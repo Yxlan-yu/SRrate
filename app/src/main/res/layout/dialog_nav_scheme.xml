@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/nav_dialog_bg"
+    android:padding="24dp">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/nav_scheme_title"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#1A1A2E"
+        android:paddingBottom="12dp"/>
+    <RadioGroup
+        android:id="@+id/rg_nav_scheme"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <RadioButton
+            android:id="@+id/rb_nav_float"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="@string/nav_scheme_float"
+            android:textSize="17sp"
+            android:textColor="#1A1A2E"
+            android:paddingStart="8dp"
+            android:gravity="center_vertical"
+            android:buttonTint="#1976D2"/>
+        <RadioButton
+            android:id="@+id/rb_nav_classic"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="@string/nav_scheme_classic"
+            android:textSize="17sp"
+            android:textColor="#1A1A2E"
+            android:paddingStart="8dp"
+            android:gravity="center_vertical"
+            android:buttonTint="#1976D2"/>
+        <RadioButton android:id="@+id/rb_nav_top" android:layout_width="match_parent" android:layout_height="60dp" android:text="@string/nav_scheme_top" android:textSize="17sp" android:textColor="#1A1A2E" android:paddingStart="8dp" android:gravity="center_vertical" android:buttonTint="#1976D2"/>
+        <RadioButton android:id="@+id/rb_nav_left" android:layout_width="match_parent" android:layout_height="60dp" android:text="@string/nav_scheme_left" android:textSize="17sp" android:textColor="#1A1A2E" android:paddingStart="8dp" android:gravity="center_vertical" android:buttonTint="#1976D2"/>
+        <RadioButton android:id="@+id/rb_nav_right" android:layout_width="match_parent" android:layout_height="60dp" android:text="@string/nav_scheme_right" android:textSize="17sp" android:textColor="#1A1A2E" android:paddingStart="8dp" android:gravity="center_vertical" android:buttonTint="#1976D2"/>
+    </RadioGroup>
+</LinearLayout>

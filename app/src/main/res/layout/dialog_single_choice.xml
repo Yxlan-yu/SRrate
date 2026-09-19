@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:background="@drawable/nav_dialog_bg" android:padding="24dp">
+    <TextView android:id="@+id/dialog_choice_title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="22sp" android:textStyle="bold" android:textColor="#1A1A2E" android:paddingBottom="12dp"/>
+    <RadioGroup android:id="@+id/dialog_choice_group" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+</LinearLayout>
