@@ -717,10 +717,10 @@ private fun exec(m: AbsAdbConnectionManager, cmd: String): String {
     val stream: AdbStream = m.openStream("shell:$cmd")
     val bos = ByteArrayOutputStream()
     try {
-        val is: InputStream = stream.openInputStream()
+        val ins: InputStream = stream.openInputStream()
         val buf = ByteArray(4096)
         while (true) {
-            val n = is.read(buf)
+            val n = ins.read(buf)
             if (n < 0) break
             bos.write(buf, 0, n)
         }
@@ -740,7 +740,7 @@ private fun addMode(
     val id = Integer.parseInt(m.group(1))
     val w = Integer.parseInt(m.group(2))
     val h = Integer.parseInt(m.group(3))
-    val fps = Float.parseFloat(m.group(4))
+    val fps = m.group(4).toFloat()
     val key = "${w}x${h}@${Math.round(fps)}"
     if (!seen.add(key)) return
     val dm = DisplayMode(w, h, fps, id)
@@ -756,13 +756,13 @@ private fun parseActiveFps(dump: String): Int {
         if (a.find()) {
             val id = Integer.parseInt(a.group(1))
             val f = Pattern.compile("id=$id, width=\\d+, height=\\d+, fps=([0-9.]+)").matcher(dump)
-            if (f.find()) return Math.round(Float.parseFloat(f.group(1)))
+            if (f.find()) return Math.round(f.group(1).toFloat())
         }
     } catch (e: Exception) {
     }
     try {
         val r = Pattern.compile("refreshRate=?\\s?([0-9]+(?:\\.[0-9]+)?)").matcher(dump)
-        if (r.find()) return Math.round(Float.parseFloat(r.group(1)))
+        if (r.find()) return Math.round(r.group(1).toFloat())
     } catch (e: Exception) {
     }
     return -1
