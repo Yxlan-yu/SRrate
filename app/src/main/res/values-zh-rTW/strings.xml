@@ -58,7 +58,7 @@
     <string name="root_running_label">Root 執行</string>
     <string name="shizuku_running_label">Shizuku 執行</string>
     <string name="about_title">關於</string>
-    <string name="version_label">版本: 1.6.8</string>
+    <string name="version_label">版本: 1.0</string>
     <string name="generate_log_btn">產生記錄</string>
     <string name="language_zh">简体中文</string>
     <string name="language_zh_tw">繁體中文</string>
