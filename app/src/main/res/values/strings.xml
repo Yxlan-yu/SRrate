@@ -211,4 +211,10 @@
     <string name="update_changelog_label">更新内容：</string>
     <string name="update_downloading">正在下载更新</string>
     <string name="update_allow_install">请先允许安装未知应用权限，然后重新点击更新</string>
+    <string name="badge_current">当前</string>
+    <string name="home_status_format">当前 %1$d Hz · %2$s</string>
+    <string name="settings_section_general">常规</string>
+    <string name="native_overlay_title">原生刷新率覆盖</string>
+    <string name="native_overlay_desc">使用系统原生命令，需 Root/Shizuku</string>
+    <string name="about_page_subtitle">刷新率 · 版本 %1$s</string>
 </resources>

@@ -211,4 +211,10 @@
     <string name="update_changelog_label">更新内容：</string>
     <string name="update_downloading">ダウンロード中</string>
     <string name="update_allow_install">不明なアプリのインストールを許可してから、もう一度更新を押してください</string>
+    <string name="badge_current">現在</string>
+    <string name="home_status_format">現在 %1$d Hz · %2$s</string>
+    <string name="settings_section_general">一般</string>
+    <string name="native_overlay_title">ネイティブリフレッシュオーバーレイ</string>
+    <string name="native_overlay_desc">システムのネイティブコマンドを使用（Root/Shizuku が必要）</string>
+    <string name="about_page_subtitle">リフレッシュレート · バージョン %1$s</string>
 </resources>

@@ -1,20 +1,660 @@
 package com.yxlanyu.refreshrate.ui.screens
 
-import androidx.compose.foundation.layout.PaddingValues
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import com.yxlanyu.refreshrate.R
-import com.yxlanyu.refreshrate.ui.components.PlaceholderItem
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
+import com.yxlanyu.refreshrate.util.AccessibilityUtils
+import com.yxlanyu.refreshrate.util.LanguageUtils
+import com.yxlanyu.refreshrate.util.RootUtils
+import com.yxlanyu.refreshrate.util.ShizukuUtils
+import java.io.File
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import top.yukonga.miuix.kmp.basic.Button
+import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.RadioButton
+import top.yukonga.miuix.kmp.basic.SmallTitle
+import top.yukonga.miuix.kmp.basic.Switch
+import top.yukonga.miuix.kmp.basic.Text
+import top.yukonga.miuix.kmp.basic.TextButton
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Back
+import top.yukonga.miuix.kmp.icon.extended.ChevronForward
+import top.yukonga.miuix.kmp.icon.extended.File
+import top.yukonga.miuix.kmp.icon.extended.Info
+import top.yukonga.miuix.kmp.icon.extended.Translate
+import top.yukonga.miuix.kmp.overlay.OverlayDialog
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+
+private enum class SettingsPage { Main, Language, About }
+
+private data class LangOption(val key: String, val labelRes: Int)
+
+private val LANG_OPTIONS = listOf(
+    LangOption(LanguageUtils.LANG_SYSTEM, R.string.lang_system),
+    LangOption(LanguageUtils.LANG_ZH, R.string.lang_zh),
+    LangOption(LanguageUtils.LANG_ZH_TW, R.string.lang_zh_tw),
+    LangOption(LanguageUtils.LANG_EN, R.string.lang_en),
+    LangOption(LanguageUtils.LANG_JA, R.string.lang_ja),
+)
 
 @Composable
-fun SettingsScreen(outerContentPadding: PaddingValues) {
-    RefreshPageScaffold(
-        title = stringResource(R.string.nav_settings),
-        outerContentPadding = outerContentPadding,
-    ) {
-        item(key = "placeholder") {
-            PlaceholderItem(text = stringResource(R.string.nav_settings))
+fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.PaddingValues) {
+    val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences("s", android.content.Context.MODE_PRIVATE) }
+    val scope = rememberCoroutineScope()
+
+    var page by remember { mutableStateOf(SettingsPage.Main) }
+    var authMode by remember { mutableStateOf(prefs.getString("auth_mode", "") ?: "") }
+    var hasRoot by remember { mutableStateOf(false) }
+    var shizukuAvail by remember { mutableStateOf(false) }
+    var shizukuPerm by remember { mutableStateOf(false) }
+    var a11yEnabled by remember { mutableStateOf(false) }
+    var nativeOverlay by remember { mutableStateOf(prefs.getBoolean("native_refresh_overlay", false)) }
+    var showLog by remember { mutableStateOf(false) }
+    var logText by remember { mutableStateOf("") }
+
+    suspend fun refreshA11y() {
+        val ok = withContext(Dispatchers.IO) { AccessibilityUtils.isKeepAliveServiceEnabled(context) }
+        a11yEnabled = ok
+    }
+
+    suspend fun refreshAuth() {
+        val root = withContext(Dispatchers.IO) { RootUtils.isRooted() }
+        val avail = withContext(Dispatchers.IO) { ShizukuUtils.isAvailable() }
+        val perm = withContext(Dispatchers.IO) {
+            if (avail) ShizukuUtils.hasPermission() else false
+        }
+        hasRoot = root
+        shizukuAvail = avail
+        shizukuPerm = perm
+    }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            refreshA11y()
+            refreshAuth()
+            kotlinx.coroutines.delay(1500L)
         }
     }
+
+    val openA11y: () -> Unit = {
+        try {
+            context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        } catch (e: Exception) {
+            Toast.makeText(context, R.string.accessibility_open_failed, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    RefreshPageScaffold(
+        title = stringResource(R.string.settings_title),
+        outerContentPadding = outerContentPadding,
+        largeTitle = when (page) {
+            SettingsPage.Main -> stringResource(R.string.settings_title)
+            SettingsPage.Language -> stringResource(R.string.language_page_title)
+            SettingsPage.About -> stringResource(R.string.about_title)
+        },
+        navigationIcon = if (page != SettingsPage.Main) {
+            {
+                top.yukonga.miuix.kmp.basic.IconButton(onClick = { page = SettingsPage.Main }) {
+                    top.yukonga.miuix.kmp.basic.Icon(
+                        imageVector = MiuixIcons.Back,
+                        contentDescription = "back",
+                    )
+                }
+            }
+        } else null,
+    ) {
+        when (page) {
+            SettingsPage.Main -> {
+                item(key = "auth") {
+                    SettingsSectionCard(
+                        title = stringResource(R.string.settings_root_title),
+                        children = {
+                            RootRow(
+                                hasRoot = hasRoot,
+                                checked = authMode == "root",
+                                onCheckedChange = { checked ->
+                                    if (checked) {
+                                        authMode = "root"
+                                        prefs.edit().putString("auth_mode", "root").apply()
+                                    } else {
+                                        if (authMode != "shizuku") {
+                                            authMode = ""
+                                            prefs.edit().putString("auth_mode", "").apply()
+                                        }
+                                    }
+                                },
+                            )
+                            ShizukuRow(
+                                avail = shizukuAvail,
+                                perm = shizukuPerm,
+                                checked = authMode == "shizuku",
+                                onCheckedChange = { checked ->
+                                    if (checked) {
+                                        authMode = "shizuku"
+                                        prefs.edit().putString("auth_mode", "shizuku").apply()
+                                    } else {
+                                        if (authMode != "root") {
+                                            authMode = ""
+                                            prefs.edit().putString("auth_mode", "").apply()
+                                        }
+                                    }
+                                },
+                                onAuthorize = {
+                                    if (shizukuAvail) {
+                                        ShizukuUtils.requestPermission()
+                                        kotlinx.coroutines.CoroutineScope(Dispatchers.IO).launch {
+                                            kotlinx.coroutines.delay(1000L)
+                                            val perm = ShizukuUtils.hasPermission()
+                                            withContext(Dispatchers.Main) { shizukuPerm = perm }
+                                        }
+                                    } else {
+                                        Toast.makeText(context, R.string.shizuku_install_hint, Toast.LENGTH_LONG).show()
+                                    }
+                                },
+                            )
+                            AccessibilityRow(a11yEnabled = a11yEnabled, onClick = openA11y)
+                            NativeOverlayRow(
+                                checked = nativeOverlay,
+                                onCheckedChange = { checked ->
+                                    val mode = prefs.getString("auth_mode", "")
+                                    val useRoot = "root" == mode
+                                    val useShizuku = "shizuku" == mode
+                                    if (!useRoot && !useShizuku) {
+                                        Toast.makeText(context, R.string.rate_lock_need_auth, Toast.LENGTH_SHORT).show()
+                                        nativeOverlay = false
+                                    } else {
+                                        nativeOverlay = checked
+                                        prefs.edit().putBoolean("native_refresh_overlay", checked).apply()
+                                        scope.launch(Dispatchers.IO) {
+                                            if (useRoot) RootUtils.setNativeRefreshOverlay(checked)
+                                            else ShizukuUtils.setNativeRefreshOverlay(checked)
+                                        }
+                                    }
+                                },
+                            )
+                        },
+                    )
+                }
+                item(key = "general") {
+                    SettingsSectionCard(
+                        title = stringResource(R.string.settings_section_general),
+                        children = {
+                            ChevRow(
+                                icon = MiuixIcons.Translate,
+                                title = stringResource(R.string.language_page_title),
+                                desc = stringResource(R.string.language_row_desc),
+                                onClick = { page = SettingsPage.Language },
+                            )
+                            ChevRow(
+                                icon = MiuixIcons.Info,
+                                title = stringResource(R.string.about_title),
+                                desc = stringResource(R.string.version_label),
+                                onClick = { page = SettingsPage.About },
+                            )
+                        },
+                    )
+                }
+            }
+            SettingsPage.Language -> {
+                val current = LanguageUtils.getCurrentLang(context)
+                item(key = "lang") {
+                    Card(
+                        cornerRadius = 16.dp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp, 14.dp, 14.dp, 0.dp),
+                    ) {
+                        LANG_OPTIONS.forEachIndexed { index, opt ->
+                            val selected = opt.key == current
+                            val onClick = {
+                                val activity = context as? Activity
+                                if (activity != null) LanguageUtils.setLanguageAndRecreate(activity, opt.key)
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 12.dp, end = 14.dp, top = 8.dp, bottom = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = stringResource(opt.labelRes),
+                                    fontSize = 17.sp,
+                                    color = MiuixTheme.colorScheme.onSurface,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                RadioButton(selected = selected, onClick = onClick)
+                            }
+                            if (index < LANG_OPTIONS.lastIndex) {
+                                top.yukonga.miuix.kmp.basic.HorizontalDivider(
+                                    modifier = Modifier.padding(start = 12.dp, end = 12.dp),
+                                    thickness = 1.dp,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            SettingsPage.About -> {
+                item(key = "about_logo") {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 20.dp, bottom = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .background(
+                                    Brush.linearGradient(listOf(Color(0xFF0A84FF), Color(0xFF00B6F0))),
+                                    RoundedCornerShape(18.dp),
+                                ),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = "刷",
+                                color = Color.White,
+                                fontSize = 30.sp,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                        Spacer(Modifier.size(10.dp))
+                        Text(
+                            text = stringResource(R.string.about_page_subtitle, "1.0"),
+                            fontSize = 13.sp,
+                            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                        )
+                    }
+                }
+                item(key = "contributors") {
+                    SettingsSectionCard(
+                        title = stringResource(R.string.contributors_title),
+                        children = {
+                            ContributorRow(
+                                avatar = "爱",
+                                type = stringResource(R.string.contrib_type_creator),
+                                info = stringResource(R.string.contrib_info_aihaozhe),
+                                url = "https://www.coolapk.com/u/31452988",
+                            )
+                            ContributorRow(
+                                avatar = "傻",
+                                type = stringResource(R.string.contrib_type_coder),
+                                info = stringResource(R.string.contrib_info_shagua),
+                                url = "https://www.coolapk.com/u/33802586",
+                            )
+                            ContributorRow(
+                                avatar = "槐",
+                                type = stringResource(R.string.contrib_type_supporter),
+                                info = stringResource(R.string.contrib_info_huaiyin),
+                                url = "https://www.coolapk.com/u/14621568",
+                            )
+                            ContributorRow(
+                                avatar = "叶",
+                                type = stringResource(R.string.contrib_type_ui),
+                                info = stringResource(R.string.contrib_info_yxlanyu),
+                                url = "https://www.coolapk.com/u/1779",
+                            )
+                        },
+                    )
+                }
+                item(key = "log") {
+                    Button(
+                        onClick = {
+                            scope.launch(Dispatchers.IO) {
+                                val log = RootUtils.generateRuntimeLog(context)
+                                withContext(Dispatchers.Main) {
+                                    logText = log
+                                    showLog = true
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                    ) {
+                        Text(text = stringResource(R.string.generate_log_btn))
+                    }
+                }
+            }
+        }
+    }
+
+    if (showLog) {
+        OverlayDialog(
+            show = showLog,
+            title = stringResource(R.string.log_dialog_title),
+            onDismissRequest = { showLog = false },
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 320.dp)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+            ) {
+                Text(
+                    text = logText.ifEmpty { "-" },
+                    fontSize = 12.sp,
+                    color = MiuixTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End,
+            ) {
+                TextButton(
+                    text = stringResource(R.string.log_dialog_close),
+                    onClick = { showLog = false },
+                )
+                Spacer(Modifier.width(8.dp))
+                Button(onClick = {
+                    shareLog(context, logText)
+                    showLog = false
+                }) {
+                    Text(text = stringResource(R.string.log_dialog_share))
+                }
+            }
+        }
+    }
+}
+
+private fun shareLog(context: android.content.Context, content: String) {
+    try {
+        val logDir = File(context.cacheDir, "logs").apply { mkdirs() }
+        val logFile = File(logDir, "refresh_rate_log.txt")
+        logFile.writeText(content)
+        val uri: Uri = FileProvider.getUriForFile(
+            context,
+            context.packageName + ".fileprovider",
+            logFile,
+        )
+        val share = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(share, content.getShareTitle(context)))
+    } catch (e: Exception) {
+        val share = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, content)
+        }
+        context.startActivity(Intent.createChooser(share, content.getShareTitle(context)))
+    }
+}
+
+private fun String.getShareTitle(context: android.content.Context): String =
+    context.getString(R.string.log_dialog_share)
+
+@Composable
+private fun SettingsSectionCard(
+    title: String,
+    children: @Composable () -> Unit,
+) {
+    SmallTitle(
+        text = title,
+        insideMargin = androidx.compose.foundation.layout.PaddingValues(28.dp, 12.dp),
+    )
+    Card(
+        cornerRadius = 16.dp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(14.dp, 0.dp, 14.dp, 0.dp),
+    ) {
+        children()
+    }
+}
+
+@Composable
+private fun SettingsRow(
+    title: String,
+    desc: String,
+    descColor: Color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+    trailing: @Composable (() -> Unit)? = null,
+    onClick: (() -> Unit)? = null,
+) {
+    val clickableModifier = if (onClick != null) {
+        Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+    } else {
+        Modifier.fillMaxWidth()
+    }
+    Row(
+        modifier = clickableModifier.padding(start = 14.dp, end = 14.dp, top = 10.dp, bottom = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                fontSize = 17.sp,
+                color = MiuixTheme.colorScheme.onSurface,
+            )
+            if (desc.isNotEmpty()) {
+                Spacer(Modifier.size(3.dp))
+                Text(
+                    text = desc,
+                    fontSize = 13.sp,
+                    color = descColor,
+                )
+            }
+        }
+        if (trailing != null) {
+            Spacer(Modifier.width(10.dp))
+            trailing()
+        }
+    }
+}
+
+@Composable
+private fun RootRow(
+    hasRoot: Boolean,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    SettingsRow(
+        title = stringResource(R.string.root_running_label),
+        desc = stringResource(if (hasRoot) R.string.settings_root_granted else R.string.settings_root_denied),
+        descColor = if (hasRoot) Color(0xFF2ECC71) else Color(0xFFE74C3C),
+        trailing = {
+            Switch(checked = checked, onCheckedChange = onCheckedChange)
+        },
+    )
+    Divider()
+}
+
+@Composable
+private fun ShizukuRow(
+    avail: Boolean,
+    perm: Boolean,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    onAuthorize: () -> Unit,
+) {
+    val descRes = when {
+        !avail -> R.string.shizuku_not_running
+        !perm -> R.string.shizuku_no_perm
+        else -> R.string.shizuku_authorized
+    }
+    val descColor = when {
+        !avail -> Color(0xFF888888)
+        !perm -> Color(0xFFE74C3C)
+        else -> Color(0xFF2ECC71)
+    }
+    SettingsRow(
+        title = stringResource(R.string.shizuku_running_label),
+        desc = stringResource(descRes),
+        descColor = descColor,
+        onClick = if (avail && !perm) onAuthorize else null,
+        trailing = {
+            if (avail && !perm && !checked) {
+                top.yukonga.miuix.kmp.basic.TextButton(
+                    text = stringResource(R.string.btn_authorize_shizuku),
+                    onClick = onAuthorize,
+                )
+            } else {
+                Switch(checked = checked, onCheckedChange = onCheckedChange)
+            }
+        },
+    )
+    Divider()
+}
+
+@Composable
+private fun AccessibilityRow(a11yEnabled: Boolean, onClick: () -> Unit) {
+    SettingsRow(
+        title = stringResource(R.string.accessibility_running_label),
+        desc = stringResource(if (a11yEnabled) R.string.accessibility_enabled else R.string.accessibility_disabled),
+        descColor = if (a11yEnabled) Color(0xFF2ECC71) else Color(0xFFE74C3C),
+        onClick = onClick,
+        trailing = {
+            Switch(
+                checked = a11yEnabled,
+                onCheckedChange = { onClick() },
+                enabled = false,
+            )
+        },
+    )
+    Divider()
+}
+
+@Composable
+private fun NativeOverlayRow(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    SettingsRow(
+        title = stringResource(R.string.native_overlay_title),
+        desc = stringResource(R.string.native_overlay_desc),
+        trailing = {
+            Switch(checked = checked, onCheckedChange = onCheckedChange)
+        },
+    )
+}
+
+@Composable
+private fun ChevRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    desc: String,
+    onClick: () -> Unit,
+) {
+    SettingsRow(
+        title = title,
+        desc = desc,
+        onClick = onClick,
+        trailing = {
+            top.yukonga.miuix.kmp.basic.Icon(
+                modifier = Modifier.size(20.dp),
+                imageVector = icon,
+                contentDescription = title,
+                tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+            )
+            Spacer(Modifier.width(2.dp))
+            top.yukonga.miuix.kmp.basic.Icon(
+                modifier = Modifier.size(16.dp),
+                imageVector = MiuixIcons.ChevronForward,
+                contentDescription = "chevron",
+                tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+            )
+        },
+    )
+    Divider()
+}
+
+@Composable
+private fun ContributorRow(
+    avatar: String,
+    type: String,
+    info: String,
+    url: String,
+) {
+    val context = LocalContext.current
+    SettingsRow(
+        title = type,
+        desc = info,
+        onClick = {
+            try {
+                context.startActivity(
+                    Intent(Intent.ACTION_VIEW, Uri.parse(url)).setPackage("com.coolapk.market"),
+                )
+            } catch (e: Exception) {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+            }
+        },
+        trailing = {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(Color(0xFFE8EEF3), RoundedCornerShape(20.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = avatar,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF555),
+                )
+            }
+            Spacer(Modifier.width(8.dp))
+            top.yukonga.miuix.kmp.basic.Icon(
+                modifier = Modifier.size(16.dp),
+                imageVector = MiuixIcons.ChevronForward,
+                contentDescription = "chevron",
+                tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+            )
+        },
+    )
+    Divider()
+}
+
+@Composable
+private fun Divider() {
+    top.yukonga.miuix.kmp.basic.HorizontalDivider(
+        modifier = Modifier.padding(start = 12.dp, end = 12.dp),
+        thickness = 1.dp,
+    )
 }
