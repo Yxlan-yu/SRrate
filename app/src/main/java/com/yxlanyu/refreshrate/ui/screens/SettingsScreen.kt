@@ -63,6 +63,7 @@ import top.yukonga.miuix.kmp.icon.extended.ConvertFile
 import top.yukonga.miuix.kmp.icon.extended.File
 import top.yukonga.miuix.kmp.icon.extended.Info
 import top.yukonga.miuix.kmp.icon.extended.Link
+import top.yukonga.miuix.kmp.icon.extended.Refresh
 import top.yukonga.miuix.kmp.icon.extended.Translate
 import top.yukonga.miuix.kmp.icon.extended.Update
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
@@ -295,11 +296,11 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                                 ),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Text(
-                                text = "刷",
-                                color = Color.White,
-                                fontSize = 26.sp,
-                                fontWeight = FontWeight.Bold,
+                            Icon(
+                                imageVector = MiuixIcons.Refresh,
+                                contentDescription = null,
+                                modifier = Modifier.size(32.dp),
+                                tint = Color.White,
                             )
                         }
                         Spacer(Modifier.size(12.dp))
