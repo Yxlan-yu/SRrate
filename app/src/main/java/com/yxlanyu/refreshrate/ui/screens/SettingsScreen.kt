@@ -296,7 +296,7 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                                 ),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Icon(
+                            top.yukonga.miuix.kmp.basic.Icon(
                                 imageVector = MiuixIcons.Refresh,
                                 contentDescription = null,
                                 modifier = Modifier.size(32.dp),
