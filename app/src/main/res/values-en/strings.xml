@@ -175,20 +175,13 @@
     <string name="custom_notif_status_off">[Custom refresh rate NOT enabled]</string>
     <string name="custom_notif_set_format">Set  Resolution: %1$s  Rate: %2$d Hz</string>
     <string name="custom_notif_current_format">Current resolution: %1$s  Current rate: %2$d Hz</string>
-    <string name="contributors_title">About Us</string>
-    <string name="contrib_type_creator">Type: Creator</string>
-    <string name="contrib_info_aihaozhe">Profile: Coolapk 爱好者ahh</string>
-    <string name="contrib_jump">Open profile</string>
-    <string name="contrib_type_coder">Type: Code Contributor &amp; Supporter</string>
-    <string name="contrib_info_shagua">Profile: Coolapk 傻瓜我爱你呀喵</string>
-    <string name="contrib_type_supporter">Type: Supporter</string>
-    <string name="contrib_info_huaiyin">Profile: Coolapk 槐蔭區</string>
+    <string name="contributors_title">Author</string>
     <string name="custom_notif_waiting_title">Per-app refresh rate · Running</string>
     <string name="custom_notif_waiting_text">Waiting to switch to an enabled app…</string>
     <string name="perm_status_title">Permission status</string>
     <string name="accessibility_running_label">Accessibility running</string>
-    <string name="contrib_type_ui">Contribution: Feature/UI redesign</string>
-    <string name="contrib_info_yxlanyu">Profile: Coolapk Yxlan-yu</string>
+    <string name="contrib_name_yxlanyu">Yxlan-yu</string>
+    <string name="contrib_info_yxlanyu">GitHub</string>
     <string name="language_page_title">Language</string>
     <string name="lang_system">系统默认</string>
     <string name="lang_zh">简体中文</string>
@@ -217,4 +210,16 @@
     <string name="native_overlay_title">Native Refresh Overlay</string>
     <string name="native_overlay_desc">Use system native commands, requires Root/Shizuku</string>
     <string name="about_page_subtitle">Refresh Rate · Version %1$s</string>
+
+    <string name="about_app_brand">SRrate</string>
+    <string name="about_version">v1.0</string>
+    <string name="about_menu_more">More</string>
+    <string name="about_check_update_desc">Coming soon</string>
+    <string name="about_github_project">GitHub Project</string>
+    <string name="about_github_project_desc">github.com/Yxlan-yu/refresh-rate</string>
+    <string name="about_source_code">Source Code</string>
+    <string name="about_source_desc">Source shared · Thanks to aihaozhe</string>
+    <string name="about_diag_title">Diagnostics</string>
+    <string name="about_gen_log">Generate runtime log</string>
+    <string name="generate_log_desc">Export diagnostic info for reporting issues</string>
 </resources>

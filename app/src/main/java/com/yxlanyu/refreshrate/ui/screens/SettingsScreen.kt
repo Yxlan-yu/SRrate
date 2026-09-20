@@ -59,9 +59,12 @@ import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.ChevronForward
+import top.yukonga.miuix.kmp.icon.extended.ConvertFile
 import top.yukonga.miuix.kmp.icon.extended.File
 import top.yukonga.miuix.kmp.icon.extended.Info
+import top.yukonga.miuix.kmp.icon.extended.Link
 import top.yukonga.miuix.kmp.icon.extended.Translate
+import top.yukonga.miuix.kmp.icon.extended.Update
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -280,12 +283,12 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 20.dp, bottom = 8.dp),
+                            .padding(top = 22.dp, bottom = 6.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(72.dp)
+                                .size(64.dp)
                                 .background(
                                     Brush.linearGradient(listOf(Color(0xFF0A84FF), Color(0xFF00B6F0))),
                                     RoundedCornerShape(18.dp),
@@ -295,66 +298,96 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                             Text(
                                 text = "刷",
                                 color = Color.White,
-                                fontSize = 30.sp,
+                                fontSize = 26.sp,
                                 fontWeight = FontWeight.Bold,
                             )
                         }
-                        Spacer(Modifier.size(10.dp))
+                        Spacer(Modifier.size(12.dp))
                         Text(
-                            text = stringResource(R.string.about_page_subtitle, "1.0"),
-                            fontSize = 13.sp,
+                            text = stringResource(R.string.about_app_brand),
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MiuixTheme.colorScheme.onSurface,
+                        )
+                        Spacer(Modifier.size(4.dp))
+                        Text(
+                            text = stringResource(R.string.about_version),
+                            fontSize = 12.sp,
                             color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                         )
                     }
                 }
-                item(key = "contributors") {
+                item(key = "more") {
                     SettingsSectionCard(
-                        title = stringResource(R.string.contributors_title),
+                        title = stringResource(R.string.about_menu_more),
                         children = {
-                            ContributorRow(
-                                avatar = "爱",
-                                type = stringResource(R.string.contrib_type_creator),
-                                info = stringResource(R.string.contrib_info_aihaozhe),
-                                url = "https://www.coolapk.com/u/31452988",
+                            AboutMenuRow(
+                                icon = MiuixIcons.Update,
+                                title = stringResource(R.string.check_update),
+                                desc = stringResource(R.string.about_check_update_desc),
+                                onClick = {
+                                    Toast.makeText(context, R.string.about_check_update_desc, Toast.LENGTH_SHORT).show()
+                                },
                             )
-                            ContributorRow(
-                                avatar = "傻",
-                                type = stringResource(R.string.contrib_type_coder),
-                                info = stringResource(R.string.contrib_info_shagua),
-                                url = "https://www.coolapk.com/u/33802586",
+                            AboutMenuRow(
+                                icon = MiuixIcons.Link,
+                                title = stringResource(R.string.about_github_project),
+                                desc = stringResource(R.string.about_github_project_desc),
+                                onClick = {
+                                    openInBrowser(context, "https://github.com/Yxlan-yu/refresh-rate")
+                                },
                             )
-                            ContributorRow(
-                                avatar = "槐",
-                                type = stringResource(R.string.contrib_type_supporter),
-                                info = stringResource(R.string.contrib_info_huaiyin),
-                                url = "https://www.coolapk.com/u/14621568",
-                            )
-                            ContributorRow(
-                                avatar = "叶",
-                                type = stringResource(R.string.contrib_type_ui),
-                                info = stringResource(R.string.contrib_info_yxlanyu),
-                                url = "https://www.coolapk.com/u/1779",
+                            AboutMenuRow(
+                                icon = MiuixIcons.ConvertFile,
+                                title = stringResource(R.string.about_source_code),
+                                desc = stringResource(R.string.about_source_desc),
+                                onClick = {
+                                    openInBrowser(context, "https://github.com/Yxlan-yu/pmahz-refreshrate")
+                                },
                             )
                         },
                     )
                 }
-                item(key = "log") {
-                    Button(
-                        onClick = {
-                            scope.launch(Dispatchers.IO) {
-                                val log = RootUtils.generateRuntimeLog(context)
-                                withContext(Dispatchers.Main) {
-                                    logText = log
-                                    showLog = true
-                                }
-                            }
+                item(key = "author") {
+                    SettingsSectionCard(
+                        title = stringResource(R.string.contributors_title),
+                        children = {
+                            ContributorRow(
+                                avatar = "葉",
+                                type = stringResource(R.string.contrib_name_yxlanyu),
+                                info = stringResource(R.string.contrib_info_yxlanyu),
+                                url = "https://github.com/Yxlan-yu",
+                            )
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(14.dp),
-                    ) {
-                        Text(text = stringResource(R.string.generate_log_btn))
-                    }
+                    )
+                }
+                item(key = "diag") {
+                    SettingsSectionCard(
+                        title = stringResource(R.string.about_diag_title),
+                        children = {
+                            SettingsRow(
+                                title = stringResource(R.string.about_gen_log),
+                                desc = stringResource(R.string.generate_log_desc),
+                                onClick = {
+                                    scope.launch(Dispatchers.IO) {
+                                        val log = RootUtils.generateRuntimeLog(context)
+                                        withContext(Dispatchers.Main) {
+                                            logText = log
+                                            showLog = true
+                                        }
+                                    }
+                                },
+                                trailing = {
+                                    top.yukonga.miuix.kmp.basic.Icon(
+                                        modifier = Modifier.size(16.dp),
+                                        imageVector = MiuixIcons.ChevronForward,
+                                        contentDescription = "chevron",
+                                        tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                                    )
+                                },
+                            )
+                        },
+                    )
                 }
             }
         }
@@ -429,6 +462,14 @@ private fun shareLog(context: android.content.Context, content: String) {
 private fun String.getShareTitle(context: android.content.Context): String =
     context.getString(R.string.log_dialog_share)
 
+private fun openInBrowser(context: android.content.Context, url: String) {
+    try {
+        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+    } catch (e: Exception) {
+        Toast.makeText(context, R.string.log_dialog_share, Toast.LENGTH_SHORT).show()
+    }
+}
+
 @Composable
 private fun SettingsSectionCard(
     title: String,
@@ -454,6 +495,7 @@ private fun SettingsRow(
     desc: String,
     descColor: Color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
     trailing: @Composable (() -> Unit)? = null,
+    leading: @Composable (() -> Unit)? = null,
     onClick: (() -> Unit)? = null,
 ) {
     val clickableModifier = if (onClick != null) {
@@ -467,6 +509,9 @@ private fun SettingsRow(
         modifier = clickableModifier.padding(start = 14.dp, end = 14.dp, top = 10.dp, bottom = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        if (leading != null) {
+            leading()
+        }
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
@@ -606,6 +651,45 @@ private fun ChevRow(
 }
 
 @Composable
+private fun AboutMenuRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    desc: String,
+    onClick: () -> Unit,
+) {
+    SettingsRow(
+        title = title,
+        desc = desc,
+        onClick = onClick,
+        trailing = {
+            top.yukonga.miuix.kmp.basic.Icon(
+                modifier = Modifier.size(16.dp),
+                imageVector = MiuixIcons.ChevronForward,
+                contentDescription = "chevron",
+                tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+            )
+        },
+        leading = {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .background(Color(0xFFE8EEF3), RoundedCornerShape(10.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                top.yukonga.miuix.kmp.basic.Icon(
+                    modifier = Modifier.size(20.dp),
+                    imageVector = icon,
+                    contentDescription = title,
+                    tint = MiuixTheme.colorScheme.primary,
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+        },
+    )
+    Divider()
+}
+
+@Composable
 private fun ContributorRow(
     avatar: String,
     type: String,
@@ -617,29 +701,28 @@ private fun ContributorRow(
         title = type,
         desc = info,
         onClick = {
-            try {
-                context.startActivity(
-                    Intent(Intent.ACTION_VIEW, Uri.parse(url)).setPackage("com.coolapk.market"),
-                )
-            } catch (e: Exception) {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-            }
+            openInBrowser(context, url)
         },
-        trailing = {
+        leading = {
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .background(Color(0xFFE8EEF3), RoundedCornerShape(20.dp)),
+                    .background(
+                        Brush.linearGradient(listOf(Color(0xFF9C6BFF), Color(0xFF7C6CFF))),
+                        RoundedCornerShape(20.dp),
+                    ),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = avatar,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color(0xFF555),
+                    color = Color.White,
                 )
             }
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(12.dp))
+        },
+        trailing = {
             top.yukonga.miuix.kmp.basic.Icon(
                 modifier = Modifier.size(16.dp),
                 imageVector = MiuixIcons.ChevronForward,

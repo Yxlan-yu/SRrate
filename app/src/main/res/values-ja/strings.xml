@@ -175,20 +175,13 @@
     <string name="custom_notif_status_off">[このアプリは独自リフレッシュレート 未設定]</string>
     <string name="custom_notif_set_format">設定値  解像度: %1$s  リフレッシュ: %2$d Hz</string>
     <string name="custom_notif_current_format">現在の解像度: %1$s  現在のリフレッシュ: %2$d Hz</string>
-    <string name="contributors_title">私たちについて</string>
-    <string name="contrib_type_creator">種別: 制作者</string>
-    <string name="contrib_info_aihaozhe">プロフィール: Coolapk 爱好者ahh</string>
-    <string name="contrib_jump">プロフィールへ</string>
-    <string name="contrib_type_coder">種別: コード貢献者 &amp; サポーター</string>
-    <string name="contrib_info_shagua">プロフィール: Coolapk 傻瓜我爱你呀喵</string>
-    <string name="contrib_type_supporter">種別: サポーター</string>
-    <string name="contrib_info_huaiyin">プロフィール: Coolapk 槐蔭區</string>
+    <string name="contributors_title">作者</string>
     <string name="custom_notif_waiting_title">アプリ別リフレッシュレート · 実行中</string>
     <string name="custom_notif_waiting_text">有効なアプリへの切り替えを待機中…</string>
     <string name="perm_status_title">権限の許可状態</string>
     <string name="accessibility_running_label">アクセシビリティ実行中</string>
-    <string name="contrib_type_ui">貢献: 機能/UI 二次最適化</string>
-    <string name="contrib_info_yxlanyu">プロフィール: 酷安 叶昕蓝yu</string>
+    <string name="contrib_name_yxlanyu">Yxlan-yu</string>
+    <string name="contrib_info_yxlanyu">GitHub</string>
     <string name="language_page_title">言語設定</string>
     <string name="lang_system">系统默认</string>
     <string name="lang_zh">简体中文</string>
@@ -217,4 +210,16 @@
     <string name="native_overlay_title">ネイティブリフレッシュオーバーレイ</string>
     <string name="native_overlay_desc">システムのネイティブコマンドを使用（Root/Shizuku が必要）</string>
     <string name="about_page_subtitle">リフレッシュレート · バージョン %1$s</string>
+
+    <string name="about_app_brand">SRrate</string>
+    <string name="about_version">v1.0</string>
+    <string name="about_menu_more">更多</string>
+    <string name="about_check_update_desc">後續完善</string>
+    <string name="about_github_project">GitHub 項目</string>
+    <string name="about_github_project_desc">github.com/Yxlan-yu/refresh-rate</string>
+    <string name="about_source_code">ソースコード</string>
+    <string name="about_source_desc">ソース共有 · 投稿者に感謝</string>
+    <string name="about_diag_title">診斷</string>
+    <string name="about_gen_log">ランタイムログを生成</string>
+    <string name="generate_log_desc">診断情報をエクスポートして問題を報告</string>
 </resources>

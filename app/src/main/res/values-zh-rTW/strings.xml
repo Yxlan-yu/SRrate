@@ -175,20 +175,13 @@
     <string name="custom_notif_status_off">[該應用未啟用自訂更新率]</string>
     <string name="custom_notif_set_format">已設定  解析度: %1$s  更新率: %2$d Hz</string>
     <string name="custom_notif_current_format">目前解析度: %1$s  目前更新率: %2$d Hz</string>
-    <string name="contributors_title">關於我們</string>
-    <string name="contrib_type_creator">貢獻類型: 創作者</string>
-    <string name="contrib_info_aihaozhe">個人資訊: 酷安 爱好者ahh</string>
-    <string name="contrib_jump">前往關注</string>
-    <string name="contrib_type_coder">貢獻類型: 程式碼貢獻者&amp;支持者</string>
-    <string name="contrib_info_shagua">個人資訊: 酷安 傻瓜我爱你呀喵</string>
-    <string name="contrib_type_supporter">貢獻類型: 支持者</string>
-    <string name="contrib_info_huaiyin">個人資訊: 酷安 槐蔭區</string>
+    <string name="contributors_title">作者</string>
     <string name="custom_notif_waiting_title">自訂應用更新率 · 執行中</string>
     <string name="custom_notif_waiting_text">等待切換到已啟用的應用…</string>
     <string name="perm_status_title">權限授權狀態</string>
     <string name="accessibility_running_label">無障礙運行</string>
-    <string name="contrib_type_ui">貢獻類型: 功能/UI二次優化</string>
-    <string name="contrib_info_yxlanyu">個人資訊: 酷安 葉昕藍yu</string>
+    <string name="contrib_name_yxlanyu">Yxlan-yu</string>
+    <string name="contrib_info_yxlanyu">GitHub</string>
     <string name="language_page_title">語言設定</string>
     <string name="lang_system">系统默认</string>
     <string name="lang_zh">简体中文</string>
@@ -217,4 +210,16 @@
     <string name="native_overlay_title">原生刷新率覆蓋</string>
     <string name="native_overlay_desc">使用系統原生命令，需 Root/Shizuku</string>
     <string name="about_page_subtitle">螢幕刷新率 · 版本 %1$s</string>
+
+    <string name="about_app_brand">SRrate</string>
+    <string name="about_version">v1.0</string>
+    <string name="about_menu_more">更多</string>
+    <string name="about_check_update_desc">後續完善</string>
+    <string name="about_github_project">GitHub 專案</string>
+    <string name="about_github_project_desc">github.com/Yxlan-yu/refresh-rate</string>
+    <string name="about_source_code">原始碼</string>
+    <string name="about_source_desc">原始碼分享 · 感謝 愛好者ahh</string>
+    <string name="about_diag_title">診斷</string>
+    <string name="about_gen_log">產生運行記錄</string>
+    <string name="generate_log_desc">匯出診斷資訊用於回報問題</string>
 </resources>
