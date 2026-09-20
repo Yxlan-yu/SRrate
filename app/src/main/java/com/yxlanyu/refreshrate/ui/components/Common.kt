@@ -39,14 +39,14 @@ fun RefreshPageScaffold(
                     largeTitle = largeTitle,
                     subtitle = subtitle,
                     navigationIcon = navigationIcon ?: {},
-                    actions = actions,
+                    actions = actions ?: {},
                     scrollBehavior = scrollBehavior,
                 )
             } else {
                 SmallTopAppBar(
                     title = title,
                     navigationIcon = navigationIcon ?: {},
-                    actions = actions,
+                    actions = actions ?: {},
                     scrollBehavior = scrollBehavior,
                 )
             }

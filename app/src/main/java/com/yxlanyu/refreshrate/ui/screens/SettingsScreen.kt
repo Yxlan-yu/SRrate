@@ -376,7 +376,7 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                 Text(
                     text = logText.ifEmpty { "-" },
                     fontSize = 12.sp,
-                    color = MiuixTheme.colorScheme.onSurfaceVariant,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 )
             }
             Row(

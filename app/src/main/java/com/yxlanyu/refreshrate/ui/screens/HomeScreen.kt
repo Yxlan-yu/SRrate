@@ -124,7 +124,7 @@ fun HomeScreen(outerContentPadding: androidx.compose.foundation.layout.PaddingVa
                             mode = item,
                             isCurrent = isCurrent,
                             onClick = {
-                                onRateSelected(context, item, hasRoot, reload)
+                                onRateSelected(context, item, hasRoot, ::reload)
                             },
                         )
                     }
