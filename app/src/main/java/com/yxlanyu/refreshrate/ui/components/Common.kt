@@ -1,16 +1,26 @@
 package com.yxlanyu.refreshrate.ui.components
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
@@ -76,4 +86,34 @@ fun PlaceholderItem(text: String) {
         text = text,
         color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
     )
+}
+
+@Composable
+fun FicIcon(
+    @DrawableRes resId: Int,
+    accent: Boolean = false,
+    contentDescription: String? = null,
+) {
+    val bgColor = if (accent) MiuixTheme.colorScheme.primary else MiuixTheme.colorScheme.surfaceVariant
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .then(
+                if (accent) {
+                    Modifier.background(bgColor, RoundedCornerShape(12.dp))
+                } else {
+                    Modifier
+                        .background(bgColor, RoundedCornerShape(12.dp))
+                        .border(1.dp, MiuixTheme.colorScheme.dividerLine, RoundedCornerShape(12.dp))
+                },
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter = painterResource(resId),
+            contentDescription = contentDescription,
+            modifier = Modifier.size(22.dp),
+            tint = if (accent) Color.White else MiuixTheme.colorScheme.primary,
+        )
+    }
 }

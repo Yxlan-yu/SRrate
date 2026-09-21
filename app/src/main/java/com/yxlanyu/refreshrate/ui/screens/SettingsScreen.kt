@@ -42,6 +42,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import com.yxlanyu.refreshrate.R
+import com.yxlanyu.refreshrate.ui.components.FicIcon
+import com.yxlanyu.refreshrate.ui.components.FicIcon
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
 import com.yxlanyu.refreshrate.util.AccessibilityUtils
 import com.yxlanyu.refreshrate.util.RootUtils
@@ -215,7 +217,6 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                         title = stringResource(R.string.settings_section_general),
                         children = {
                             ChevRow(
-                                icon = MiuixIcons.Info,
                                 title = stringResource(R.string.about_title),
                                 desc = stringResource(R.string.version_label),
                                 onClick = { page = SettingsPage.About },
@@ -304,6 +305,14 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                         title = stringResource(R.string.about_diag_title),
                         children = {
                             SettingsRow(
+                                leading = {
+                                    FicIcon(R.drawable.ic_fic_doc, accent = false)
+                                    Spacer(Modifier.width(12.dp))
+                                },
+                                leading = {
+                                    FicIcon(R.drawable.ic_fic_doc, accent = false)
+                                    Spacer(Modifier.width(12.dp))
+                                },
                                 title = stringResource(R.string.about_gen_log),
                                 desc = stringResource(R.string.generate_log_desc),
                                 onClick = {
@@ -482,6 +491,10 @@ private fun RootRow(
         title = stringResource(R.string.root_running_label),
         desc = stringResource(if (hasRoot) R.string.settings_root_granted else R.string.settings_root_denied),
         descColor = if (hasRoot) Color(0xFF2ECC71) else Color(0xFFE74C3C),
+        leading = {
+            FicIcon(R.drawable.ic_fic_shield, accent = true)
+            Spacer(Modifier.width(12.dp))
+        },
         trailing = {
             Switch(checked = checked, onCheckedChange = onCheckedChange)
         },
@@ -512,6 +525,10 @@ private fun ShizukuRow(
         desc = stringResource(descRes),
         descColor = descColor,
         onClick = if (avail && !perm) onAuthorize else null,
+        leading = {
+            FicIcon(R.drawable.ic_fic_lock, accent = true)
+            Spacer(Modifier.width(12.dp))
+        },
         trailing = {
             if (avail && !perm && !checked) {
                 top.yukonga.miuix.kmp.basic.TextButton(
@@ -533,6 +550,10 @@ private fun AccessibilityRow(a11yEnabled: Boolean, onClick: () -> Unit) {
         desc = stringResource(if (a11yEnabled) R.string.accessibility_enabled else R.string.accessibility_disabled),
         descColor = if (a11yEnabled) Color(0xFF2ECC71) else Color(0xFFE74C3C),
         onClick = onClick,
+        leading = {
+            FicIcon(R.drawable.ic_fic_bell, accent = true)
+            Spacer(Modifier.width(12.dp))
+        },
         trailing = {
             Switch(
                 checked = a11yEnabled,
@@ -550,6 +571,14 @@ private fun NativeOverlayRow(
     onCheckedChange: (Boolean) -> Unit,
 ) {
     SettingsRow(
+        leading = {
+            FicIcon(R.drawable.ic_fic_bolt, accent = false)
+            Spacer(Modifier.width(12.dp))
+        },
+        leading = {
+            FicIcon(R.drawable.ic_fic_bolt, accent = false)
+            Spacer(Modifier.width(12.dp))
+        },
         title = stringResource(R.string.native_overlay_title),
         desc = stringResource(R.string.native_overlay_desc),
         trailing = {
@@ -560,7 +589,6 @@ private fun NativeOverlayRow(
 
 @Composable
 private fun ChevRow(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
     desc: String,
     onClick: () -> Unit,
@@ -569,14 +597,11 @@ private fun ChevRow(
         title = title,
         desc = desc,
         onClick = onClick,
+        leading = {
+            FicIcon(R.drawable.ic_fic_info, accent = false)
+            Spacer(Modifier.width(12.dp))
+        },
         trailing = {
-            top.yukonga.miuix.kmp.basic.Icon(
-                modifier = Modifier.size(20.dp),
-                imageVector = icon,
-                contentDescription = title,
-                tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-            )
-            Spacer(Modifier.width(2.dp))
             top.yukonga.miuix.kmp.basic.Icon(
                 modifier = Modifier.size(16.dp),
                 imageVector = MiuixIcons.ChevronForward,
@@ -585,7 +610,7 @@ private fun ChevRow(
             )
         },
     )
-    Divider()
+    Divider(start = 62.dp)
 }
 
 @Composable
