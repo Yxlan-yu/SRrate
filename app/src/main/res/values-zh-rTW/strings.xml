@@ -222,4 +222,13 @@
     <string name="about_diag_title">診斷</string>
     <string name="about_gen_log">產生運行記錄</string>
     <string name="generate_log_desc">匯出診斷資訊用於回報問題</string>
+    <string name="custom_section_global">全域</string>
+    <string name="custom_section_manage">管理</string>
+    <string name="custom_app_master_title">自訂應用程式更新頻率</string>
+    <string name="custom_app_master_desc">進入已配置的應用程式時自動切換專屬更新頻率</string>
+    <string name="app_list_title">應用程式管理</string>
+    <string name="app_list_search_hint">搜尋應用程式</string>
+    <string name="app_enabled_badge">已啟用</string>
+    <string name="app_enabled_res_format">%1$s @ %2$d Hz</string>
+    <string name="current_rate_format">目前 %1$d Hz · %2$s</string>
 </resources>

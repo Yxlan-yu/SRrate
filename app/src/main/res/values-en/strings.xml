@@ -222,4 +222,13 @@
     <string name="about_diag_title">Diagnostics</string>
     <string name="about_gen_log">Generate runtime log</string>
     <string name="generate_log_desc">Export diagnostic info for reporting issues</string>
+    <string name="custom_section_global">Global</string>
+    <string name="custom_section_manage">Manage</string>
+    <string name="custom_app_master_title">Custom App Refresh</string>
+    <string name="custom_app_master_desc">Switch to a per-app refresh rate when entering a configured app</string>
+    <string name="app_list_title">App Management</string>
+    <string name="app_list_search_hint">Search apps</string>
+    <string name="app_enabled_badge">Enabled</string>
+    <string name="app_enabled_res_format">%1$s @ %2$d Hz</string>
+    <string name="current_rate_format">Current %1$d Hz · %2$s</string>
 </resources>

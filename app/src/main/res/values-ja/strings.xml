@@ -222,4 +222,13 @@
     <string name="about_diag_title">診斷</string>
     <string name="about_gen_log">ランタイムログを生成</string>
     <string name="generate_log_desc">診断情報をエクスポートして問題を報告</string>
+    <string name="custom_section_global">全般</string>
+    <string name="custom_section_manage">管理</string>
+    <string name="custom_app_master_title">カスタムアプリ更新</string>
+    <string name="custom_app_master_desc">設定したアプリに入ると専用の更新率に切り替えます</string>
+    <string name="app_list_title">アプリ管理</string>
+    <string name="app_list_search_hint">アプリを検索</string>
+    <string name="app_enabled_badge">有効</string>
+    <string name="app_enabled_res_format">%1$s @ %2$d Hz</string>
+    <string name="current_rate_format">現在 %1$d Hz · %2$s</string>
 </resources>

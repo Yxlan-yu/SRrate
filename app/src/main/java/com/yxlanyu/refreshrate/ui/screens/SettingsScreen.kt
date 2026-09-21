@@ -1,6 +1,5 @@
 package com.yxlanyu.refreshrate.ui.screens
 
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
@@ -40,7 +39,6 @@ import androidx.core.content.FileProvider
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
 import com.yxlanyu.refreshrate.util.AccessibilityUtils
-import com.yxlanyu.refreshrate.util.LanguageUtils
 import com.yxlanyu.refreshrate.util.RootUtils
 import com.yxlanyu.refreshrate.util.ShizukuUtils
 import java.io.File
@@ -51,7 +49,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.RadioButton
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Switch
 import top.yukonga.miuix.kmp.basic.Text
@@ -64,22 +61,11 @@ import top.yukonga.miuix.kmp.icon.extended.File
 import top.yukonga.miuix.kmp.icon.extended.Info
 import top.yukonga.miuix.kmp.icon.extended.Link
 import top.yukonga.miuix.kmp.icon.extended.Refresh
-import top.yukonga.miuix.kmp.icon.extended.Translate
 import top.yukonga.miuix.kmp.icon.extended.Update
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-private enum class SettingsPage { Main, Language, About }
-
-private data class LangOption(val key: String, val labelRes: Int)
-
-private val LANG_OPTIONS = listOf(
-    LangOption(LanguageUtils.LANG_SYSTEM, R.string.lang_system),
-    LangOption(LanguageUtils.LANG_ZH, R.string.lang_zh),
-    LangOption(LanguageUtils.LANG_ZH_TW, R.string.lang_zh_tw),
-    LangOption(LanguageUtils.LANG_EN, R.string.lang_en),
-    LangOption(LanguageUtils.LANG_JA, R.string.lang_ja),
-)
+private enum class SettingsPage { Main, About }
 
 @Composable
 fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.PaddingValues) {
@@ -134,7 +120,6 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
         outerContentPadding = outerContentPadding,
         largeTitle = when (page) {
             SettingsPage.Main -> stringResource(R.string.settings_title)
-            SettingsPage.Language -> stringResource(R.string.language_page_title)
             SettingsPage.About -> stringResource(R.string.about_title)
         },
         navigationIcon = if (page != SettingsPage.Main) {
@@ -225,12 +210,6 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                         title = stringResource(R.string.settings_section_general),
                         children = {
                             ChevRow(
-                                icon = MiuixIcons.Translate,
-                                title = stringResource(R.string.language_page_title),
-                                desc = stringResource(R.string.language_row_desc),
-                                onClick = { page = SettingsPage.Language },
-                            )
-                            ChevRow(
                                 icon = MiuixIcons.Info,
                                 title = stringResource(R.string.about_title),
                                 desc = stringResource(R.string.version_label),
@@ -238,45 +217,6 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                             )
                         },
                     )
-                }
-            }
-            SettingsPage.Language -> {
-                val current = LanguageUtils.getCurrentLang(context)
-                item(key = "lang") {
-                    Card(
-                        cornerRadius = 16.dp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(14.dp, 14.dp, 14.dp, 0.dp),
-                    ) {
-                        LANG_OPTIONS.forEachIndexed { index, opt ->
-                            val selected = opt.key == current
-                            val onClick = {
-                                val activity = context as? Activity
-                                if (activity != null) LanguageUtils.setLanguageAndRecreate(activity, opt.key)
-                            }
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 12.dp, end = 14.dp, top = 8.dp, bottom = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    text = stringResource(opt.labelRes),
-                                    fontSize = 17.sp,
-                                    color = MiuixTheme.colorScheme.onSurface,
-                                    modifier = Modifier.weight(1f),
-                                )
-                                RadioButton(selected = selected, onClick = onClick)
-                            }
-                            if (index < LANG_OPTIONS.lastIndex) {
-                                top.yukonga.miuix.kmp.basic.HorizontalDivider(
-                                    modifier = Modifier.padding(start = 12.dp, end = 12.dp),
-                                    thickness = 1.dp,
-                                )
-                            }
-                        }
-                    }
                 }
             }
             SettingsPage.About -> {
@@ -343,7 +283,7 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                                 title = stringResource(R.string.about_source_code),
                                 desc = stringResource(R.string.about_source_desc),
                                 onClick = {
-                                    openInBrowser(context, "https://github.com/Yxlan-yu/pmahz-refreshrate")
+                                    openInBrowser(context, "https://www.coolapk.com/u/31452988")
                                 },
                             )
                         },
