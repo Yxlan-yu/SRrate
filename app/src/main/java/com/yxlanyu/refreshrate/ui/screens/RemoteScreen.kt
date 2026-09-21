@@ -626,7 +626,7 @@ private fun HistoryRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 4.dp)
-            .background(MiuixTheme.colorScheme.secondaryVariant, RoundedCornerShape(14.dp))
+            .background(MiuixTheme.colorScheme.secondaryVariant, RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically,

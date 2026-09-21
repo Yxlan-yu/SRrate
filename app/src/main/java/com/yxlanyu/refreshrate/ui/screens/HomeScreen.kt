@@ -253,7 +253,7 @@ private fun RateCard(
                             fontSize = 12.sp,
                             color = Color.White,
                             modifier = Modifier
-                                .background(Color(0xFF2ECC71), RoundedCornerShape(6.dp))
+                                .background(Color(0xFF2ECC71), RoundedCornerShape(8.dp))
                                 .padding(horizontal = 6.dp, vertical = 2.dp),
                         )
                     }

@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
@@ -610,7 +611,7 @@ private fun AboutMenuRow(
             Box(
                 modifier = Modifier
                     .size(36.dp)
-                    .background(Color(0xFFE8EEF3), RoundedCornerShape(10.dp)),
+                    .background(Color(0xFFE8EEF3), RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center,
             ) {
                 top.yukonga.miuix.kmp.basic.Icon(
@@ -623,7 +624,7 @@ private fun AboutMenuRow(
             Spacer(Modifier.width(12.dp))
         },
     )
-    Divider()
+    Divider(start = 62.dp)
 }
 
 @Composable
@@ -679,13 +680,12 @@ private fun ContributorRow(
             )
         },
     )
-    Divider()
 }
 
 @Composable
-private fun Divider() {
+private fun Divider(start: Dp = 14.dp, end: Dp = 14.dp) {
     top.yukonga.miuix.kmp.basic.HorizontalDivider(
-        modifier = Modifier.padding(start = 12.dp, end = 12.dp),
+        modifier = Modifier.padding(start = start, end = end),
         thickness = 1.dp,
     )
 }
