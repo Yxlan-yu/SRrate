@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -28,9 +30,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -227,22 +231,13 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                             .padding(top = 22.dp, bottom = 6.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Box(
+                        Image(
+                            painter = painterResource(R.drawable.ic_srrate),
+                            contentDescription = null,
                             modifier = Modifier
                                 .size(64.dp)
-                                .background(
-                                    Brush.linearGradient(listOf(Color(0xFF0A84FF), Color(0xFF00B6F0))),
-                                    RoundedCornerShape(18.dp),
-                                ),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            top.yukonga.miuix.kmp.basic.Icon(
-                                imageVector = MiuixIcons.Refresh,
-                                contentDescription = null,
-                                modifier = Modifier.size(32.dp),
-                                tint = Color.White,
-                            )
-                        }
+                                .clip(RoundedCornerShape(18.dp)),
+                        )
                         Spacer(Modifier.size(12.dp))
                         Text(
                             text = stringResource(R.string.about_app_brand),
@@ -298,6 +293,7 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                                 type = stringResource(R.string.contrib_name_yxlanyu),
                                 info = stringResource(R.string.contrib_info_yxlanyu),
                                 url = "https://github.com/Yxlan-yu",
+                                avatarImage = R.drawable.avatar_yxlanyu,
                             )
                         },
                     )
@@ -636,6 +632,7 @@ private fun ContributorRow(
     type: String,
     info: String,
     url: String,
+    avatarImage: Int? = null,
 ) {
     val context = LocalContext.current
     SettingsRow(
@@ -645,21 +642,31 @@ private fun ContributorRow(
             openInBrowser(context, url)
         },
         leading = {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(
-                        Brush.linearGradient(listOf(Color(0xFF9C6BFF), Color(0xFF7C6CFF))),
-                        RoundedCornerShape(20.dp),
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = avatar,
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.White,
+            if (avatarImage != null) {
+                Image(
+                    painter = painterResource(avatarImage),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape),
                 )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            Brush.linearGradient(listOf(Color(0xFF9C6BFF), Color(0xFF7C6CFF))),
+                            RoundedCornerShape(20.dp),
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = avatar,
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White,
+                    )
+                }
             }
             Spacer(Modifier.width(12.dp))
         },

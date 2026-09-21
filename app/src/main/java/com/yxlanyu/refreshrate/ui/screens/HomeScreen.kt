@@ -3,7 +3,6 @@ package com.yxlanyu.refreshrate.ui.screens
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,7 +23,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -216,16 +214,6 @@ private fun fallback(context: Context): List<Any> {
     return list
 }
 
-private fun gradientFor(hz: Int): Pair<Color, Color> = when {
-    hz >= 185 -> Color(0xFFF5A623) to Color(0xFFFF7A00)
-    hz >= 165 -> Color(0xFFE74C3C) to Color(0xFFD4356C)
-    hz >= 144 -> Color(0xFFD4356C) to Color(0xFFF5A623)
-    hz >= 120 -> Color(0xFF0A84FF) to Color(0xFF00B6F0)
-    hz >= 90 -> Color(0xFF3BA8FF) to Color(0xFF7C6CFF)
-    hz >= 60 -> Color(0xFF00A86B) to Color(0xFF34C77B)
-    else -> Color(0xFF07C160) to Color(0xFF00B96B)
-}
-
 @Composable
 private fun RateCard(
     mode: DisplayMode,
@@ -233,7 +221,6 @@ private fun RateCard(
     onClick: () -> Unit,
 ) {
     val ctx = LocalContext.current
-    val (c1, c2) = gradientFor(mode.rateInt)
     val name = mode.getRateName(ctx)
     val desc = mode.getRateDesc(ctx)
     val isFallback = mode.modeId < 0
@@ -251,20 +238,6 @@ private fun RateCard(
                 .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .background(Brush.linearGradient(listOf(c1, c2)), RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = name.take(1),
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-            Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
