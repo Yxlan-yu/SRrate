@@ -138,7 +138,6 @@
     <string name="notification_channel_name">Auto Overclock Guard</string>
     <string name="notification_title">Auto overclock guard running</string>
     <string name="notification_stop">Stop</string>
-    <string name="current_rate_format" formatted="false">Rate: %d Hz  Res: %s</string>
     <string name="guard_running_format">Guard enabled  %s</string>
     <string name="guard_watching_format">Guarding @ %d Hz</string>
     <string name="guard_start_format" formatted="false">Guard started, target: %s @ %d Hz</string>

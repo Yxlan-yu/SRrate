@@ -138,7 +138,6 @@
     <string name="notification_channel_name">自动超频守护</string>
     <string name="notification_title">自动超频守护运行中</string>
     <string name="notification_stop">停止</string>
-    <string name="current_rate_format" formatted="false">当前刷新率: %d Hz  分辨率: %s</string>
     <string name="guard_running_format">自动启动守护已开启  %s</string>
     <string name="guard_watching_format">守护中 @ %d Hz</string>
     <string name="guard_start_format" formatted="false">守护启动，目标：%s @ %d Hz</string>

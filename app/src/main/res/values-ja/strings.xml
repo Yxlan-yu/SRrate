@@ -138,7 +138,6 @@
     <string name="notification_channel_name">自動オーバークロックガード</string>
     <string name="notification_title">自動オーバークロックガード実行中</string>
     <string name="notification_stop">停止</string>
-    <string name="current_rate_format" formatted="false">レート: %d Hz  解像度: %s</string>
     <string name="guard_running_format">ガード有効  %s</string>
     <string name="guard_watching_format">ガード中 @ %d Hz</string>
     <string name="guard_start_format" formatted="false">ガード開始、目標: %s @ %d Hz</string>
