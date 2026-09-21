@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -104,29 +105,35 @@ fun CustomScreen(outerContentPadding: PaddingValues) {
         } else null,
     ) {
         when (page) {
-            CustomPage.Main -> MainContent(
-                context = context,
-                prefs = prefs,
-                scope = scope,
-                openAppList = { page = CustomPage.AppList },
-                openAppConfig = { pkg ->
-                    configPkg = pkg
-                    page = CustomPage.AppConfig
-                },
-            )
-            CustomPage.AppList -> AppListContent(
-                context = context,
-                prefs = prefs,
-                openAppConfig = { pkg ->
-                    configPkg = pkg
-                    page = CustomPage.AppConfig
-                },
-            )
-            CustomPage.AppConfig -> AppConfigContent(
-                context = context,
-                prefs = prefs,
-                pkg = configPkg,
-            )
+            CustomPage.Main -> item(key = "main") {
+                MainContent(
+                    context = context,
+                    prefs = prefs,
+                    scope = scope,
+                    openAppList = { page = CustomPage.AppList },
+                    openAppConfig = { pkg ->
+                        configPkg = pkg
+                        page = CustomPage.AppConfig
+                    },
+                )
+            }
+            CustomPage.AppList -> item(key = "applist") {
+                AppListContent(
+                    context = context,
+                    prefs = prefs,
+                    openAppConfig = { pkg ->
+                        configPkg = pkg
+                        page = CustomPage.AppConfig
+                    },
+                )
+            }
+            CustomPage.AppConfig -> item(key = "appcfg") {
+                AppConfigContent(
+                    context = context,
+                    prefs = prefs,
+                    pkg = configPkg,
+                )
+            }
         }
     }
 }
@@ -234,7 +241,7 @@ private fun MainContent(
             if (res.isEmpty() || hz <= 0) {
                 val first = firstValidTarget(context)
                 if (first == null) {
-                    Toast.makeText(context, R.string.guard_no_res_format, "?", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.guard_no_res_format, "?"), Toast.LENGTH_SHORT).show()
                     return
                 }
                 val (w, h, hzz) = first
@@ -248,7 +255,7 @@ private fun MainContent(
             }
             val wh = res.split("x")
             if (wh.size != 2) {
-                Toast.makeText(context, R.string.guard_no_res_format, res, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.guard_no_res_format, res), Toast.LENGTH_SHORT).show()
                 return
             }
             try {
@@ -257,7 +264,7 @@ private fun MainContent(
                 ocOn = true
                 prefs.edit().putBoolean("auto_overclock", true).apply()
             } catch (e: Exception) {
-                Toast.makeText(context, R.string.guard_no_res_format, res, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.guard_no_res_format, res), Toast.LENGTH_SHORT).show()
             }
         } else {
             AutoOverclockManager.stopService(context)
@@ -499,58 +506,50 @@ private fun AppListContent(
         }
     }
 
-    item(key = "search") {
-        TextField(
-            value = query,
-            onValueChange = { query = it },
-            label = stringResource(R.string.app_list_search_hint),
-            useLabelAsPlaceholder = true,
+    TextField(
+        value = query,
+        onValueChange = { query = it },
+        label = stringResource(R.string.app_list_search_hint),
+        useLabelAsPlaceholder = true,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 14.dp, end = 14.dp, top = 4.dp, bottom = 4.dp),
+    )
+    SettingsRow(
+        title = stringResource(R.string.show_system_apps),
+        desc = stringResource(if (showSystem) R.string.app_list_all_hint else R.string.app_list_third_party_hint),
+        onClick = {
+            showSystem = !showSystem
+            prefs.edit().putBoolean("show_system_apps_in_list", showSystem).apply()
+        },
+        trailing = {
+            Switch(checked = showSystem, onCheckedChange = {
+                showSystem = it
+                prefs.edit().putBoolean("show_system_apps_in_list", it).apply()
+            })
+        },
+    )
+    Divider()
+    if (loading) {
+        Text(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 14.dp, end = 14.dp, top = 4.dp, bottom = 4.dp),
+                .padding(20.dp),
+            text = "-",
+            fontSize = 14.sp,
+            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
         )
-    }
-    item(key = "switch") {
-        SettingsRow(
-            title = stringResource(R.string.show_system_apps),
-            desc = stringResource(if (showSystem) R.string.app_list_all_hint else R.string.app_list_third_party_hint),
-            onClick = {
-                showSystem = !showSystem
-                prefs.edit().putBoolean("show_system_apps_in_list", showSystem).apply()
-            },
-            trailing = {
-                Switch(checked = showSystem, onCheckedChange = {
-                    showSystem = it
-                    prefs.edit().putBoolean("show_system_apps_in_list", it).apply()
-                })
-            },
-        )
-        Divider()
-    }
-    if (loading) {
-        item(key = "loading") {
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                text = "-",
-                fontSize = 14.sp,
-                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-            )
-        }
     } else if (filtered.isEmpty()) {
-        item(key = "empty") {
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                text = stringResource(R.string.no_apps_found),
-                fontSize = 14.sp,
-                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-            )
-        }
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            text = stringResource(R.string.no_apps_found),
+            fontSize = 14.sp,
+            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+        )
     } else {
-        items(filtered) { app ->
+        filtered.forEach { app ->
             SettingsRow(
                 title = app.name,
                 desc = app.pkg,
@@ -666,49 +665,44 @@ private fun AppConfigContent(
         }
     }
 
-    item(key = "header") {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            AppAvatar(appName, pkg)
-            Spacer(Modifier.width(14.dp))
-            Column {
-                Text(
-                    text = appName,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MiuixTheme.colorScheme.onSurface,
-                )
-                Spacer(Modifier.size(3.dp))
-                Text(
-                    text = pkg,
-                    fontSize = 12.sp,
-                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                )
-            }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        AppAvatar(appName, pkg)
+        Spacer(Modifier.width(14.dp))
+        Column {
+            Text(
+                text = appName,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MiuixTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.size(3.dp))
+            Text(
+                text = pkg,
+                fontSize = 12.sp,
+                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+            )
         }
     }
-    item(key = "switch") {
-        SettingsSectionCard(
-            title = stringResource(R.string.enable_single_app_refresh),
-            children = {
-                SettingsRow(
-                    title = stringResource(R.string.enable_single_app_refresh),
-                    desc = stringResource(R.string.single_app_refresh_desc),
-                    onClick = { toggleApp(!enabled) },
-                    trailing = {
-                        Switch(checked = enabled, onCheckedChange = { toggleApp(it) })
-                    },
-                )
-            },
-        )
-    }
-    item(key = "targets") {
-        SettingsSectionCard(
-            title = stringResource(R.string.custom_section_global),
+    SettingsSectionCard(
+        title = stringResource(R.string.enable_single_app_refresh),
+        children = {
+            SettingsRow(
+                title = stringResource(R.string.enable_single_app_refresh),
+                desc = stringResource(R.string.single_app_refresh_desc),
+                onClick = { toggleApp(!enabled) },
+                trailing = {
+                    Switch(checked = enabled, onCheckedChange = { toggleApp(it) })
+                },
+            )
+        },
+    )
+    SettingsSectionCard(
+        title = stringResource(R.string.custom_section_global),
             children = {
                 SettingsRow(
                     title = stringResource(R.string.target_resolution_label),
@@ -739,7 +733,6 @@ private fun AppConfigContent(
                 )
             },
         )
-    }
 
     val modes = remember { AutoOverclockManager.getSupportedModes(context) }
     TargetPickerDialog(
