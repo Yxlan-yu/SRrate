@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -199,7 +200,7 @@ private fun MainContent(
     fun updateRunningTarget(res: String, hz: Int) {
         if (res.isEmpty() || hz <= 0) return
         if (!AutoOverclockManager.isRunning()) return
-        val wh = res.split("x")
+        val wh = res.replace("×", "x").split("x")
         if (wh.size != 2) return
         try {
             AutoOverclockManager.updateTarget(wh[0].toInt(), wh[1].toInt(), hz)
@@ -254,7 +255,7 @@ private fun MainContent(
                 prefs.edit().putBoolean("auto_overclock", true).apply()
                 return
             }
-            val wh = res.split("x")
+            val wh = res.replace("×", "x").split("x")
             if (wh.size != 2) {
                 Toast.makeText(context, context.getString(R.string.guard_no_res_format, res), Toast.LENGTH_SHORT).show()
                 return
@@ -287,7 +288,7 @@ private fun MainContent(
                     Switch(checked = ocOn, onCheckedChange = { applyOcSwitch(it) })
                 },
             )
-            Divider()
+            Divider(start = 52.dp)
             SettingsRow(
                 title = stringResource(R.string.target_resolution_label),
                 desc = if (ocRes.isEmpty()) "-" else ocRes.replace("x", "×"),
@@ -400,7 +401,7 @@ private fun MainContent(
                             )
                         },
                     )
-                    if (idx < enabledApps.lastIndex) Divider()
+                    if (idx < enabledApps.lastIndex) Divider(start = 52.dp)
                 }
             }
         },
@@ -434,18 +435,19 @@ private fun MainContent(
         show = showResPicker,
         title = stringResource(R.string.target_resolution_label),
         options = remember(modes) { buildResLabels(modes) },
-        selected = ocRes,
+        selected = ocRes.replace("x", "×"),
         onSelect = { res ->
-            ocRes = res
-            prefs.edit().putString("oc_target_res", res).apply()
-            val rates = ratesForRes(modes, res)
+            val nr = res.replace("×", "x")
+            ocRes = nr
+            prefs.edit().putString("oc_target_res", nr).apply()
+            val rates = ratesForRes(modes, nr)
             if (rates.isNotEmpty()) {
                 val cur = prefs.getInt("oc_target_hz", -1)
                 val hz = if (rates.contains(cur)) cur else rates.last()
                 ocHz = hz
                 prefs.edit().putInt("oc_target_hz", hz).apply()
             }
-            updateRunningTarget(res, ocHz)
+            updateRunningTarget(nr, ocHz)
         },
         onDismiss = { showResPicker = false },
     )
@@ -580,7 +582,7 @@ private fun AppListContent(
                     )
                 },
             )
-            Divider()
+            Divider(start = 52.dp)
         }
     }
 }
@@ -629,7 +631,7 @@ private fun AppConfigContent(
 
     fun applyDisplay(res: String, hz: Int) {
         if (res.isEmpty() || hz <= 0) return
-        val wh = res.split("x")
+        val wh = res.replace("×", "x").split("x")
         if (wh.size != 2) return
         val authMode = prefs.getString("auth_mode", "") ?: ""
         try {
@@ -752,18 +754,19 @@ private fun AppConfigContent(
         show = showResPicker,
         title = stringResource(R.string.target_resolution_label),
         options = remember(modes) { buildResLabels(modes) },
-        selected = res,
+        selected = res.replace("x", "×"),
         onSelect = { r ->
-            res = r
-            prefs.edit().putString("app_refresh_res_" + pkg, r).apply()
-            val rates = ratesForRes(modes, r)
+            val nr = r.replace("×", "x")
+            res = nr
+            prefs.edit().putString("app_refresh_res_" + pkg, nr).apply()
+            val rates = ratesForRes(modes, nr)
             if (rates.isNotEmpty()) {
                 val cur = prefs.getInt("app_refresh_hz_" + pkg, -1)
                 val h = if (rates.contains(cur)) cur else rates.last()
                 hz = h
                 prefs.edit().putInt("app_refresh_hz_" + pkg, h).apply()
             }
-            if (enabled) applyDisplay(r, hz)
+            if (enabled) applyDisplay(nr, hz)
         },
         onDismiss = { showResPicker = false },
     )
@@ -977,9 +980,9 @@ private fun SettingsRow(
 }
 
 @Composable
-private fun Divider() {
+private fun Divider(start: Dp = 14.dp, end: Dp = 14.dp) {
     top.yukonga.miuix.kmp.basic.HorizontalDivider(
-        modifier = Modifier.padding(start = 14.dp, end = 14.dp),
+        modifier = Modifier.padding(start = start, end = end),
         thickness = 1.dp,
     )
 }

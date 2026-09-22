@@ -69,7 +69,7 @@ public class AutoOverclockManager {
             clearCustomOverride();
             return;
         }
-        customOverrideRes = res;
+        customOverrideRes = res.replace("×", "x");
         customOverrideHz  = hz;
         if (appContext != null) {
             lastLog = getLocalizedContext().getString(R.string.guard_target_updated, res.replace("x", "×"), hz);
@@ -101,6 +101,7 @@ public class AutoOverclockManager {
                     String ovrRes = customOverrideRes;
                     int ovrHz = customOverrideHz;
                     if (ovrRes != null && !ovrRes.isEmpty() && ovrHz > 0) {
+                        ovrRes = ovrRes.replace("×", "x");
                         String[] ovrWh = ovrRes.split("x");
                         if (ovrWh.length == 2) {
                             try {

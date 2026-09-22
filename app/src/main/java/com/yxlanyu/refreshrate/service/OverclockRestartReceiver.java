@@ -13,7 +13,7 @@ public class OverclockRestartReceiver extends BroadcastReceiver {
         String ocRes    = prefs.getString("oc_target_res", "");
         int    ocHz     = prefs.getInt("oc_target_hz", -1);
         if (authMode.isEmpty() || ocRes.isEmpty() || ocHz < 0) return;
-        String[] wh = ocRes.split("x");
+        String[] wh = ocRes.replace("×", "x").split("x");
         if (wh.length < 2) return;
         try {
             int tw = Integer.parseInt(wh[0]);

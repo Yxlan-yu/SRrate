@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.ui.components.FicIcon
-import com.yxlanyu.refreshrate.ui.components.FicIcon
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
 import com.yxlanyu.refreshrate.util.AccessibilityUtils
 import com.yxlanyu.refreshrate.util.RootUtils
@@ -309,10 +308,6 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                                     FicIcon(R.drawable.ic_fic_doc, accent = false)
                                     Spacer(Modifier.width(12.dp))
                                 },
-                                leading = {
-                                    FicIcon(R.drawable.ic_fic_doc, accent = false)
-                                    Spacer(Modifier.width(12.dp))
-                                },
                                 title = stringResource(R.string.about_gen_log),
                                 desc = stringResource(R.string.generate_log_desc),
                                 onClick = {
@@ -499,7 +494,7 @@ private fun RootRow(
             Switch(checked = checked, onCheckedChange = onCheckedChange)
         },
     )
-    Divider()
+    Divider(start = 52.dp)
 }
 
 @Composable
@@ -540,7 +535,7 @@ private fun ShizukuRow(
             }
         },
     )
-    Divider()
+    Divider(start = 52.dp)
 }
 
 @Composable
@@ -562,7 +557,7 @@ private fun AccessibilityRow(a11yEnabled: Boolean, onClick: () -> Unit) {
             )
         },
     )
-    Divider()
+    Divider(start = 52.dp)
 }
 
 @Composable
@@ -571,10 +566,6 @@ private fun NativeOverlayRow(
     onCheckedChange: (Boolean) -> Unit,
 ) {
     SettingsRow(
-        leading = {
-            FicIcon(R.drawable.ic_fic_bolt, accent = false)
-            Spacer(Modifier.width(12.dp))
-        },
         leading = {
             FicIcon(R.drawable.ic_fic_bolt, accent = false)
             Spacer(Modifier.width(12.dp))
@@ -610,7 +601,7 @@ private fun ChevRow(
             )
         },
     )
-    Divider(start = 62.dp)
+    Divider(start = 52.dp)
 }
 
 @Composable
@@ -649,7 +640,7 @@ private fun AboutMenuRow(
             Spacer(Modifier.width(12.dp))
         },
     )
-    Divider(start = 62.dp)
+    Divider(start = 52.dp)
 }
 
 @Composable
