@@ -215,6 +215,8 @@ public class RootUtils {
           .append(" @ ").append(prefs.getInt("oc_target_hz", -1)).append("Hz\n");
         sb.append("锁定刷新率: ").append(prefs.getBoolean("rate_lock_enabled", false)
                 ? ("锁定中 @ " + prefs.getInt("rate_lock_hz", 0) + "Hz") : "未锁定").append("\n");
+        sb.append("帧率切换弹出提醒: ").append(prefs.getBoolean("switch_toast_enabled", true) ? "开" : "关").append("\n");
+        sb.append("守护通知: ").append(prefs.getBoolean("overclock_notif_enabled", true) ? "开" : "关").append("\n");
         sb.append("超频最近日志: ").append(com.yxlanyu.refreshrate.util.AutoOverclockManager.getLastLog()).append("\n\n");
         sb.append("【已配置的单应用刷新率】\n");
         int cfgCount = 0;

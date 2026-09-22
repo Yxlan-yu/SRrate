@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import com.yxlanyu.refreshrate.R
+import com.yxlanyu.refreshrate.service.OverclockService
 import com.yxlanyu.refreshrate.ui.components.FicIcon
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
 import com.yxlanyu.refreshrate.util.AccessibilityUtils
@@ -87,6 +88,8 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
     var shizukuPerm by remember { mutableStateOf(false) }
     var a11yEnabled by remember { mutableStateOf(false) }
     var nativeOverlay by remember { mutableStateOf(prefs.getBoolean("native_refresh_overlay", false)) }
+    var switchToast by remember { mutableStateOf(prefs.getBoolean("switch_toast_enabled", true)) }
+    var notifEnabled by remember { mutableStateOf(prefs.getBoolean("overclock_notif_enabled", true)) }
     var showLog by remember { mutableStateOf(false) }
     var logText by remember { mutableStateOf("") }
 
@@ -220,6 +223,27 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                     SettingsSectionCard(
                         title = stringResource(R.string.settings_section_general),
                         children = {
+                            ToggleRow(
+                                leadingIcon = R.drawable.ic_fic_bell,
+                                title = stringResource(R.string.settings_switch_toast),
+                                desc = stringResource(R.string.settings_switch_toast_desc),
+                                checked = switchToast,
+                                onCheckedChange = { checked ->
+                                    switchToast = checked
+                                    prefs.edit().putBoolean("switch_toast_enabled", checked).apply()
+                                },
+                            )
+                            ToggleRow(
+                                leadingIcon = R.drawable.ic_fic_radar,
+                                title = stringResource(R.string.settings_overclock_notif),
+                                desc = stringResource(R.string.settings_overclock_notif_desc),
+                                checked = notifEnabled,
+                                onCheckedChange = { checked ->
+                                    notifEnabled = checked
+                                    prefs.edit().putBoolean("overclock_notif_enabled", checked).apply()
+                                    OverclockService.updateChannelImportance(context)
+                                },
+                            )
                             ChevRow(
                                 title = stringResource(R.string.about_title),
                                 desc = stringResource(R.string.version_label),
@@ -581,6 +605,28 @@ private fun NativeOverlayRow(
             Switch(checked = checked, onCheckedChange = onCheckedChange)
         },
     )
+}
+
+@Composable
+private fun ToggleRow(
+    leadingIcon: Int,
+    title: String,
+    desc: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    SettingsRow(
+        title = title,
+        desc = desc,
+        leading = {
+            FicIcon(leadingIcon, accent = false)
+            Spacer(Modifier.width(12.dp))
+        },
+        trailing = {
+            Switch(checked = checked, onCheckedChange = onCheckedChange)
+        },
+    )
+    Divider(start = 52.dp)
 }
 
 @Composable

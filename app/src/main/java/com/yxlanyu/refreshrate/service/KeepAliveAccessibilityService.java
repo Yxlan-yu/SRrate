@@ -211,6 +211,7 @@ public class KeepAliveAccessibilityService extends AccessibilityService {
     }
     private void postCustomToast(String pkg, String setRes, int setHz) {
         try {
+            if (!getSharedPreferences("s", MODE_PRIVATE).getBoolean("switch_toast_enabled", true)) return;
             Context lc = getLocalizedCtx();
             String appLabel = pkg;
             try {

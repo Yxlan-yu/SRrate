@@ -230,5 +230,9 @@
     <string name="app_list_search_hint">Search apps</string>
     <string name="app_enabled_badge">Enabled</string>
     <string name="app_enabled_res_format">%1$s @ %2$d Hz</string>
-    <string name="current_rate_format">Current %1$d Hz · %2$s</string>
+<string name="current_rate_format">Current %1$d Hz · %2$s</string>
+    <string name="settings_switch_toast">Frame-switch popup</string>
+    <string name="settings_switch_toast_desc">Show a popup when switching to an enabled app</string>
+    <string name="settings_overclock_notif">Guard notification</string>
+    <string name="settings_overclock_notif_desc">Show the persistent auto-overclock notification</string>
 </resources>

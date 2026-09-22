@@ -70,18 +70,40 @@ public class OverclockService extends Service {
         }
     }
     private void createNotificationChannel() {
-    Context lc = getLocalizedContext(this);
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    lc.getString(R.string.notification_channel_name),
-                    NotificationManager.IMPORTANCE_LOW
-            );
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            if (manager != null) {
-                manager.createNotificationChannel(channel);
-            }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createOrUpdateChannel(this);
         }
+    }
+    public static void updateChannelImportance(Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
+        try {
+            NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (manager == null) return;
+            NotificationChannel channel = manager.getNotificationChannel(CHANNEL_ID);
+            int target = isNotifEnabled(context) ? NotificationManager.IMPORTANCE_LOW : NotificationManager.IMPORTANCE_NONE;
+            if (channel != null) {
+                if (channel.getImportance() != target) {
+                    channel.setImportance(target);
+                    manager.createNotificationChannel(channel);
+                }
+            } else {
+                createOrUpdateChannel(context);
+            }
+        } catch (Exception ignored) {}
+    }
+    private static void createOrUpdateChannel(Context context) {
+        Context lc = getLocalizedContext(context);
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (manager == null) return;
+        NotificationChannel channel = new NotificationChannel(
+                CHANNEL_ID,
+                lc.getString(R.string.notification_channel_name),
+                isNotifEnabled(context) ? NotificationManager.IMPORTANCE_LOW : NotificationManager.IMPORTANCE_NONE
+        );
+        manager.createNotificationChannel(channel);
+    }
+    private static boolean isNotifEnabled(Context context) {
+        return context.getSharedPreferences("s", Context.MODE_PRIVATE).getBoolean("overclock_notif_enabled", true);
     }
     private Notification buildNotification() {
     Context lc = getLocalizedContext(this);

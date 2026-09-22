@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import com.yxlanyu.refreshrate.ui.AppRoot
 import com.yxlanyu.refreshrate.ui.AppTheme
 import com.yxlanyu.refreshrate.util.LanguageUtils
@@ -21,6 +22,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         LanguageUtils.applyLanguage(this)
         appliedLang = LanguageUtils.getCurrentLang(this)
         createNotificationChannel()
