@@ -90,10 +90,61 @@ fun CustomScreen(outerContentPadding: PaddingValues) {
 
     var page by remember { mutableStateOf(CustomPage.Main) }
     var configPkg by remember { mutableStateOf("") }
+    var configFrom by remember { mutableStateOf(CustomPage.Main) }
+
+    var appQuery by remember { mutableStateOf("") }
+    var appShowSystem by remember { mutableStateOf(prefs.getBoolean("show_system_apps_in_list", false)) }
+    var appAllApps by remember { mutableStateOf<List<AppEntry>>(emptyList()) }
+    var appLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        val list = withContext(Dispatchers.IO) {
+            val pm = context.packageManager
+            val intents = if (Build.VERSION.SDK_INT >= 33) {
+                pm.queryIntentActivities(
+                    Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),
+                    PackageManager.ResolveInfoFlags.of(0L),
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                pm.queryIntentActivities(
+                    Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),
+                    0,
+                )
+            }
+            val seen = mutableSetOf<String>()
+            val out = mutableListOf<AppEntry>()
+            for (ri in intents) {
+                val pkg = ri.activityInfo?.packageName ?: continue
+                if (pkg in seen) continue
+                seen.add(pkg)
+                val label = ri.loadLabel(pm)?.toString() ?: pkg
+                val sys = try {
+                    (pm.getApplicationInfo(pkg, 0).flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
+                } catch (e: Exception) { false }
+                out.add(AppEntry(label, pkg, sys))
+            }
+            out.filter { it.name.isNotBlank() }.distinctBy { it.pkg }.sortedBy { it.name.lowercase() }
+        }
+        appAllApps = list
+        appLoading = false
+    }
+
+    val appFiltered = remember(appQuery, appShowSystem, appAllApps) {
+        val base = if (appShowSystem) appAllApps else appAllApps.filter { !it.systemApp }
+        if (appQuery.isBlank()) base
+        else base.filter {
+            it.name.contains(appQuery, ignoreCase = true) || it.pkg.contains(appQuery, ignoreCase = true)
+        }
+    }
+
+    fun backToPrevious() {
+        page = if (page == CustomPage.AppConfig) configFrom else CustomPage.Main
+        configPkg = ""
+    }
 
     BackHandler(enabled = page != CustomPage.Main) {
-        page = if (page == CustomPage.AppConfig) CustomPage.AppList else CustomPage.Main
-        configPkg = ""
+        backToPrevious()
     }
 
     RefreshPageScaffold(
@@ -106,9 +157,7 @@ fun CustomScreen(outerContentPadding: PaddingValues) {
         },
         navigationIcon = if (page != CustomPage.Main) {
             {
-                top.yukonga.miuix.kmp.basic.IconButton(onClick = {
-                    page = if (page == CustomPage.AppConfig) CustomPage.AppList else CustomPage.Main
-                }) {
+                top.yukonga.miuix.kmp.basic.IconButton(onClick = { backToPrevious() }) {
                     top.yukonga.miuix.kmp.basic.Icon(
                         imageVector = MiuixIcons.Back,
                         contentDescription = "back",
@@ -125,20 +174,82 @@ fun CustomScreen(outerContentPadding: PaddingValues) {
                     scope = scope,
                     openAppList = { page = CustomPage.AppList },
                     openAppConfig = { pkg ->
+                        configFrom = CustomPage.Main
                         configPkg = pkg
                         page = CustomPage.AppConfig
                     },
                 )
             }
-            CustomPage.AppList -> item(key = "applist") {
-                AppListContent(
-                    context = context,
-                    prefs = prefs,
-                    openAppConfig = { pkg ->
-                        configPkg = pkg
-                        page = CustomPage.AppConfig
-                    },
-                )
+            CustomPage.AppList -> {
+                item(key = "search") {
+                    TextField(
+                        value = appQuery,
+                        onValueChange = { appQuery = it },
+                        label = stringResource(R.string.app_list_search_hint),
+                        useLabelAsPlaceholder = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp, 4.dp),
+                    )
+                }
+                item(key = "syswitch") {
+                    Column {
+                        SettingsRow(
+                            title = stringResource(R.string.show_system_apps),
+                            desc = stringResource(
+                                if (appShowSystem) R.string.app_list_all_hint else R.string.app_list_third_party_hint,
+                            ),
+                            onClick = {
+                                appShowSystem = !appShowSystem
+                                prefs.edit().putBoolean("show_system_apps_in_list", appShowSystem).apply()
+                            },
+                            trailing = {
+                                Switch(checked = appShowSystem, onCheckedChange = {
+                                    appShowSystem = it
+                                    prefs.edit().putBoolean("show_system_apps_in_list", it).apply()
+                                })
+                            },
+                        )
+                        Divider()
+                    }
+                }
+                if (appFiltered.isEmpty()) {
+                    item(key = if (appLoading) "loading" else "empty") {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            text = if (appLoading) "-" else stringResource(R.string.no_apps_found),
+                            fontSize = 14.sp,
+                            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                        )
+                    }
+                } else {
+                    items(appFiltered, key = { it.pkg }) { app ->
+                        SettingsRow(
+                            title = app.name,
+                            desc = app.pkg,
+                            onClick = {
+                                configFrom = CustomPage.AppList
+                                configPkg = app.pkg
+                                page = CustomPage.AppConfig
+                            },
+                            leading = {
+                                AppAvatar(app.name, app.pkg)
+                                Spacer(Modifier.width(12.dp))
+                            },
+                            trailing = {
+                                top.yukonga.miuix.kmp.basic.Icon(
+                                    modifier = Modifier.size(16.dp),
+                                    imageVector = MiuixIcons.ChevronForward,
+                                    contentDescription = "chevron",
+                                    tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                                )
+                            },
+                        )
+                        Divider(start = 52.dp)
+                    }
+                }
             }
             CustomPage.AppConfig -> item(key = "appcfg") {
                 AppConfigContent(
@@ -479,124 +590,7 @@ private fun MainContent(
     )
 }
 
-@Composable
-private fun AppListContent(
-    context: Context,
-    prefs: android.content.SharedPreferences,
-    openAppConfig: (String) -> Unit,
-) {
-    var query by remember { mutableStateOf("") }
-    var showSystem by remember { mutableStateOf(prefs.getBoolean("show_system_apps_in_list", false)) }
-    var allApps by remember { mutableStateOf<List<AppEntry>>(emptyList()) }
-    var loading by remember { mutableStateOf(true) }
-    val scope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
-        val list = withContext(Dispatchers.IO) {
-            val pm = context.packageManager
-            val intents = if (Build.VERSION.SDK_INT >= 33) {
-                pm.queryIntentActivities(
-                    Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),
-                    PackageManager.ResolveInfoFlags.of(0L),
-                )
-            } else {
-                @Suppress("DEPRECATION")
-                pm.queryIntentActivities(
-                    Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),
-                    0,
-                )
-            }
-            val seen = mutableSetOf<String>()
-            val out = mutableListOf<AppEntry>()
-            for (ri in intents) {
-                val pkg = ri.activityInfo?.packageName ?: continue
-                if (pkg in seen) continue
-                seen.add(pkg)
-                val label = ri.loadLabel(pm)?.toString() ?: pkg
-                val sys = try {
-                    (pm.getApplicationInfo(pkg, 0).flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0
-                } catch (e: Exception) { false }
-                out.add(AppEntry(label, pkg, sys))
-            }
-            out.filter { it.name.isNotBlank() }.distinctBy { it.pkg }.sortedBy { it.name.lowercase() }
-        }
-        allApps = list
-        loading = false
-    }
-
-    val filtered = remember(query, showSystem, allApps) {
-        val base = if (showSystem) allApps else allApps.filter { !it.systemApp }
-        if (query.isBlank()) base
-        else base.filter {
-            it.name.contains(query, ignoreCase = true) || it.pkg.contains(query, ignoreCase = true)
-        }
-    }
-
-    TextField(
-        value = query,
-        onValueChange = { query = it },
-        label = stringResource(R.string.app_list_search_hint),
-        useLabelAsPlaceholder = true,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 14.dp, end = 14.dp, top = 4.dp, bottom = 4.dp),
-    )
-    SettingsRow(
-        title = stringResource(R.string.show_system_apps),
-        desc = stringResource(if (showSystem) R.string.app_list_all_hint else R.string.app_list_third_party_hint),
-        onClick = {
-            showSystem = !showSystem
-            prefs.edit().putBoolean("show_system_apps_in_list", showSystem).apply()
-        },
-        trailing = {
-            Switch(checked = showSystem, onCheckedChange = {
-                showSystem = it
-                prefs.edit().putBoolean("show_system_apps_in_list", it).apply()
-            })
-        },
-    )
-    Divider()
-    if (loading) {
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            text = "-",
-            fontSize = 14.sp,
-            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-        )
-    } else if (filtered.isEmpty()) {
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            text = stringResource(R.string.no_apps_found),
-            fontSize = 14.sp,
-            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-        )
-    } else {
-        filtered.forEach { app ->
-            SettingsRow(
-                title = app.name,
-                desc = app.pkg,
-                onClick = { openAppConfig(app.pkg) },
-                leading = {
-                    AppAvatar(app.name, app.pkg)
-                    Spacer(Modifier.width(12.dp))
-                },
-                trailing = {
-                    top.yukonga.miuix.kmp.basic.Icon(
-                        modifier = Modifier.size(16.dp),
-                        imageVector = MiuixIcons.ChevronForward,
-                        contentDescription = "chevron",
-                        tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                    )
-                },
-            )
-            Divider(start = 52.dp)
-        }
-    }
-}
 
 @Composable
 private fun AppConfigContent(

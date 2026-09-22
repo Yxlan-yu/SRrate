@@ -41,11 +41,11 @@ jobs:
           fi
           echo "$KEY_B64" | base64 -d > app/debug.keystore
 
-      - name: Build debug APK
-        run: gradle assembleDebug --stacktrace
+      - name: Build release APK
+        run: gradle assembleRelease --stacktrace
 
-      - name: Upload debug APK
+      - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
           name: screen-refreshrate-debug
-          path: app/build/outputs/apk/debug/*.apk
+          path: app/build/outputs/apk/release/*.apk

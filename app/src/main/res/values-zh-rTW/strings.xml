@@ -85,6 +85,7 @@
     <string name="remote_blur_ip">隱藏 IP 位址（點擊輸入欄檢視）</string>
     <string name="remote_max_devices">最多同時連接 3 台裝置</string>
     <string name="remote_section_connect">連線</string>
+    <string name="remote_16kb_hint">提示：無線配對在 16KB 頁大小裝置（部分新版本系統）上可能無法使用</string>
     <string name="remote_need_pair_input">請填寫 IP、配對埠和配對碼</string>
     <string name="remote_pairing">正在配對…</string>
     <string name="remote_pair_ok">配對成功，請填連接埠後點連線</string>

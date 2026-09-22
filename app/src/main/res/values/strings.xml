@@ -85,6 +85,7 @@
     <string name="remote_blur_ip">隐藏 IP 地址（点击输入栏查看）</string>
     <string name="remote_max_devices">最多同时连接 3 台设备</string>
     <string name="remote_section_connect">连接</string>
+    <string name="remote_16kb_hint">提示：无线配对在 16KB 页大小设备（部分新版本系统）上可能不可用</string>
     <string name="remote_need_pair_input">请填写 IP、配对端口和配对码</string>
     <string name="remote_pairing">正在配对…</string>
     <string name="remote_pair_ok">配对成功，请填连接端口后点连接</string>

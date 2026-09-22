@@ -347,6 +347,14 @@ fun RemoteScreen(outerContentPadding: PaddingValues) {
         }
 
         if (wirelessMode) {
+            item(key = "kb_hint") {
+                Text(
+                    text = stringResource(R.string.remote_16kb_hint),
+                    fontSize = 12.sp,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp),
+                )
+            }
             item(key = "pair_section") {
                 SmallTitle(
                     text = stringResource(R.string.remote_section_pair),

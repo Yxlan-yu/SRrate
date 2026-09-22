@@ -68,8 +68,11 @@ fun HomeScreen(outerContentPadding: androidx.compose.foundation.layout.PaddingVa
     fun reload() {
         scope.launch(Dispatchers.IO) {
             val root = RootUtils.isRooted()
-            val dumped = if (root) RootUtils.getDisplayModesFromDumpsys() else emptyList()
-            val sorted = buildSortedList(context, dumped.ifEmpty { null })
+            var modes = AutoOverclockManager.getSupportedModes(context)
+            if (modes.isEmpty() && root) {
+                modes = RootUtils.getDisplayModesFromDumpsys()
+            }
+            val sorted = buildSortedList(context, modes.ifEmpty { null })
             val selW = prefs.getInt("last_sel_w", 0)
             val selH = prefs.getInt("last_sel_h", 0)
             val selHz = prefs.getInt("last_sel_hz", 0)
@@ -206,11 +209,26 @@ private fun buildSortedList(context: Context, dumpedModes: List<DisplayMode>?): 
 
 private fun fallback(context: Context): List<Any> {
     val rates = intArrayOf(60, 90, 120, 144, 165, 170, 175, 177)
+    var fw = 1080
+    var fh = 2340
+    try {
+        val dm = context.getSystemService(Context.DISPLAY_SERVICE)
+                as android.hardware.display.DisplayManager
+        val d = dm.getDisplay(android.view.Display.DEFAULT_DISPLAY)
+        val p = android.graphics.Point()
+        d.getRealSize(p)
+        if (p.x > 0 && p.y > 0) {
+            fw = maxOf(p.x, p.y)
+            fh = minOf(p.x, p.y)
+        }
+    } catch (e: Exception) {}
     val list = mutableListOf<Any>()
     list.add(context.getString(R.string.fallback_high_res))
-    for (r in rates) list.add(DisplayMode(1272, 2772, r.toFloat(), -1))
+    for (r in rates) list.add(DisplayMode(fw, fh, r.toFloat(), -1))
     list.add(context.getString(R.string.fallback_low_res))
-    for (r in rates) list.add(DisplayMode(1080, 2354, r.toFloat(), -1))
+    val lw = maxOf(fw / 2, 1)
+    val lh = maxOf(fh / 2, 1)
+    for (r in rates) list.add(DisplayMode(lw, lh, r.toFloat(), -1))
     return list
 }
 

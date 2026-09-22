@@ -85,6 +85,7 @@
     <string name="remote_blur_ip">Hide IP (tap the input box to view)</string>
     <string name="remote_max_devices">Up to 3 devices at once</string>
     <string name="remote_section_connect">Connect</string>
+    <string name="remote_16kb_hint">Note: wireless pairing may be unavailable on 16 KB page-size devices (some newer systems)</string>
     <string name="remote_need_pair_input">Enter IP, pairing port and code</string>
     <string name="remote_pairing">Pairing…</string>
     <string name="remote_pair_ok">Paired. Enter connect port, then tap Connect.</string>

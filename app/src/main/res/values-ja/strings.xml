@@ -85,6 +85,7 @@
     <string name="remote_blur_ip">IPを隠す（入力欄をタップで表示）</string>
     <string name="remote_max_devices">同時接続は最大3台</string>
     <string name="remote_section_connect">接続</string>
+    <string name="remote_16kb_hint">注意：16KB ページサイズの端末（一部の新しいシステム）ではワイヤレスペアリングが使えない場合があります</string>
     <string name="remote_need_pair_input">IP・ペアリングポート・コードを入力してください</string>
     <string name="remote_pairing">ペアリング中…</string>
     <string name="remote_pair_ok">ペア設定完了。接続ポートを入力して接続してください</string>
