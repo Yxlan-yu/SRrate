@@ -8,6 +8,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -34,8 +36,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +48,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.model.DisplayMode
 import com.yxlanyu.refreshrate.ui.components.FicIcon
@@ -84,6 +90,11 @@ fun CustomScreen(outerContentPadding: PaddingValues) {
 
     var page by remember { mutableStateOf(CustomPage.Main) }
     var configPkg by remember { mutableStateOf("") }
+
+    BackHandler(enabled = page != CustomPage.Main) {
+        page = if (page == CustomPage.AppConfig) CustomPage.AppList else CustomPage.Main
+        configPkg = ""
+    }
 
     RefreshPageScaffold(
         title = stringResource(R.string.nav_custom_app_refresh),
@@ -675,8 +686,10 @@ private fun AppConfigContent(
             }
             prefs.edit().putBoolean("app_refresh_enabled_" + pkg, true).apply()
             applyDisplay(res, hz)
+            enabled = true
         } else {
             prefs.edit().putBoolean("app_refresh_enabled_" + pkg, false).apply()
+            enabled = false
         }
     }
 
@@ -849,6 +862,30 @@ private fun TargetPickerDialog(
 
 @Composable
 private fun AppAvatar(name: String, pkg: String) {
+    val context = LocalContext.current
+    var icon by remember(pkg) { mutableStateOf<ImageBitmap?>(null) }
+    LaunchedEffect(pkg) {
+        icon = withContext(Dispatchers.IO) {
+            try {
+                context.packageManager.getApplicationIcon(pkg)
+                    .toBitmap(width = 128, height = 128)
+                    .asImageBitmap()
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+    val im = icon
+    if (im != null) {
+        Image(
+            bitmap = im,
+            contentDescription = name,
+            modifier = Modifier
+                .size(40.dp)
+                .clip(RoundedCornerShape(12.dp)),
+        )
+        return
+    }
     val hs = pkg.hashCode().and(0xFFFFFF)
     val r = ((hs ushr 16) and 0xFF).toFloat() / 255f
     val g = ((hs ushr 8) and 0xFF).toFloat() / 255f

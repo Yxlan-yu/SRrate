@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -88,6 +89,10 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
     var nativeOverlay by remember { mutableStateOf(prefs.getBoolean("native_refresh_overlay", false)) }
     var showLog by remember { mutableStateOf(false) }
     var logText by remember { mutableStateOf("") }
+
+    BackHandler(enabled = page != SettingsPage.Main) {
+        page = SettingsPage.Main
+    }
 
     suspend fun refreshA11y() {
         val ok = withContext(Dispatchers.IO) { AccessibilityUtils.isKeepAliveServiceEnabled(context) }
