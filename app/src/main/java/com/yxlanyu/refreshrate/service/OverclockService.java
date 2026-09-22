@@ -81,13 +81,15 @@ public class OverclockService extends Service {
             if (manager == null) return;
             NotificationChannel channel = manager.getNotificationChannel(CHANNEL_ID);
             int target = isNotifEnabled(context) ? NotificationManager.IMPORTANCE_LOW : NotificationManager.IMPORTANCE_NONE;
-            if (channel != null) {
-                if (channel.getImportance() != target) {
-                    channel.setImportance(target);
-                    manager.createNotificationChannel(channel);
-                }
-            } else {
+            int cur = channel != null ? channel.getImportance() : -1;
+            if (cur != target) {
+                // createNotificationChannel 对已存在的 channel 是 no-op（首次创建才生效），
+                // 运行时必须删除后重建才能真正变更 importance（关闭=隐藏通知，开启=恢复）。
+                manager.deleteNotificationChannel(CHANNEL_ID);
                 createOrUpdateChannel(context);
+                if (AutoOverclockManager.isRunning()) {
+                    updateNotification(context);
+                }
             }
         } catch (Exception ignored) {}
     }
