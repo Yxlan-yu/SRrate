@@ -860,19 +860,32 @@ private fun TargetPickerDialog(
     }
 }
 
+private object AppAvatarCache {
+    private val cache = java.util.HashMap<String, ImageBitmap?>()
+
+    fun peek(pkg: String): ImageBitmap? = synchronized(cache) { cache[pkg] }
+
+    fun load(context: Context, pkg: String): ImageBitmap? {
+        synchronized(cache) { cache[pkg]?.let { return it } }
+        val bmp = try {
+            context.packageManager.getApplicationIcon(pkg)
+                .toBitmap(width = 128, height = 128)
+                .asImageBitmap()
+        } catch (e: Exception) {
+            null
+        }
+        synchronized(cache) { cache[pkg] = bmp }
+        return bmp
+    }
+}
+
 @Composable
 private fun AppAvatar(name: String, pkg: String) {
     val context = LocalContext.current
-    var icon by remember(pkg) { mutableStateOf<ImageBitmap?>(null) }
+    var icon by remember(pkg) { mutableStateOf(AppAvatarCache.peek(pkg)) }
     LaunchedEffect(pkg) {
-        icon = withContext(Dispatchers.IO) {
-            try {
-                context.packageManager.getApplicationIcon(pkg)
-                    .toBitmap(width = 128, height = 128)
-                    .asImageBitmap()
-            } catch (e: Exception) {
-                null
-            }
+        if (icon == null) {
+            icon = withContext(Dispatchers.IO) { AppAvatarCache.load(context, pkg) }
         }
     }
     val im = icon

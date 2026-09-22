@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Refresh Rate</string>
     <string name="home_title">Refresh Rate</string>
@@ -206,7 +206,7 @@
     <string name="badge_current">Current</string>
     <string name="home_status_format">Current %1$d Hz · %2$s</string>
     <string name="settings_section_general">General</string>
-    <string name="native_overlay_title">Native Refresh Overlay</string>
+    <string name="native_overlay_title">Toggle Refresh Rate Display</string>
     <string name="native_overlay_desc">Use system native commands, requires Root/Shizuku</string>
     <string name="about_page_subtitle">Refresh Rate · Version %1$s</string>
 

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">リフレッシュレート</string>
     <string name="home_title">リフレッシュレート</string>
@@ -206,7 +206,7 @@
     <string name="badge_current">現在</string>
     <string name="home_status_format">現在 %1$d Hz · %2$s</string>
     <string name="settings_section_general">一般</string>
-    <string name="native_overlay_title">ネイティブリフレッシュオーバーレイ</string>
+    <string name="native_overlay_title">リフレッシュレート表示のオン/オフ</string>
     <string name="native_overlay_desc">システムのネイティブコマンドを使用（Root/Shizuku が必要）</string>
     <string name="about_page_subtitle">リフレッシュレート · バージョン %1$s</string>
 
