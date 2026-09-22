@@ -276,7 +276,7 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                                 title = stringResource(R.string.about_github_project),
                                 desc = stringResource(R.string.about_github_project_desc),
                                 onClick = {
-                                    openInBrowser(context, "https://github.com/Yxlan-yu/refresh-rate")
+                                    openInBrowser(context, "https://github.com/Yxlan-yu/SRrate")
                                 },
                             )
                             AboutMenuRow(

@@ -215,7 +215,7 @@
     <string name="about_menu_more">More</string>
     <string name="about_check_update_desc">Coming soon</string>
     <string name="about_github_project">GitHub Project</string>
-    <string name="about_github_project_desc">github.com/Yxlan-yu/refresh-rate</string>
+    <string name="about_github_project_desc">github.com/Yxlan-yu/SRrate</string>
     <string name="about_source_code">Source Code</string>
     <string name="about_source_desc">Source shared · Thanks to aihaozhe</string>
     <string name="about_diag_title">Diagnostics</string>

@@ -215,7 +215,7 @@
     <string name="about_menu_more">更多</string>
     <string name="about_check_update_desc">後續完善</string>
     <string name="about_github_project">GitHub 項目</string>
-    <string name="about_github_project_desc">github.com/Yxlan-yu/refresh-rate</string>
+    <string name="about_github_project_desc">github.com/Yxlan-yu/SRrate</string>
     <string name="about_source_code">ソースコード</string>
     <string name="about_source_desc">ソース共有 · 投稿者に感謝</string>
     <string name="about_diag_title">診斷</string>
