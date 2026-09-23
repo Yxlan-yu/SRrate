@@ -43,6 +43,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.activity.compose.BackHandler
 import top.yukonga.miuix.kmp.basic.Text
@@ -52,7 +53,10 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.MiuixPopupUtils.Companion.DialogLayout
 import top.yukonga.miuix.kmp.utils.getRoundedCorner
 
-private val SheetSpring = spring(dampingRatio = 0.88f, stiffness = 450f, visibilityThreshold = 0.0001f)
+private val SheetSpring = spring<IntOffset>(
+    dampingRatio = 0.88f,
+    stiffness = 450f,
+)
 
 private val SheetEnter: EnterTransition = slideInVertically(
     initialOffsetY = { it },
