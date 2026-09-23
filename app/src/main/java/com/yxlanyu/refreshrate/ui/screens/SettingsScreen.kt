@@ -44,10 +44,12 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.service.OverclockService
+import com.yxlanyu.refreshrate.service.UpdateWorker
 import com.yxlanyu.refreshrate.ui.components.FicIcon
 import com.yxlanyu.refreshrate.ui.components.PageTransitionContent
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
 import com.yxlanyu.refreshrate.ui.components.RefrSheetDialog
+import com.yxlanyu.refreshrate.ui.components.UpdateController
 import com.yxlanyu.refreshrate.util.AccessibilityUtils
 import com.yxlanyu.refreshrate.util.RootUtils
 import com.yxlanyu.refreshrate.util.ShizukuUtils
@@ -77,7 +79,10 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 private enum class SettingsPage { Main, About }
 
 @Composable
-fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.PaddingValues) {
+fun SettingsScreen(
+    outerContentPadding: androidx.compose.foundation.layout.PaddingValues,
+    updateController: UpdateController,
+) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("s", android.content.Context.MODE_PRIVATE) }
     val scope = rememberCoroutineScope()
@@ -97,6 +102,7 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
     var nativeOverlay by remember { mutableStateOf(prefs.getBoolean("native_refresh_overlay", false)) }
     var switchToast by remember { mutableStateOf(prefs.getBoolean("switch_toast_enabled", true)) }
     var notifEnabled by remember { mutableStateOf(prefs.getBoolean("overclock_notif_enabled", true)) }
+    var autoCheck by remember { mutableStateOf(prefs.getBoolean("auto_check_update", true)) }
     var showLog by remember { mutableStateOf(false) }
     var logText by remember { mutableStateOf("") }
 
@@ -260,6 +266,21 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                                     OverclockService.updateChannelImportance(context)
                                 },
                             )
+                            ToggleRow(
+                                leadingIcon = R.drawable.ic_update,
+                                title = stringResource(R.string.settings_auto_check),
+                                desc = stringResource(R.string.settings_auto_check_desc),
+                                checked = autoCheck,
+                                onCheckedChange = { checked ->
+                                    autoCheck = checked
+                                    prefs.edit().putBoolean("auto_check_update", checked).apply()
+                                    if (checked) {
+                                        UpdateWorker.schedule(context)
+                                    } else {
+                                        UpdateWorker.cancel(context)
+                                    }
+                                },
+                            )
                             ChevRow(
                                 title = stringResource(R.string.about_title),
                                 desc = stringResource(R.string.version_label, versionName),
@@ -307,9 +328,7 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                                 icon = MiuixIcons.Update,
                                 title = stringResource(R.string.check_update),
                                 desc = stringResource(R.string.about_check_update_desc),
-                                onClick = {
-                                    Toast.makeText(context, R.string.about_check_update_desc, Toast.LENGTH_SHORT).show()
-                                },
+                                onClick = { updateController.checkAndShow() },
                             )
                             AboutMenuRow(
                                 icon = MiuixIcons.Link,

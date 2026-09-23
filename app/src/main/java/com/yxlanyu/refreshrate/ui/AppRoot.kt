@@ -1,16 +1,23 @@
 package com.yxlanyu.refreshrate.ui
 
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import com.yxlanyu.refreshrate.MainActivity
 import com.yxlanyu.refreshrate.R
+import com.yxlanyu.refreshrate.service.UpdateWorker
+import com.yxlanyu.refreshrate.ui.components.UpdateDialog
+import com.yxlanyu.refreshrate.ui.components.rememberUpdateController
 import com.yxlanyu.refreshrate.ui.screens.CustomScreen
 import com.yxlanyu.refreshrate.ui.screens.HomeScreen
 import com.yxlanyu.refreshrate.ui.screens.RemoteScreen
@@ -38,6 +45,21 @@ private enum class MainTab(
 fun AppRoot() {
     var currentTab by rememberSaveable { mutableIntStateOf(0) }
     val tabs = MainTab.entries
+    val context = LocalContext.current
+    val updateController = rememberUpdateController()
+
+    LaunchedEffect(Unit) {
+        UpdateWorker.schedule(context)
+    }
+
+    val activity = context as? MainActivity
+    LaunchedEffect(activity?.intent) {
+        val act = activity ?: return@LaunchedEffect
+        if (act.intent.getBooleanExtra(UpdateWorker.EXTRA_SHOW_UPDATE, false)) {
+            act.intent.removeExtra(UpdateWorker.EXTRA_SHOW_UPDATE)
+            updateController.checkAndShow()
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -58,7 +80,9 @@ fun AppRoot() {
             MainTab.Home -> HomeScreen(outerContentPadding = innerPadding)
             MainTab.Custom -> CustomScreen(outerContentPadding = innerPadding)
             MainTab.Remote -> RemoteScreen(outerContentPadding = innerPadding)
-            MainTab.Settings -> SettingsScreen(outerContentPadding = innerPadding)
+            MainTab.Settings -> SettingsScreen(outerContentPadding = innerPadding, updateController = updateController)
         }
     }
+
+    UpdateDialog(updateController)
 }

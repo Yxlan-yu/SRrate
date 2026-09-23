@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import com.yxlanyu.refreshrate.ui.AppRoot
 import com.yxlanyu.refreshrate.ui.AppTheme
 import com.yxlanyu.refreshrate.util.LanguageUtils
+import com.yxlanyu.refreshrate.service.UpdateWorker
 
 class MainActivity : ComponentActivity() {
 
@@ -49,6 +50,7 @@ class MainActivity : ComponentActivity() {
             )
             getSystemService(NotificationManager::class.java)
                 ?.createNotificationChannel(channel)
+            UpdateWorker.ensureChannel(this)
         }
     }
 }
