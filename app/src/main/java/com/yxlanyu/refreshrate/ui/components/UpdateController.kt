@@ -64,7 +64,7 @@ class UpdateController(
         checking = true
         Toast.makeText(context, R.string.update_checking_toast, Toast.LENGTH_SHORT).show()
         scope.launch {
-            val result = withContext(Dispatchers.IO) { UpdateChecker.fetchLatestRelease() }
+            val result = withContext(Dispatchers.IO) { UpdateChecker.fetchLatestRelease(context) }
             checking = false
             if (result == null) {
                 Toast.makeText(context, R.string.update_check_fail, Toast.LENGTH_SHORT).show()
@@ -84,6 +84,17 @@ class UpdateController(
         visible = false
     }
 
+    fun openInBrowser() {
+        val entry = info ?: return
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(entry.apkUrl))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(context, R.string.update_download_fail, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     fun downloadAndInstall() {
         val entry = info ?: return
         if (downloading) return
@@ -100,6 +111,7 @@ class UpdateController(
             downloading = false
             if (!ok) {
                 Toast.makeText(context, R.string.update_download_fail, Toast.LENGTH_LONG).show()
+                openInBrowser()
                 return@launch
             }
             visible = false
@@ -181,6 +193,11 @@ fun UpdateDialog(controller: UpdateController) {
             TextButton(
                 text = stringResource(R.string.update_btn_later),
                 onClick = { controller.dismiss() },
+            )
+            Spacer(Modifier.width(8.dp))
+            TextButton(
+                text = stringResource(R.string.update_btn_browser),
+                onClick = { controller.openInBrowser() },
             )
             Spacer(Modifier.width(8.dp))
             Button(onClick = { controller.downloadAndInstall() }) {

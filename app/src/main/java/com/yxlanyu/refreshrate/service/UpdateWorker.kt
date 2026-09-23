@@ -29,7 +29,7 @@ class UpdateWorker(appContext: Context, params: WorkerParameters) : CoroutineWor
         val lastCheck = prefs.getLong("last_auto_check_ts", 0L)
         if (lastCheck > 0 && now - lastCheck < DAY_MS) return Result.success()
 
-        val info = withContext(Dispatchers.IO) { UpdateChecker.fetchLatestRelease() }
+        val info = withContext(Dispatchers.IO) { UpdateChecker.fetchLatestRelease(context) }
         if (info == null) return Result.success()
         prefs.edit().putLong("last_auto_check_ts", now).apply()
 

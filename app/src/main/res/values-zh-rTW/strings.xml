@@ -220,6 +220,7 @@
     <string name="update_download_fail">下載失敗，請檢查網路後重試</string>
     <string name="update_btn_install">立即更新</string>
     <string name="update_btn_later">稍後</string>
+    <string name="update_btn_browser">瀏覽器下載</string>
     <string name="update_notify_channel">更新提醒</string>
     <string name="update_notif_title">發現新版本 %1$s</string>
     <string name="update_notif_content">點擊查看並更新</string>

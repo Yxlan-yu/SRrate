@@ -1,5 +1,6 @@
 package com.yxlanyu.refreshrate.util
 
+import android.content.Context
 import org.json.JSONObject
 import java.io.File
 import java.net.HttpURLConnection
@@ -18,39 +19,57 @@ object UpdateChecker {
     private const val USER_AGENT = "SRrate-UpdateChecker"
     private const val TIMEOUT_MS = 8_000
 
+    private const val PREFS_NAME = "s"
+    private const val KEY_ETAG = "update_etag"
+    private const val KEY_BODY = "update_cached_body"
+
     private val API_SOURCES = listOf(
         REPO_API,
         "https://gh-proxy.com/$REPO_API",
         "https://gh-proxy.org/$REPO_API",
     )
 
-    fun fetchLatestRelease(): UpdateInfo? {
+    fun fetchLatestRelease(context: Context): UpdateInfo? {
         for (source in API_SOURCES) {
-            val body = fetchBody(source) ?: continue
+            val body = fetchBody(context, source) ?: continue
             val result = parseRelease(body)
             if (result != null) return result
         }
-        return null
+        val cached = cachedBody(context) ?: return null
+        return parseRelease(cached)
     }
 
-    private fun fetchBody(url: String): String? = try {
+    private fun fetchBody(context: Context, url: String): String? = try {
         val connection = URL(url).openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
         connection.connectTimeout = TIMEOUT_MS
         connection.readTimeout = TIMEOUT_MS
         connection.setRequestProperty("User-Agent", USER_AGENT)
         connection.setRequestProperty("Accept", "application/vnd.github+json")
+        val etag = prefs(context).getString(KEY_ETAG, null)
+        if (etag != null) connection.setRequestProperty("If-None-Match", etag)
         val code = connection.responseCode
-        val body = if (code in 200..299) {
-            connection.inputStream.bufferedReader().use { it.readText() }
-        } else {
-            null
+        val body = when {
+            code == 304 -> cachedBody(context)
+            code in 200..299 -> connection.inputStream.bufferedReader().use { it.readText() }
+            else -> null
+        }
+        if (code in 200..299 && body != null) {
+            val editor = prefs(context).edit()
+            val newEtag = connection.getHeaderField("ETag")
+            if (newEtag != null) editor.putString(KEY_ETAG, newEtag)
+            editor.putString(KEY_BODY, body).apply()
         }
         connection.disconnect()
         body
     } catch (t: Throwable) {
         null
     }
+
+    private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    private fun cachedBody(context: Context): String? =
+        prefs(context).getString(KEY_BODY, null)?.takeIf { it.isNotEmpty() }
 
     private fun parseRelease(body: String): UpdateInfo? = try {
         val json = JSONObject(body)
@@ -88,10 +107,8 @@ object UpdateChecker {
         return false
     }
 
-    private fun versionParts(version: String): List<Int> {
-        val clean = version.trim().removePrefix("v").removePrefix("V")
-        return clean.split(".").mapNotNull { it.toIntOrNull() }
-    }
+    private fun versionParts(version: String): List<Int> =
+        Regex("\\d+").findAll(version).map { it.value.toIntOrNull() ?: 0 }.toList()
 
     fun downloadApk(url: String, destFile: File, onProgress: ((Float) -> Unit)? = null): Boolean {
         val sources = listOf(

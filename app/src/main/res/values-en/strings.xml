@@ -220,6 +220,7 @@
     <string name="update_download_fail">Download failed. Check your network and try again</string>
     <string name="update_btn_install">Update now</string>
     <string name="update_btn_later">Later</string>
+    <string name="update_btn_browser">Download in Browser</string>
     <string name="update_notify_channel">Update reminders</string>
     <string name="update_notif_title">New version %1$s found</string>
     <string name="update_notif_content">Tap to view and update</string>
