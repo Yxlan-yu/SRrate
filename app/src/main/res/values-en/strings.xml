@@ -58,7 +58,7 @@
     <string name="root_running_label">Root Running</string>
     <string name="shizuku_running_label">Shizuku Running</string>
     <string name="about_title">About</string>
-    <string name="version_label">Version: 1.0</string>
+    <string name="version_label">Version: %1$s</string>
     <string name="generate_log_btn">Generate Log</string>
     <string name="language_zh">简体中文</string>
     <string name="language_zh_tw">繁體中文</string>
@@ -212,7 +212,7 @@
     <string name="about_page_subtitle">Refresh Rate · Version %1$s</string>
 
     <string name="about_app_brand">SRrate</string>
-    <string name="about_version">v1.0</string>
+    <string name="about_version">v%1$s</string>
     <string name="about_menu_more">More</string>
     <string name="about_check_update_desc">Coming soon</string>
     <string name="about_github_project">GitHub Project</string>

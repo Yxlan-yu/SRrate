@@ -81,6 +81,12 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("s", android.content.Context.MODE_PRIVATE) }
     val scope = rememberCoroutineScope()
+    val versionName = remember {
+        runCatching {
+            @Suppress("DEPRECATION")
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: ""
+        }.getOrDefault("")
+    }
 
     var page by remember { mutableStateOf(SettingsPage.Main) }
     var authMode by remember { mutableStateOf(prefs.getString("auth_mode", "") ?: "") }
@@ -256,7 +262,7 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                             )
                             ChevRow(
                                 title = stringResource(R.string.about_title),
-                                desc = stringResource(R.string.version_label),
+                                desc = stringResource(R.string.version_label, versionName),
                                 onClick = { page = SettingsPage.About },
                             )
                         },
@@ -287,7 +293,7 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                         )
                         Spacer(Modifier.size(4.dp))
                         Text(
-                            text = stringResource(R.string.about_version),
+                            text = stringResource(R.string.about_version, versionName),
                             fontSize = 12.sp,
                             color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                         )
