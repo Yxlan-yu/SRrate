@@ -815,7 +815,6 @@ private fun TargetPickerDialog(
     onSelect: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    if (!show) return
     OverlayDialog(
         show = show,
         title = title,

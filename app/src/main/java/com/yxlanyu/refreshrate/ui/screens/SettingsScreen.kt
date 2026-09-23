@@ -374,46 +374,44 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
         }
     }
 
-    if (showLog) {
-        OverlayDialog(
-            show = showLog,
-            title = stringResource(R.string.log_dialog_title),
-            onDismissRequest = { showLog = false },
+    OverlayDialog(
+        show = showLog,
+        title = stringResource(R.string.log_dialog_title),
+        onDismissRequest = { showLog = false },
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 320.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 320.dp)
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-            ) {
-                Text(
-                    text = logText.ifEmpty { "-" },
-                    fontSize = 12.sp,
-                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                )
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
-                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End,
-            ) {
-                TextButton(
-                    text = stringResource(R.string.log_dialog_close),
-                    onClick = { showLog = false },
-                )
-                Spacer(Modifier.width(8.dp))
-                Button(onClick = {
-                    shareLog(context, logText)
-                    showLog = false
-                }) {
-                    Text(text = stringResource(R.string.log_dialog_share))
-                }
+            Text(
+                text = logText.ifEmpty { "-" },
+                fontSize = 12.sp,
+                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+            )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End,
+        ) {
+            TextButton(
+                text = stringResource(R.string.log_dialog_close),
+                onClick = { showLog = false },
+            )
+            Spacer(Modifier.width(8.dp))
+            Button(onClick = {
+                shareLog(context, logText)
+                showLog = false
+            }) {
+                Text(text = stringResource(R.string.log_dialog_share))
             }
         }
     }
-    }
+}
 }
 
 private fun shareLog(context: android.content.Context, content: String) {
