@@ -62,6 +62,7 @@ class UpdateController(
     fun checkAndShow() {
         if (checking || downloading) return
         checking = true
+        Toast.makeText(context, R.string.update_checking_toast, Toast.LENGTH_SHORT).show()
         scope.launch {
             val result = withContext(Dispatchers.IO) { UpdateChecker.fetchLatestRelease() }
             checking = false

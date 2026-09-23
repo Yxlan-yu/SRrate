@@ -16,23 +16,38 @@ object UpdateChecker {
 
     private const val REPO_API = "https://api.github.com/repos/Yxlan-yu/SRrate/releases/latest"
     private const val USER_AGENT = "SRrate-UpdateChecker"
-    private const val TIMEOUT_MS = 10_000
+    private const val TIMEOUT_MS = 8_000
 
-    fun fetchLatestRelease(): UpdateInfo? = try {
-        val connection = URL(REPO_API).openConnection() as HttpURLConnection
+    private val API_SOURCES = listOf(
+        REPO_API,
+        "https://gh-proxy.com/$REPO_API",
+        "https://gh-proxy.org/$REPO_API",
+    )
+
+    fun fetchLatestRelease(): UpdateInfo? {
+        for (source in API_SOURCES) {
+            val body = fetchBody(source) ?: continue
+            val result = parseRelease(body)
+            if (result != null) return result
+        }
+        return null
+    }
+
+    private fun fetchBody(url: String): String? = try {
+        val connection = URL(url).openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
         connection.connectTimeout = TIMEOUT_MS
         connection.readTimeout = TIMEOUT_MS
         connection.setRequestProperty("User-Agent", USER_AGENT)
         connection.setRequestProperty("Accept", "application/vnd.github+json")
         val code = connection.responseCode
-        if (code !in 200..299) {
-            connection.disconnect()
-            return null
+        val body = if (code in 200..299) {
+            connection.inputStream.bufferedReader().use { it.readText() }
+        } else {
+            null
         }
-        val body = connection.inputStream.bufferedReader().use { it.readText() }
         connection.disconnect()
-        parseRelease(body)
+        body
     } catch (t: Throwable) {
         null
     }
@@ -79,11 +94,23 @@ object UpdateChecker {
     }
 
     fun downloadApk(url: String, destFile: File, onProgress: ((Float) -> Unit)? = null): Boolean {
+        val sources = listOf(
+            url,
+            "https://gh-proxy.com/$url",
+            "https://gh-proxy.org/$url",
+        )
+        for (source in sources) {
+            if (downloadFrom(source, destFile, onProgress)) return true
+        }
+        return false
+    }
+
+    private fun downloadFrom(url: String, destFile: File, onProgress: ((Float) -> Unit)? = null): Boolean {
         var connection: HttpURLConnection? = null
         try {
             connection = URL(url).openConnection() as HttpURLConnection
-            connection.connectTimeout = 15_000
-            connection.readTimeout = 15_000
+            connection.connectTimeout = 20_000
+            connection.readTimeout = 30_000
             connection.setRequestProperty("User-Agent", USER_AGENT)
             val code = connection.responseCode
             if (code !in 200..299) return false
