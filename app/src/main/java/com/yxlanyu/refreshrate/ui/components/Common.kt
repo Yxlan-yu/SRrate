@@ -1,6 +1,13 @@
 package com.yxlanyu.refreshrate.ui.components
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -115,5 +122,33 @@ fun FicIcon(
             modifier = Modifier.size(22.dp),
             tint = if (accent) Color.White else MiuixTheme.colorScheme.primary,
         )
+    }
+}
+
+@Composable
+fun <T> PageTransitionContent(
+    targetState: T,
+    depth: (T) -> Int,
+    modifier: Modifier = Modifier,
+    content: @Composable (T) -> Unit,
+) {
+    AnimatedContent(
+        targetState = targetState,
+        modifier = modifier,
+        transitionSpec = {
+            val forward = depth(targetState) > depth(initialState)
+            val enter =
+                slideInHorizontally(animationSpec = tween(300)) { fullWidth ->
+                    if (forward) fullWidth else -fullWidth / 4
+                } + fadeIn(animationSpec = tween(300))
+            val exit =
+                slideOutHorizontally(animationSpec = tween(300)) { fullWidth ->
+                    if (forward) -fullWidth / 4 else fullWidth
+                } + fadeOut(animationSpec = tween(300))
+            enter togetherWith exit
+        },
+        label = "page_transition",
+    ) { p ->
+        content(p)
     }
 }

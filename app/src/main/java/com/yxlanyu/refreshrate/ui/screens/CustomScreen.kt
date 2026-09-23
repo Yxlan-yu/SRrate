@@ -147,10 +147,20 @@ fun CustomScreen(outerContentPadding: PaddingValues) {
         backToPrevious()
     }
 
+    PageTransitionContent(
+        targetState = page,
+        depth = { p ->
+            when (p) {
+                CustomPage.Main -> 0
+                CustomPage.AppList -> 1
+                CustomPage.AppConfig -> 2
+            }
+        },
+    ) { p ->
     RefreshPageScaffold(
         title = stringResource(R.string.nav_custom_app_refresh),
         outerContentPadding = outerContentPadding,
-        largeTitle = when (page) {
+        largeTitle = when (p) {
             CustomPage.Main -> stringResource(R.string.nav_custom_app_refresh)
             CustomPage.AppList -> stringResource(R.string.app_list_title)
             CustomPage.AppConfig -> stringResource(R.string.app_refresh_config_title)
@@ -166,7 +176,7 @@ fun CustomScreen(outerContentPadding: PaddingValues) {
             }
         } else null,
     ) {
-        when (page) {
+        when (p) {
             CustomPage.Main -> item(key = "main") {
                 MainContent(
                     context = context,
@@ -259,6 +269,7 @@ fun CustomScreen(outerContentPadding: PaddingValues) {
                 )
             }
         }
+    }
     }
 }
 

@@ -129,10 +129,19 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
         }
     }
 
+    PageTransitionContent(
+        targetState = page,
+        depth = { p ->
+            when (p) {
+                SettingsPage.Main -> 0
+                SettingsPage.About -> 1
+            }
+        },
+    ) { p ->
     RefreshPageScaffold(
         title = stringResource(R.string.settings_title),
         outerContentPadding = outerContentPadding,
-        largeTitle = when (page) {
+        largeTitle = when (p) {
             SettingsPage.Main -> stringResource(R.string.settings_title)
             SettingsPage.About -> stringResource(R.string.about_title)
         },
@@ -147,7 +156,7 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
             }
         } else null,
     ) {
-        when (page) {
+        when (p) {
             SettingsPage.Main -> {
                 item(key = "auth") {
                     SettingsSectionCard(
@@ -402,6 +411,7 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
                 }
             }
         }
+    }
     }
 }
 
