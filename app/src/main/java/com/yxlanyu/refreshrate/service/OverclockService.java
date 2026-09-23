@@ -71,41 +71,16 @@ public class OverclockService extends Service {
     }
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createOrUpdateChannel(this);
-        }
-    }
-    public static void updateChannelImportance(Context context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
-        try {
-            NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            Context lc = getLocalizedContext(this);
+            NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             if (manager == null) return;
-            NotificationChannel channel = manager.getNotificationChannel(CHANNEL_ID);
-            int target = isNotifEnabled(context) ? NotificationManager.IMPORTANCE_LOW : NotificationManager.IMPORTANCE_NONE;
-            int cur = channel != null ? channel.getImportance() : -1;
-            if (cur != target) {
-                // createNotificationChannel 对已存在的 channel 是 no-op（首次创建才生效），
-                // 运行时必须删除后重建才能真正变更 importance（关闭=隐藏通知，开启=恢复）。
-                manager.deleteNotificationChannel(CHANNEL_ID);
-                createOrUpdateChannel(context);
-                if (AutoOverclockManager.isRunning()) {
-                    updateNotification(context);
-                }
-            }
-        } catch (Exception ignored) {}
-    }
-    private static void createOrUpdateChannel(Context context) {
-        Context lc = getLocalizedContext(context);
-        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (manager == null) return;
-        NotificationChannel channel = new NotificationChannel(
-                CHANNEL_ID,
-                lc.getString(R.string.notification_channel_name),
-                isNotifEnabled(context) ? NotificationManager.IMPORTANCE_LOW : NotificationManager.IMPORTANCE_NONE
-        );
-        manager.createNotificationChannel(channel);
-    }
-    private static boolean isNotifEnabled(Context context) {
-        return context.getSharedPreferences("s", Context.MODE_PRIVATE).getBoolean("overclock_notif_enabled", true);
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID,
+                    lc.getString(R.string.notification_channel_name),
+                    NotificationManager.IMPORTANCE_LOW
+            );
+            manager.createNotificationChannel(channel);
+        }
     }
     private Notification buildNotification() {
     Context lc = getLocalizedContext(this);

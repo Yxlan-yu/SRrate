@@ -240,9 +240,8 @@
     <string name="app_list_search_hint">搜尋應用程式</string>
     <string name="app_enabled_badge">已啟用</string>
     <string name="app_enabled_res_format">%1$s @ %2$d Hz</string>
-<string name="current_rate_format">目前 %1$d Hz · %2$s</string>
+    <string name="current_rate_format">目前 %1$d Hz · %2$s</string>
     <string name="settings_switch_toast">幀率切換彈出提醒</string>
     <string name="settings_switch_toast_desc">切換至已啟用應用時彈出提示</string>
-    <string name="settings_overclock_notif">守護通知</string>
-    <string name="settings_overclock_notif_desc">顯示自動超頻守護的常駐通知</string>
+
 </resources>

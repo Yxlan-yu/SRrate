@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import com.yxlanyu.refreshrate.R
-import com.yxlanyu.refreshrate.service.OverclockService
 import com.yxlanyu.refreshrate.service.UpdateWorker
 import com.yxlanyu.refreshrate.ui.components.FicIcon
 import com.yxlanyu.refreshrate.ui.components.PageTransitionContent
@@ -101,7 +100,6 @@ fun SettingsScreen(
     var a11yEnabled by remember { mutableStateOf(false) }
     var nativeOverlay by remember { mutableStateOf(prefs.getBoolean("native_refresh_overlay", false)) }
     var switchToast by remember { mutableStateOf(prefs.getBoolean("switch_toast_enabled", true)) }
-    var notifEnabled by remember { mutableStateOf(prefs.getBoolean("overclock_notif_enabled", true)) }
     var autoCheck by remember { mutableStateOf(prefs.getBoolean("auto_check_update", true)) }
     var showLog by remember { mutableStateOf(false) }
     var logText by remember { mutableStateOf("") }
@@ -253,17 +251,6 @@ fun SettingsScreen(
                                 onCheckedChange = { checked ->
                                     switchToast = checked
                                     prefs.edit().putBoolean("switch_toast_enabled", checked).apply()
-                                },
-                            )
-                            ToggleRow(
-                                leadingIcon = R.drawable.ic_fic_radar,
-                                title = stringResource(R.string.settings_overclock_notif),
-                                desc = stringResource(R.string.settings_overclock_notif_desc),
-                                checked = notifEnabled,
-                                onCheckedChange = { checked ->
-                                    notifEnabled = checked
-                                    prefs.edit().putBoolean("overclock_notif_enabled", checked).apply()
-                                    OverclockService.updateChannelImportance(context)
                                 },
                             )
                             ToggleRow(

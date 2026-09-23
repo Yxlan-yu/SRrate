@@ -14,9 +14,11 @@ public class AutoOverclockManager {
     private static final String TAG = "AutoOverclock";
     private static final long STEP_DELAY_MS = 800;
     private static final long POLL_DELAY_MS = 2000;
+    private static final int LOG_HISTORY_LIMIT = 200;
     private static Thread  daemonThread;
     private static volatile boolean running  = false;
     private static volatile String lastLog = "";
+    private static final java.util.ArrayDeque<String> logHistory = new java.util.ArrayDeque<>();
     private static volatile int    targetW   = 0;
     private static volatile int    targetH   = 0;
     private static volatile int    targetHz  = 0;
@@ -37,6 +39,17 @@ public class AutoOverclockManager {
         }
     }
     public static String getLastLog()  { return lastLog;
+    }
+    private static synchronized void pushHistory(String msg) {
+        if (msg == null) return;
+        String ts = new java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.US).format(new java.util.Date());
+        logHistory.addLast("[" + ts + "] " + msg);
+        while (logHistory.size() > LOG_HISTORY_LIMIT) logHistory.removeFirst();
+    }
+    public static synchronized String getLogHistory() {
+        StringBuilder sb = new StringBuilder();
+        for (String line : logHistory) sb.append(line).append("\n");
+        return sb.toString();
     }
     public static boolean isRunning()  { return running;
     }
@@ -62,6 +75,7 @@ public class AutoOverclockManager {
         targetH  = th;
         targetHz = hz;
         if (appContext != null) lastLog = getLocalizedContext().getString(R.string.guard_target_updated, tw + "×" + th, hz);
+        pushHistory(lastLog);
         Log.d(TAG, lastLog);
     }
     public static void setCustomOverride(String res, int hz) {
@@ -73,6 +87,7 @@ public class AutoOverclockManager {
         customOverrideHz  = hz;
         if (appContext != null) {
             lastLog = getLocalizedContext().getString(R.string.guard_target_updated, res.replace("x", "×"), hz);
+            pushHistory("[Override] " + lastLog);
             Log.d(TAG, lastLog);
             if (running) OverclockService.updateNotification(appContext);
         }
@@ -81,6 +96,7 @@ public class AutoOverclockManager {
         if (customOverrideRes.isEmpty() && customOverrideHz == -1) return;
         customOverrideRes = "";
         customOverrideHz  = -1;
+        pushHistory("[Override] Cleared");
         if (appContext != null && running) OverclockService.updateNotification(appContext);
     }
     public static void start(Context ctx, String mode,
@@ -92,6 +108,7 @@ public class AutoOverclockManager {
         targetHz = hz;
         running  = true;
         lastLog  = getLocalizedContext().getString(R.string.guard_start_format, tw + "×" + th, hz);
+        pushHistory(lastLog);
         daemonThread = new Thread(() -> {
             while (running) {
                 try {
@@ -119,6 +136,7 @@ public class AutoOverclockManager {
                     }
                     if (filtered.isEmpty()) {
                         lastLog = getLocalizedContext().getString(R.string.guard_no_res_format, curTargetW + "×" + curTargetH);
+                        pushHistory(lastLog);
                         Thread.sleep(POLL_DELAY_MS);
                         continue;
                     }
@@ -163,6 +181,7 @@ public class AutoOverclockManager {
                         lastLog = getLocalizedContext().getString(R.string.guard_hz_down, curInt, next.getRateInt());
                     }
                     Log.d(TAG, lastLog);
+                    pushHistory(lastLog);
                     if ("root".equals(authMode)) {
                         RootUtils.setDisplayMode(next.getWidth(), next.getHeight(), next.getRateInt(), next.getSfIndex());
                     } else if ("shizuku".equals(authMode)) {
@@ -173,12 +192,17 @@ public class AutoOverclockManager {
                 } catch (InterruptedException e) {
                     break;
                 } catch (Exception e) {
-                    Log.e(TAG, "daemon: " + e.getMessage());
+                    String em = "daemon err: " + (e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage());
+                    Log.e(TAG, em);
+                    pushHistory(em);
                     try { Thread.sleep(POLL_DELAY_MS); } catch (InterruptedException ex) { break; }
                 }
             }
             running = false;
-            if (appContext != null) lastLog = getLocalizedContext().getString(R.string.guard_stopped);
+            if (appContext != null) {
+                lastLog = getLocalizedContext().getString(R.string.guard_stopped);
+                pushHistory(lastLog);
+            }
         });
         daemonThread.setDaemon(true);
         daemonThread.start();

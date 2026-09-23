@@ -165,7 +165,16 @@ public class RootUtils {
             .format(new java.util.Date());
     sb.append("===== 屏幕刷新率工具 运行调试日志 =====\n");
     sb.append("生成时间: ").append(ts).append("\n");
-    sb.append("App版本: 1.6.5 (1650)\n\n");
+    String verName = "";
+    long verCode = 0;
+    if (ctx != null) {
+        try {
+            verName = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0).versionName;
+            verCode = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0).getLongVersionCode();
+        } catch (Exception ignored) {}
+    }
+    sb.append("App版本: ").append(verName.isEmpty() ? "(未获取, 旧版硬编码问题已修复)" : verName)
+      .append(" (").append(verCode).append(")\n\n");
     sb.append("【设备信息】\n");
     sb.append("品牌: ").append(android.os.Build.BRAND).append("\n");
     sb.append("型号: ").append(android.os.Build.MODEL).append("\n");
@@ -216,8 +225,42 @@ public class RootUtils {
         sb.append("锁定刷新率: ").append(prefs.getBoolean("rate_lock_enabled", false)
                 ? ("锁定中 @ " + prefs.getInt("rate_lock_hz", 0) + "Hz") : "未锁定").append("\n");
         sb.append("帧率切换弹出提醒: ").append(prefs.getBoolean("switch_toast_enabled", true) ? "开" : "关").append("\n");
-        sb.append("守护通知: ").append(prefs.getBoolean("overclock_notif_enabled", true) ? "开" : "关").append("\n");
         sb.append("超频最近日志: ").append(com.yxlanyu.refreshrate.util.AutoOverclockManager.getLastLog()).append("\n\n");
+        sb.append("【超频运行历史(最多200条)】\n");
+        String hist = com.yxlanyu.refreshrate.util.AutoOverclockManager.getLogHistory();
+        sb.append(hist == null || hist.isEmpty() ? "  （暂无）\n" : hist).append("\n");
+        sb.append("【完整配置(SharedPreferences s)】\n");
+        Map<String, ?> allPrefs = prefs.getAll();
+        if (allPrefs.isEmpty()) {
+            sb.append("  （空）\n");
+        } else {
+            for (String k : new java.util.TreeSet<>(allPrefs.keySet())) {
+                Object v = allPrefs.get(k);
+                sb.append("  ").append(k).append(" = ").append(v).append("\n");
+            }
+        }
+        sb.append("\n");
+        sb.append("【更新检查状态】\n");
+        sb.append("自动检查更新: ").append(prefs.getBoolean("auto_check_update", true) ? "开" : "关").append("\n");
+        long lastCheck = prefs.getLong("last_auto_check_ts", 0);
+        sb.append("上次后台检查: ").append(lastCheck > 0
+                ? new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(new java.util.Date(lastCheck))
+                : "（从未）").append("\n");
+        String lastNotified = prefs.getString("last_notified_version", "");
+        sb.append("上次通知版本: ").append(lastNotified.isEmpty() ? "（无）" : lastNotified).append("\n");
+        sb.append("【通知渠道状态】\n");
+        if (android.os.Build.VERSION.SDK_INT >= 26) {
+            android.app.NotificationManager nm = (android.app.NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null) {
+                describeChannel(sb, nm, "overclock_channel");
+                describeChannel(sb, nm, "update_channel");
+            } else {
+                sb.append("  （NotificationManager 不可用）\n");
+            }
+        } else {
+            sb.append("  (API<26 无渠道概念)\n");
+        }
+        sb.append("\n");
         sb.append("【已配置的单应用刷新率】\n");
         int cfgCount = 0;
         Map<String, ?> all = prefs.getAll();
@@ -291,7 +334,47 @@ public class RootUtils {
             }catch(Exception ignored){}
         }
     }
+    sb.append("\n");
+    sb.append("【服务存活状态】\n");
+    try {
+        Process ps = Runtime.getRuntime().exec("su");
+        java.io.DataOutputStream os5 = new java.io.DataOutputStream(ps.getOutputStream());
+        os5.writeBytes("dumpsys activity services com.yxlanyu.refreshrate | grep -E 'ServiceRecord|isForeground|startRequested' \nexit\n");
+        os5.flush();
+        java.io.BufferedReader r5 = new java.io.BufferedReader(new java.io.InputStreamReader(ps.getInputStream()));
+        String l5; int svcCount = 0;
+        while ((l5 = r5.readLine()) != null) {
+            String trimmed = l5.trim();
+            if (trimmed.isEmpty()) continue;
+            sb.append(trimmed).append("\n");
+            if (trimmed.startsWith("ServiceRecord")) svcCount++;
+        }
+        if (svcCount == 0) sb.append("  （未发现运行中的 SRrate 服务）\n");
+        ps.waitFor();
+    } catch (Exception e) {
+        sb.append("  查询失败: ").append(e.getMessage()).append("\n");
+    }
     sb.append("\n=====\n");
     return sb.toString();
+}
+private static void describeChannel(StringBuilder sb, android.app.NotificationManager nm, String id) {
+    android.app.NotificationChannel ch = nm.getNotificationChannel(id);
+    if (ch == null) {
+        sb.append("  ").append(id).append(": 未创建\n");
+        return;
+    }
+    int imp = ch.getImportance();
+    String name;
+    switch (imp) {
+        case android.app.NotificationManager.IMPORTANCE_NONE: name = "IMPORTANCE_NONE(隐藏)"; break;
+        case android.app.NotificationManager.IMPORTANCE_MIN: name = "IMPORTANCE_MIN"; break;
+        case android.app.NotificationManager.IMPORTANCE_LOW: name = "IMPORTANCE_LOW"; break;
+        case android.app.NotificationManager.IMPORTANCE_DEFAULT: name = "IMPORTANCE_DEFAULT"; break;
+        case android.app.NotificationManager.IMPORTANCE_HIGH: name = "IMPORTANCE_HIGH"; break;
+        default: name = "UNKNOWN(" + imp + ")";
+    }
+    sb.append("  ").append(id).append(": ").append(name)
+      .append("  已启用: ").append(ch.getImportance() != android.app.NotificationManager.IMPORTANCE_NONE ? "是" : "否(用户已关闭)")
+      .append("\n");
 }
 }

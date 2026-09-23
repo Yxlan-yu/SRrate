@@ -240,9 +240,8 @@
     <string name="app_list_search_hint">アプリを検索</string>
     <string name="app_enabled_badge">有効</string>
     <string name="app_enabled_res_format">%1$s @ %2$d Hz</string>
-<string name="current_rate_format">現在 %1$d Hz · %2$s</string>
+    <string name="current_rate_format">現在 %1$d Hz · %2$s</string>
     <string name="settings_switch_toast">フレーム切替ポップアップ</string>
     <string name="settings_switch_toast_desc">有効化したアプリへの切り替え時に表示</string>
-    <string name="settings_overclock_notif">ガード通知</string>
-    <string name="settings_overclock_notif_desc">自動オーバークロック監視の常駐通知を表示</string>
+
 </resources>
