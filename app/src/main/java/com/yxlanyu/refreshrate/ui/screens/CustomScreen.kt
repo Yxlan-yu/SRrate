@@ -54,6 +54,7 @@ import com.yxlanyu.refreshrate.model.DisplayMode
 import com.yxlanyu.refreshrate.ui.components.FicIcon
 import com.yxlanyu.refreshrate.ui.components.PageTransitionContent
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
+import com.yxlanyu.refreshrate.ui.components.RefrSheetDialog
 import com.yxlanyu.refreshrate.util.AccessibilityUtils
 import com.yxlanyu.refreshrate.util.AutoOverclockManager
 import com.yxlanyu.refreshrate.util.RootUtils
@@ -72,7 +73,6 @@ import top.yukonga.miuix.kmp.basic.TextField
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Back
 import top.yukonga.miuix.kmp.icon.extended.ChevronForward
-import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 private enum class CustomPage { Main, AppList, AppConfig }
@@ -815,7 +815,7 @@ private fun TargetPickerDialog(
     onSelect: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    OverlayDialog(
+    RefrSheetDialog(
         show = show,
         title = title,
         onDismissRequest = onDismiss,

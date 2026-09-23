@@ -47,6 +47,7 @@ import com.yxlanyu.refreshrate.service.OverclockService
 import com.yxlanyu.refreshrate.ui.components.FicIcon
 import com.yxlanyu.refreshrate.ui.components.PageTransitionContent
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
+import com.yxlanyu.refreshrate.ui.components.RefrSheetDialog
 import com.yxlanyu.refreshrate.util.AccessibilityUtils
 import com.yxlanyu.refreshrate.util.RootUtils
 import com.yxlanyu.refreshrate.util.ShizukuUtils
@@ -71,7 +72,6 @@ import top.yukonga.miuix.kmp.icon.extended.Info
 import top.yukonga.miuix.kmp.icon.extended.Link
 import top.yukonga.miuix.kmp.icon.extended.Refresh
 import top.yukonga.miuix.kmp.icon.extended.Update
-import top.yukonga.miuix.kmp.overlay.OverlayDialog
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 private enum class SettingsPage { Main, About }
@@ -374,7 +374,7 @@ fun SettingsScreen(outerContentPadding: androidx.compose.foundation.layout.Paddi
         }
     }
 
-    OverlayDialog(
+    RefrSheetDialog(
         show = showLog,
         title = stringResource(R.string.log_dialog_title),
         onDismissRequest = { showLog = false },
