@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
@@ -88,9 +90,10 @@ class UpdateController(
         progress = 0f
         scope.launch {
             val dest = File(context.cacheDir, "update/${fileSafeTag(entry.tagName)}.apk")
+            val mainHandler = Handler(Looper.getMainLooper())
             val ok = withContext(Dispatchers.IO) {
                 UpdateChecker.downloadApk(entry.apkUrl, dest) { fraction ->
-                    withContext(Dispatchers.Main) { progress = fraction }
+                    mainHandler.post { progress = fraction }
                 }
             }
             downloading = false
