@@ -82,7 +82,6 @@ fun AppRoot() {
             MainTab.Remote -> RemoteScreen(outerContentPadding = innerPadding)
             MainTab.Settings -> SettingsScreen(outerContentPadding = innerPadding, updateController = updateController)
         }
+        UpdateDialog(updateController)
     }
-
-    UpdateDialog(updateController)
 }
