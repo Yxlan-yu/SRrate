@@ -1,5 +1,8 @@
 package com.yxlanyu.refreshrate.ui.components
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -9,6 +12,8 @@ import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import androidx.core.app.NotificationCompat
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,12 +30,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
+import com.yxlanyu.refreshrate.MainActivity
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.service.UpdateWorker
 import com.yxlanyu.refreshrate.util.UpdateChecker
@@ -42,6 +51,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import top.yukonga.miuix.kmp.basic.Button
+import top.yukonga.miuix.kmp.basic.LinearProgressIndicator
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -52,6 +62,22 @@ class UpdateController(
 ) {
     companion object {
         private const val TAG = "SRrate_Upd"
+        const val CHANNEL_DOWNLOAD = "update_download_channel"
+        private const val NOTIFICATION_ID_DOWNLOAD = 2002
+
+        fun ensureDownloadChannel(context: Context) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                if (manager.getNotificationChannel(CHANNEL_DOWNLOAD) == null) {
+                    val channel = NotificationChannel(
+                        CHANNEL_DOWNLOAD,
+                        context.getString(R.string.update_downloading),
+                        NotificationManager.IMPORTANCE_LOW,
+                    )
+                    manager.createNotificationChannel(channel)
+                }
+            }
+        }
     }
     var checking by mutableStateOf(false)
         private set
@@ -95,8 +121,11 @@ class UpdateController(
     }
 
     fun dismiss() {
-        if (downloading) return
         visible = false
+    }
+
+    fun reshow() {
+        if (downloading) visible = true
     }
 
     fun openInBrowser() {
@@ -115,15 +144,25 @@ class UpdateController(
         if (downloading) return
         downloading = true
         progress = 0f
+        showProgressNotification(0f)
         scope.launch {
             val dest = File(context.cacheDir, "update/${fileSafeTag(entry.tagName)}.apk")
             val mainHandler = Handler(Looper.getMainLooper())
+            var lastNotifyPct = -1
             val ok = withContext(Dispatchers.IO) {
                 UpdateChecker.downloadApk(entry.apkUrl, dest) { fraction ->
-                    mainHandler.post { progress = fraction }
+                    mainHandler.post {
+                        progress = fraction
+                        val pct = (fraction * 100).toInt()
+                        if (pct != lastNotifyPct) {
+                            lastNotifyPct = pct
+                            showProgressNotification(fraction)
+                        }
+                    }
                 }
             }
             downloading = false
+            cancelProgressNotification()
             if (!ok) {
                 Toast.makeText(context, R.string.update_download_fail, Toast.LENGTH_LONG).show()
                 openInBrowser()
@@ -131,6 +170,49 @@ class UpdateController(
             }
             visible = false
             installApk(dest)
+        }
+    }
+
+    private fun showProgressNotification(fraction: Float) {
+        try {
+            ensureDownloadChannel(context)
+            val intent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtra(UpdateWorker.EXTRA_SHOW_UPDATE, true)
+            }
+            val pending = PendingIntent.getActivity(
+                context,
+                0,
+                intent,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                } else {
+                    PendingIntent.FLAG_UPDATE_CURRENT
+                },
+            )
+            val pct = (fraction.coerceIn(0f, 1f) * 100).toInt()
+            val notification = NotificationCompat.Builder(context, CHANNEL_DOWNLOAD)
+                .setSmallIcon(R.drawable.ic_update)
+                .setContentTitle(context.getString(R.string.update_downloading))
+                .setContentText("${pct}%")
+                .setContentIntent(pending)
+                .setOnlyAlertOnce(true)
+                .setOngoing(true)
+                .setProgress(100, pct, false)
+                .build()
+            val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.notify(NOTIFICATION_ID_DOWNLOAD, notification)
+        } catch (e: Exception) {
+            Log.w(TAG, "showProgressNotification failed: ${e.message}")
+        }
+    }
+
+    private fun cancelProgressNotification() {
+        try {
+            val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.cancel(NOTIFICATION_ID_DOWNLOAD)
+        } catch (e: Exception) {
+            Log.w(TAG, "cancelProgressNotification failed: ${e.message}")
         }
     }
 
@@ -177,26 +259,50 @@ fun UpdateDialog(controller: UpdateController) {
         title = title,
         onDismissRequest = { controller.dismiss() },
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 300.dp)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-        ) {
-            val notes = controller.info?.releaseNotes?.trim().orEmpty()
-            Text(
-                text = if (notes.isEmpty()) context.getString(R.string.update_notif_content) else notes,
-                fontSize = 13.sp,
-                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-            )
-            if (controller.downloading) {
-                Spacer(Modifier.width(16.dp))
-                Text(
-                    text = "${(controller.progress * 100).toInt()}%",
-                    fontSize = 13.sp,
-                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                )
+        AnimatedContent(
+            targetState = controller.downloading,
+            label = "update_dialog_content",
+        ) { downloading ->
+            if (downloading) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 140.dp, max = 300.dp)
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    LinearProgressIndicator(progress = controller.progress)
+                    Spacer(Modifier.width(16.dp))
+                    Text(
+                        text = "${(controller.progress * 100).toInt()}%",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        color = MiuixTheme.colorScheme.primary,
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = context.getString(R.string.update_downloading),
+                        fontSize = 13.sp,
+                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                    )
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 300.dp)
+                        .verticalScroll(rememberScrollState())
+                        .padding(16.dp),
+                ) {
+                    val notes = controller.info?.releaseNotes?.trim().orEmpty()
+                    Text(
+                        text = if (notes.isEmpty()) context.getString(R.string.update_notif_content) else notes,
+                        fontSize = 13.sp,
+                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                    )
+                }
             }
         }
         Row(

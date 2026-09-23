@@ -57,7 +57,11 @@ fun AppRoot() {
         val act = activity ?: return@LaunchedEffect
         if (act.intent.getBooleanExtra(UpdateWorker.EXTRA_SHOW_UPDATE, false)) {
             act.intent.removeExtra(UpdateWorker.EXTRA_SHOW_UPDATE)
-            updateController.checkAndShow()
+            if (updateController.downloading) {
+                updateController.reshow()
+            } else {
+                updateController.checkAndShow()
+            }
         }
     }
 
