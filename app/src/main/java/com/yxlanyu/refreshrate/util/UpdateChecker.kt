@@ -1,6 +1,7 @@
 package com.yxlanyu.refreshrate.util
 
 import android.content.Context
+import android.util.Log
 import org.json.JSONObject
 import java.io.File
 import java.net.HttpURLConnection
@@ -15,6 +16,7 @@ data class UpdateInfo(
 
 object UpdateChecker {
 
+    private const val TAG = "SRrate_Upd"
     private const val REPO_API = "https://api.github.com/repos/Yxlan-yu/SRrate/releases/latest"
     private const val USER_AGENT = "SRrate-UpdateChecker"
     private const val TIMEOUT_MS = 8_000
@@ -35,11 +37,16 @@ object UpdateChecker {
             val result = parseRelease(body)
             if (result != null) return result
         }
-        val cached = cachedBody(context) ?: return null
+        val cached = cachedBody(context) ?: run {
+            Log.w(TAG, "fetchLatestRelease: no cached body")
+            return null
+        }
+        Log.i(TAG, "fetchLatestRelease: using cached body, len=${cached.length}")
         return parseRelease(cached)
     }
 
     private fun fetchBody(context: Context, url: String): String? = try {
+        Log.i(TAG, "fetchBody start: $url at ${System.currentTimeMillis()}")
         val connection = URL(url).openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
         connection.connectTimeout = TIMEOUT_MS
@@ -48,7 +55,9 @@ object UpdateChecker {
         connection.setRequestProperty("Accept", "application/vnd.github+json")
         val etag = prefs(context).getString(KEY_ETAG, null)
         if (etag != null) connection.setRequestProperty("If-None-Match", etag)
+        Log.i(TAG, "fetchBody: connecting $url")
         val code = connection.responseCode
+        Log.i(TAG, "fetchBody: got response $code for $url at ${System.currentTimeMillis()}")
         val body = when {
             code == 304 -> cachedBody(context)
             code in 200..299 -> connection.inputStream.bufferedReader().use { it.readText() }
@@ -61,8 +70,10 @@ object UpdateChecker {
             editor.putString(KEY_BODY, body).apply()
         }
         connection.disconnect()
+        Log.i(TAG, "fetchBody: done, bodyLen=${body?.length ?: -1}")
         body
     } catch (t: Throwable) {
+        Log.e(TAG, "fetchBody error for $url: ${t.javaClass.name}: ${t.message}", t)
         null
     }
 

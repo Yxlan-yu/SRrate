@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,6 +40,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TextButton
@@ -48,6 +50,9 @@ class UpdateController(
     private val context: Context,
     private val scope: CoroutineScope,
 ) {
+    companion object {
+        private const val TAG = "SRrate_Upd"
+    }
     var checking by mutableStateOf(false)
         private set
     var downloading by mutableStateOf(false)
@@ -62,18 +67,28 @@ class UpdateController(
     fun checkAndShow() {
         if (checking || downloading) return
         checking = true
+        Log.i(TAG, "checkAndShow: start, checking=true at ${System.currentTimeMillis()}")
         Toast.makeText(context, R.string.update_checking_toast, Toast.LENGTH_SHORT).show()
         scope.launch {
-            val result = withContext(Dispatchers.IO) { UpdateChecker.fetchLatestRelease(context) }
-            checking = false
+            val result = try {
+                withTimeoutOrNull(30_000) {
+                    withContext(Dispatchers.IO) { UpdateChecker.fetchLatestRelease(context) }
+                }
+            } finally {
+                checking = false
+                Log.i(TAG, "checkAndShow: network done, checking=false at ${System.currentTimeMillis()}")
+            }
             if (result == null) {
+                Log.i(TAG, "checkAndShow: result=null -> fail toast")
                 Toast.makeText(context, R.string.update_check_fail, Toast.LENGTH_SHORT).show()
                 return@launch
             }
             if (!UpdateChecker.isNewerThan(UpdateWorker.currentVersionName(context), result.tagName)) {
+                Log.i(TAG, "checkAndShow: not newer (${result.tagName}) -> no_new toast")
                 Toast.makeText(context, R.string.update_no_new, Toast.LENGTH_SHORT).show()
                 return@launch
             }
+            Log.i(TAG, "checkAndShow: newer ${result.tagName} -> visible=true")
             info = result
             visible = true
         }
