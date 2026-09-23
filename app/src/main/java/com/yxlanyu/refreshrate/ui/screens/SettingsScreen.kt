@@ -45,6 +45,7 @@ import androidx.core.content.FileProvider
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.service.OverclockService
 import com.yxlanyu.refreshrate.ui.components.FicIcon
+import com.yxlanyu.refreshrate.ui.components.PageTransitionContent
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
 import com.yxlanyu.refreshrate.util.AccessibilityUtils
 import com.yxlanyu.refreshrate.util.RootUtils
