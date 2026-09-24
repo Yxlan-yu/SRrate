@@ -90,9 +90,9 @@ private val LANG_OPTIONS = listOf(
 )
 
 private val THEME_COLORS = listOf(
-    0xFF1976D2.toInt(),
+    0xFF3B76FD.toInt(),
     0xFF5B6CFF.toInt(),
-    0xFF8E24AA.toInt(),
+    0xFFF94D9A.toInt(),
     0xFFE53935.toInt(),
     0xFFFB8C00.toInt(),
     0xFFD81B60.toInt(),
@@ -125,7 +125,7 @@ fun SettingsScreen(
     var switchToast by remember { mutableStateOf(prefs.getBoolean("switch_toast_enabled", true)) }
     var autoCheck by remember { mutableStateOf(prefs.getBoolean("auto_check_update", true)) }
     var monet by remember { mutableStateOf(prefs.getBoolean("monet", true)) }
-    var themeColor by remember { mutableStateOf(prefs.getInt("theme_color", 0xFF1976D2.toInt())) }
+    var themeColor by remember { mutableStateOf(prefs.getInt("theme_color", 0xFF3B76FD.toInt())) }
     var showColorPicker by remember { mutableStateOf(false) }
     var showLog by remember { mutableStateOf(false) }
     var logText by remember { mutableStateOf("") }
