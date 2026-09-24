@@ -49,7 +49,7 @@ fun AppRoot() {
     val updateController = rememberUpdateController()
 
     LaunchedEffect(Unit) {
-        UpdateWorker.schedule(context)
+        updateController.checkSilently()
     }
 
     val activity = context as? MainActivity

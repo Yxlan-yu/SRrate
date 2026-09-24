@@ -1,9 +1,11 @@
 package com.yxlanyu.refreshrate.ui
 
+import android.content.Context
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import top.yukonga.miuix.kmp.theme.ColorSchemeMode
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.ThemeController
@@ -21,11 +23,22 @@ private val DarkText = Color(0xFFE4E5E9)
 private val DarkSub = Color(0xFF9BA0A8)
 private val DarkIcon = Color(0xFF6A6F78)
 
+const val PREFS_NAME = "s"
+const val KEY_MONET = "monet"
+const val KEY_THEME_COLOR = "theme_color"
+private val DefaultAccent = 0xFF1976D2.toInt()
+
 @Composable
 fun AppTheme(content: @Composable () -> Unit) {
     val dark = isSystemInDarkTheme()
+    val context = LocalContext.current
     val themeController = remember {
-        ThemeController(colorSchemeMode = ColorSchemeMode.MonetSystem)
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val monet = prefs.getBoolean(KEY_MONET, true)
+        ThemeController(
+            colorSchemeMode = ColorSchemeMode.MonetSystem,
+            keyColor = if (monet) null else Color(prefs.getInt(KEY_THEME_COLOR, DefaultAccent)),
+        )
     }
     val base = themeController.currentColors()
     val colors = remember(base, dark) {

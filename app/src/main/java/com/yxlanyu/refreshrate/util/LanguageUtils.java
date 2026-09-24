@@ -18,7 +18,7 @@ public class LanguageUtils {
     private static final String KEY_LANG = "language";
     public static void applyLanguage(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        String lang = prefs.getString(KEY_LANG, LANG_ZH);
+        String lang = prefs.getString(KEY_LANG, LANG_SYSTEM);
         setLocale(context, lang);
     }
     public static void setLanguageAndRecreate(Activity activity, String lang) {
@@ -29,7 +29,7 @@ public class LanguageUtils {
     }
     public static String getCurrentLang(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        return prefs.getString(KEY_LANG, LANG_ZH);
+        return prefs.getString(KEY_LANG, LANG_SYSTEM);
     }
     private static Locale resolve(String lang) {
         if (LANG_SYSTEM.equals(lang)) {
@@ -43,7 +43,7 @@ public class LanguageUtils {
     }
     public static Context wrap(Context context) {
         String lang = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                .getString(KEY_LANG, LANG_ZH);
+                .getString(KEY_LANG, LANG_SYSTEM);
         Locale locale = resolve(lang);
         Locale.setDefault(locale);
         Configuration config = new Configuration(context.getResources().getConfiguration());

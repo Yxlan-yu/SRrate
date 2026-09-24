@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,7 +45,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import com.yxlanyu.refreshrate.R
-import com.yxlanyu.refreshrate.service.UpdateWorker
 import com.yxlanyu.refreshrate.ui.components.FicIcon
 import com.yxlanyu.refreshrate.ui.components.PageTransitionContent
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
@@ -89,6 +89,17 @@ private val LANG_OPTIONS = listOf(
     LangOption(LanguageUtils.LANG_EN, R.string.lang_en),
 )
 
+private val THEME_COLORS = listOf(
+    0xFF1976D2.toInt(),
+    0xFF5B6CFF.toInt(),
+    0xFF8E24AA.toInt(),
+    0xFFE53935.toInt(),
+    0xFFFB8C00.toInt(),
+    0xFFD81B60.toInt(),
+    0xFF34A853.toInt(),
+    0xFF00B6A3.toInt(),
+)
+
 @Composable
 fun SettingsScreen(
     outerContentPadding: androidx.compose.foundation.layout.PaddingValues,
@@ -113,8 +124,16 @@ fun SettingsScreen(
     var nativeOverlay by remember { mutableStateOf(prefs.getBoolean("native_refresh_overlay", false)) }
     var switchToast by remember { mutableStateOf(prefs.getBoolean("switch_toast_enabled", true)) }
     var autoCheck by remember { mutableStateOf(prefs.getBoolean("auto_check_update", true)) }
+    var monet by remember { mutableStateOf(prefs.getBoolean("monet", true)) }
+    var themeColor by remember { mutableStateOf(prefs.getInt("theme_color", 0xFF1976D2.toInt())) }
+    var showColorPicker by remember { mutableStateOf(false) }
     var showLog by remember { mutableStateOf(false) }
     var logText by remember { mutableStateOf("") }
+
+    fun recreateActivity() {
+        val activity = context as? Activity
+        activity?.recreate()
+    }
 
     BackHandler(enabled = page != SettingsPage.Main) {
         page = SettingsPage.Main
@@ -275,12 +294,24 @@ fun SettingsScreen(
                                 onCheckedChange = { checked ->
                                     autoCheck = checked
                                     prefs.edit().putBoolean("auto_check_update", checked).apply()
-                                    if (checked) {
-                                        UpdateWorker.schedule(context)
-                                    } else {
-                                        UpdateWorker.cancel(context)
-                                    }
                                 },
+                            )
+                            ToggleRow(
+                                leadingIcon = R.drawable.ic_fic_radar,
+                                title = stringResource(R.string.settings_monet_title),
+                                desc = stringResource(R.string.settings_monet_desc),
+                                checked = monet,
+                                onCheckedChange = { checked ->
+                                    monet = checked
+                                    prefs.edit().putBoolean("monet", checked).apply()
+                                    recreateActivity()
+                                },
+                            )
+                            ChevRow(
+                                title = stringResource(R.string.settings_color_title),
+                                desc = stringResource(R.string.settings_color_desc),
+                                icon = R.drawable.ic_fic_grid,
+                                onClick = { showColorPicker = true },
                             )
                             ChevRow(
                                 title = stringResource(R.string.language_page_title),
@@ -481,6 +512,50 @@ fun SettingsScreen(
                 showLog = false
             }) {
                 Text(text = stringResource(R.string.log_dialog_share))
+            }
+        }
+    }
+
+    RefrSheetDialog(
+        show = showColorPicker,
+        title = stringResource(R.string.settings_color_title),
+        onDismissRequest = { showColorPicker = false },
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+        ) {
+            THEME_COLORS.chunked(4).forEach { rowColors ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 14.dp),
+                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
+                ) {
+                    rowColors.forEach { c ->
+                        val selected = themeColor == c
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(Color(c))
+                                .then(
+                                    if (selected) {
+                                        Modifier.border(3.dp, MiuixTheme.colorScheme.surface, CircleShape)
+                                    } else {
+                                        Modifier
+                                    },
+                                )
+                                .clickable {
+                                    themeColor = c
+                                    showColorPicker = false
+                                    prefs.edit().putInt("theme_color", c).apply()
+                                    recreateActivity()
+                                },
+                        )
+                    }
+                }
             }
         }
     }

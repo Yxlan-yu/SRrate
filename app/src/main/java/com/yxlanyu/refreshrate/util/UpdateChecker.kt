@@ -16,6 +16,14 @@ data class UpdateInfo(
 
 object UpdateChecker {
 
+    fun currentVersionName(context: Context): String =
+        try {
+            @Suppress("DEPRECATION")
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: ""
+        } catch (t: Throwable) {
+            ""
+        }
+
     private const val TAG = "SRrate_Upd"
     private const val REPO_API = "https://api.github.com/repos/Yxlan-yu/SRrate/releases/latest"
     private const val USER_AGENT = "SRrate-UpdateChecker"

@@ -109,12 +109,41 @@ class UpdateController(
                 Toast.makeText(context, R.string.update_check_fail, Toast.LENGTH_SHORT).show()
                 return@launch
             }
-            if (!UpdateChecker.isNewerThan(UpdateWorker.currentVersionName(context), result.tagName)) {
+            if (!UpdateChecker.isNewerThan(UpdateChecker.currentVersionName(context), result.tagName)) {
                 Log.i(TAG, "checkAndShow: not newer (${result.tagName}) -> no_new toast")
                 Toast.makeText(context, R.string.update_no_new, Toast.LENGTH_SHORT).show()
                 return@launch
             }
             Log.i(TAG, "checkAndShow: newer ${result.tagName} -> visible=true")
+            info = result
+            visible = true
+        }
+    }
+
+    fun checkSilently() {
+        if (checking || downloading) return
+        val prefs = context.getSharedPreferences("s", Context.MODE_PRIVATE)
+        if (!prefs.getBoolean("auto_check_update", true)) return
+        checking = true
+        Log.i(TAG, "checkSilently: start at ${System.currentTimeMillis()}")
+        scope.launch {
+            val result = try {
+                withTimeoutOrNull(30_000) {
+                    withContext(Dispatchers.IO) { UpdateChecker.fetchLatestRelease(context) }
+                }
+            } finally {
+                checking = false
+                Log.i(TAG, "checkSilently: done, checking=false at ${System.currentTimeMillis()}")
+            }
+            if (result == null) {
+                Log.i(TAG, "checkSilently: result=null (silent skip)")
+                return@launch
+            }
+            if (!UpdateChecker.isNewerThan(UpdateChecker.currentVersionName(context), result.tagName)) {
+                Log.i(TAG, "checkSilently: not newer (${result.tagName}) (silent skip)")
+                return@launch
+            }
+            Log.i(TAG, "checkSilently: newer ${result.tagName} -> visible=true")
             info = result
             visible = true
         }
