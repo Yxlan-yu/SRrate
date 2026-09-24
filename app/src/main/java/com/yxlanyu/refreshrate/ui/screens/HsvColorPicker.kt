@@ -57,9 +57,10 @@ fun HsvColorPicker(
     onCancel: () -> Unit,
 ) {
     // 用初始颜色初始化 HSV 状态
-    val initHue = Color(initialColor).toHsv().first
-    val initSat = Color(initialColor).toHsv().second
-    val initVal = Color(initialColor).toHsv().third
+    val initHsv = Color(initialColor).toHsv()
+    val initHue = initHsv[0]
+    val initSat = initHsv[1]
+    val initVal = initHsv[2]
     var hue by remember { mutableStateOf(initHue) }
     var sat by remember { mutableStateOf(initSat) }
     var value by remember { mutableStateOf(initVal) }
@@ -131,9 +132,10 @@ fun HsvColorPicker(
                                 CircleShape,
                             )
                             .clickable {
-                                hue = Color(c).toHsv().first
-                                sat = Color(c).toHsv().second
-                                value = Color(c).toHsv().third
+                                val hsv = Color(c).toHsv()
+                                hue = hsv[0]
+                                sat = hsv[1]
+                                value = hsv[2]
                             },
                     )
                 }
@@ -216,15 +218,11 @@ private fun SvPanel(
                 }
             },
     ) {
-        // 游标
-        val thumbX = sat * size.width
-        val thumbY = (1f - value) * size.height
-        if (size.width > 0 && size.height > 0) {
-            androidx.compose.foundation.Canvas(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(Unit) {},
-            ) {
+        // 游标（DrawScope 内按实际尺寸定位）
+        androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+            val thumbX = sat * size.width
+            val thumbY = (1f - value) * size.height
+            if (size.width > 0 && size.height > 0) {
                 drawCircle(
                     color = Color.White,
                     radius = thumbRadius.toPx(),
