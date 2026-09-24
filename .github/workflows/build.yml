@@ -4,6 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches: [ main ]
+    tags: [ 'v*' ]
+
+permissions:
+  contents: write
 
 concurrency:
   group: build-apk
@@ -49,3 +53,39 @@ jobs:
         with:
           name: screen-refreshrate-debug
           path: app/build/outputs/apk/release/*.apk
+
+      - name: Prepare release body + rename APK (tag pushes only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VER="${{ github.ref_name }}"
+          sed "s/__VER__/$VER/g" release_body.tpl.md > "release_body_$VER.md"
+          cp app/build/outputs/apk/release/app-release.apk "./SRrate-$VER.apk"
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: 刷新率 ${{ github.ref_name }}
+          body_path: release_body_${{ github.ref_name }}.md
+          files: SRrate-${{ github.ref_name }}.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare release body + rename APK (version tag only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VER="${{ github.ref_name }}"
+          sed "s/__VER__/$VER/g" release_body.tpl.md > release_body_$VER.md
+          cp app/build/outputs/apk/release/app-release.apk ./SRrate-$VER.apk
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: 刷新率 ${{ github.ref_name }}
+          body_path: release_body_${{ github.ref_name }}.md
+          files: SRrate-${{ github.ref_name }}.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
