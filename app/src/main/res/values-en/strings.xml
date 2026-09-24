@@ -203,6 +203,7 @@
     <string name="update_check_fail">Update check failed, try again later</string>
     <string name="update_changelog_label">Changelog:</string>
     <string name="update_downloading">Downloading update</string>
+    <string name="update_updating">Updating</string>
     <string name="update_allow_install">Please allow installing unknown apps, then tap Update again</string>
     <string name="badge_current">Current</string>
     <string name="home_status_format">Current %1$d Hz · %2$s</string>

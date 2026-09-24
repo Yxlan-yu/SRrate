@@ -283,7 +283,7 @@ fun UpdateDialog(controller: UpdateController) {
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = context.getString(R.string.update_downloading),
+                        text = context.getString(R.string.update_updating),
                         fontSize = 13.sp,
                         color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                     )
@@ -324,7 +324,7 @@ fun UpdateDialog(controller: UpdateController) {
             Button(onClick = { controller.downloadAndInstall() }) {
                 Text(
                     text = if (controller.downloading) {
-                        stringResource(R.string.update_downloading)
+                        stringResource(R.string.update_updating)
                     } else {
                         stringResource(R.string.update_btn_install)
                     },

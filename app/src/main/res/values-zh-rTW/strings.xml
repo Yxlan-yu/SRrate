@@ -203,6 +203,7 @@
     <string name="update_check_fail">檢查更新失敗，請稍後重試</string>
     <string name="update_changelog_label">更新內容：</string>
     <string name="update_downloading">正在下載更新</string>
+    <string name="update_updating">正在更新</string>
     <string name="update_allow_install">請先允許安裝未知應用權限，然後重新點擊更新</string>
     <string name="badge_current">目前</string>
     <string name="home_status_format">目前 %1$d Hz · %2$s</string>

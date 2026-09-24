@@ -203,6 +203,7 @@
     <string name="update_check_fail">確認に失敗しました</string>
     <string name="update_changelog_label">更新内容：</string>
     <string name="update_downloading">ダウンロード中</string>
+    <string name="update_updating">更新中</string>
     <string name="update_allow_install">不明なアプリのインストールを許可してから、もう一度更新を押してください</string>
     <string name="badge_current">現在</string>
     <string name="home_status_format">現在 %1$d Hz · %2$s</string>
