@@ -231,6 +231,8 @@
     <string name="settings_monet_desc">Use the system dynamic color scheme to match the wallpaper tone</string>
     <string name="settings_color_title">Color options</string>
     <string name="settings_color_desc">Choose the app accent color, effective when Monet colors is off</string>
+    <string name="settings_color_cancel">Cancel</string>
+    <string name="settings_color_confirm">Confirm</string>
     <string name="about_github_project">GitHub Project</string>
     <string name="about_github_project_desc">github.com/Yxlan-yu/SRrate</string>
     <string name="about_source_code">Source Code</string>

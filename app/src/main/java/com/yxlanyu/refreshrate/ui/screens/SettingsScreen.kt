@@ -8,7 +8,6 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -89,7 +88,7 @@ private val LANG_OPTIONS = listOf(
     LangOption(LanguageUtils.LANG_EN, R.string.lang_en),
 )
 
-private val THEME_COLORS = listOf(
+internal val THEME_COLORS = listOf(
     0xFF3B76FD.toInt(),
     0xFF5B6CFF.toInt(),
     0xFFF94D9A.toInt(),
@@ -521,43 +520,16 @@ fun SettingsScreen(
         title = stringResource(R.string.settings_color_title),
         onDismissRequest = { showColorPicker = false },
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-        ) {
-            THEME_COLORS.chunked(4).forEach { rowColors ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 14.dp),
-                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
-                ) {
-                    rowColors.forEach { c ->
-                        val selected = themeColor == c
-                        Box(
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(CircleShape)
-                                .background(Color(c))
-                                .then(
-                                    if (selected) {
-                                        Modifier.border(3.dp, MiuixTheme.colorScheme.surface, CircleShape)
-                                    } else {
-                                        Modifier
-                                    },
-                                )
-                                .clickable {
-                                    themeColor = c
-                                    showColorPicker = false
-                                    prefs.edit().putInt("theme_color", c).apply()
-                                    recreateActivity()
-                                },
-                        )
-                    }
-                }
-            }
-        }
+        HsvColorPicker(
+            initialColor = themeColor,
+            onConfirm = { c ->
+                themeColor = c
+                showColorPicker = false
+                prefs.edit().putInt("theme_color", c).apply()
+                recreateActivity()
+            },
+            onCancel = { showColorPicker = false },
+        )
     }
 }
 }

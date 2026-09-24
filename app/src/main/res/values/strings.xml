@@ -231,6 +231,8 @@
     <string name="settings_monet_desc">使用系统动态取色，自动匹配壁纸色调</string>
     <string name="settings_color_title">颜色选项</string>
     <string name="settings_color_desc">选择应用强调色，关闭莫奈取色后生效</string>
+    <string name="settings_color_cancel">取消</string>
+    <string name="settings_color_confirm">确定</string>
     <string name="about_github_project">GitHub 项目</string>
     <string name="about_github_project_desc">github.com/Yxlan-yu/SRrate</string>
     <string name="about_source_code">源代码</string>
