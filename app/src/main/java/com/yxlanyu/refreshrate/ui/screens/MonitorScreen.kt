@@ -4,7 +4,6 @@ import android.app.Activity
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
-import android.view.FrameMetrics
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -57,7 +56,7 @@ fun MonitorScreen(outerContentPadding: PaddingValues) {
 
     val onFrame = remember {
         val queue = java.util.ArrayDeque<Long>()
-        FrameMetrics.OnFrameMetricsAvailableListener { _, _, _ ->
+        android.view.Window.OnFrameMetricsAvailableListener { _, _, _ ->
             val now = SystemClock.elapsedRealtime()
             queue.addLast(now)
             while (queue.size > 1 && now - queue.peekFirst() > SAMPLE_WINDOW_MS) {
