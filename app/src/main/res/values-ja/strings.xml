@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">リフレッシュレート</string>
     <string name="home_title">リフレッシュレート</string>
@@ -54,8 +54,7 @@
     <string name="settings_card_alpha">カードの透明度</string>
     <string name="settings_text_alpha">テキストの透明度</string>
     <string name="app_page_alpha_title">カスタムアプリページ</string>
-    <string name="remote_page_alpha_title">リモートページ</string>
-    <string name="root_running_label">Root 実行</string>
+<string name="root_running_label">Root 実行</string>
     <string name="shizuku_running_label">Shizuku 実行</string>
     <string name="about_title">について</string>
     <string name="version_label">バージョン: %1$s</string>
@@ -66,33 +65,7 @@
     <string name="language_ja">日本語</string>
     <string name="nav_home">ホーム</string>
     <string name="nav_custom_app_refresh">カスタム</string>
-    <string name="nav_remote">リモート</string>
-    <string name="remote_mode_wireless">無線接続</string>
-    <string name="remote_mode_usb">USB接続</string>
-    <string name="remote_ip_hint">デバイスIP</string>
-    <string name="remote_port_hint">接続ポート</string>
-    <string name="remote_pair_hint">ペアリングコード</string>
-    <string name="remote_connect_btn">接続</string>
-    <string name="remote_status_idle">未接続</string>
-    <string name="remote_status_none">デバイス未接続</string>
-    <string name="remote_modes_title">リモートのリフレッシュレート</string>
-    <string name="remote_hint">制御される端末で「ワイヤレスデバッグ」を有効にし、「ペア設定コードでデバイスをペア設定」からIP・ポート・コードを取得します。</string>
-    <string name="remote_usb_hint">USBケーブルで制御される端末を接続し、USBデバッグを許可してください。</string>
-    <string name="remote_status_need_input">IPアドレスとポートを入力してください</string>
-    <string name="remote_pair_port_hint">ペアリングポート</string>
-    <string name="remote_pair_btn">デバイスをペア設定</string>
-    <string name="remote_section_pair">ワイヤレスデバッグのペア設定</string>
-    <string name="remote_blur_ip">IPを隠す（入力欄をタップで表示）</string>
-    <string name="remote_max_devices">同時接続は最大3台</string>
-    <string name="remote_section_connect">接続</string>
-    <string name="remote_16kb_hint">注意：16KB ページサイズの端末（一部の新しいシステム）ではワイヤレスペアリングが使えない場合があります</string>
-    <string name="remote_need_pair_input">IP・ペアリングポート・コードを入力してください</string>
-    <string name="remote_pairing">ペアリング中…</string>
-    <string name="remote_pair_ok">ペア設定完了。接続ポートを入力して接続してください</string>
-    <string name="remote_pair_fail">ペアリング失敗：%1$s</string>
-    <string name="remote_conn_wait">接続中…</string>
-    <string name="remote_connected">%1$s に接続しました</string>
-    <string name="remote_wireless_device">ワイヤレスデバッグ端末</string>
+    <string name="nav_tools">ツール</string>
     <string name="debug_mode_title">デバッグモード</string>
     <string name="anim_engine_title">アニメーションエンジン</string>
     <string name="anim_effect_title">アニメーション効果</string>
@@ -103,14 +76,6 @@
     <string name="anim_type_linear">リニア</string>
     <string name="anim_type_fade">フェード</string>
     <string name="anim_type_slide">スライド</string>
-    <string name="remote_conn_fail">接続失敗：%1$s</string>
-    <string name="remote_switching">%1$d Hz に切り替え中…</string>
-    <string name="remote_switch_ok">%1$d Hz に切り替えました</string>
-    <string name="remote_switch_fail">切り替え失敗：%1$s</string>
-    <string name="remote_modes_parse_fail">リフレッシュレートを取得できません。接続を確認してください</string>
-    <string name="remote_history_title">履歴</string>
-    <string name="remote_switch_sent">送信しました（現在のリフレッシュレートを取得できません）</string>
-    <string name="remote_switch_actual">送信、現在 %1$d Hz（ロックの可能性）</string>
     <string name="nav_settings">設定</string>
     <string name="log_dialog_title">実行ログ</string>
     <string name="log_dialog_close">閉じる</string>
@@ -251,5 +216,14 @@
     <string name="current_rate_format">現在 %1$d Hz · %2$s</string>
     <string name="settings_switch_toast">フレーム切替ポップアップ</string>
     <string name="settings_switch_toast_desc">有効化したアプリへの切り替え時に表示</string>
-
+<string name="monitor_title">リアルタイム更新率</string>
+<string name="monitor_history_title">リアルタイムグラフ</string>
+<string name="monitor_current">現在の更新率</string>
+<string name="monitor_resolution">解像度</string>
+<string name="monitor_modes_title">対応モード</string>
+<string name="settings_channel_title">更新チャンネル</string>
+<string name="settings_channel_desc">安定版（正式版）かベータ版</string>
+<string name="channel_stable">安定版（正式版）</string>
+<string name="channel_beta">ベータ版</string>
+    <string name="monitor_page_alpha_title">モニターページ設定</string>
 </resources>

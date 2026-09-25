@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Refresh Rate</string>
     <string name="home_title">Refresh Rate</string>
@@ -54,8 +54,7 @@
     <string name="settings_card_alpha">Card Alpha</string>
     <string name="settings_text_alpha">Text Alpha</string>
     <string name="app_page_alpha_title">Custom app refresh page</string>
-    <string name="remote_page_alpha_title">Remote refresh page</string>
-    <string name="root_running_label">Root Running</string>
+<string name="root_running_label">Root Running</string>
     <string name="shizuku_running_label">Shizuku Running</string>
     <string name="about_title">About</string>
     <string name="version_label">Version: %1$s</string>
@@ -66,33 +65,7 @@
     <string name="language_ja">日本語</string>
     <string name="nav_home">Home</string>
     <string name="nav_custom_app_refresh">Custom</string>
-    <string name="nav_remote">Remote</string>
-    <string name="remote_mode_wireless">Wireless</string>
-    <string name="remote_mode_usb">USB</string>
-    <string name="remote_ip_hint">Device IP</string>
-    <string name="remote_port_hint">Connect port</string>
-    <string name="remote_pair_hint">Pairing code</string>
-    <string name="remote_connect_btn">Connect</string>
-    <string name="remote_status_idle">Not connected</string>
-    <string name="remote_status_none">No device connected</string>
-    <string name="remote_modes_title">Remote refresh rates</string>
-    <string name="remote_hint">On the controlled phone, enable Wireless debugging and use Pair device with pairing code to get the IP, port and code.</string>
-    <string name="remote_usb_hint">Connect the controlled device via USB cable and authorize USB debugging on it.</string>
-    <string name="remote_status_need_input">Please enter IP address and port</string>
-    <string name="remote_pair_port_hint">Pairing port</string>
-    <string name="remote_pair_btn">Pair device</string>
-    <string name="remote_section_pair">Wireless debug pairing</string>
-    <string name="remote_blur_ip">Hide IP (tap the input box to view)</string>
-    <string name="remote_max_devices">Up to 3 devices at once</string>
-    <string name="remote_section_connect">Connect</string>
-    <string name="remote_16kb_hint">Note: wireless pairing may be unavailable on 16 KB page-size devices (some newer systems)</string>
-    <string name="remote_need_pair_input">Enter IP, pairing port and code</string>
-    <string name="remote_pairing">Pairing…</string>
-    <string name="remote_pair_ok">Paired. Enter connect port, then tap Connect.</string>
-    <string name="remote_pair_fail">Pair failed: %1$s</string>
-    <string name="remote_conn_wait">Connecting…</string>
-    <string name="remote_connected">Connected to %1$s</string>
-    <string name="remote_wireless_device">wireless debug device</string>
+    <string name="nav_tools">Tools</string>
     <string name="debug_mode_title">Debug Mode</string>
     <string name="anim_engine_title">Animation Engine</string>
     <string name="anim_effect_title">Animation Effects</string>
@@ -103,14 +76,6 @@
     <string name="anim_type_linear">Linear</string>
     <string name="anim_type_fade">Fade</string>
     <string name="anim_type_slide">Slide</string>
-    <string name="remote_conn_fail">Connect failed: %1$s</string>
-    <string name="remote_switching">Switching to %1$d Hz…</string>
-    <string name="remote_switch_ok">Switched to %1$d Hz</string>
-    <string name="remote_switch_fail">Switch failed: %1$s</string>
-    <string name="remote_modes_parse_fail">Could not read refresh rates. Make sure the device is connected.</string>
-    <string name="remote_history_title">History</string>
-    <string name="remote_switch_sent">Sent (could not read current refresh rate)</string>
-    <string name="remote_switch_actual">Sent, now at %1$d Hz (rate may be locked)</string>
     <string name="nav_settings">Settings</string>
     <string name="log_dialog_title">Runtime Log</string>
     <string name="log_dialog_close">Close</string>
@@ -251,5 +216,14 @@
     <string name="current_rate_format">Current %1$d Hz · %2$s</string>
     <string name="settings_switch_toast">Frame-switch popup</string>
     <string name="settings_switch_toast_desc">Show a popup when switching to an enabled app</string>
-
+<string name="monitor_title">Real-time refresh rate</string>
+<string name="monitor_history_title">Live chart</string>
+<string name="monitor_current">Current refresh rate</string>
+<string name="monitor_resolution">Resolution</string>
+<string name="monitor_modes_title">Supported modes</string>
+<string name="settings_channel_title">Update channel</string>
+<string name="settings_channel_desc">Stable (Release) or Beta</string>
+<string name="channel_stable">Stable (Release)</string>
+<string name="channel_beta">Beta</string>
+    <string name="monitor_page_alpha_title">Monitor page settings</string>
 </resources>

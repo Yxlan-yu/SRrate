@@ -20,14 +20,14 @@ import com.yxlanyu.refreshrate.ui.components.UpdateDialog
 import com.yxlanyu.refreshrate.ui.components.rememberUpdateController
 import com.yxlanyu.refreshrate.ui.screens.CustomScreen
 import com.yxlanyu.refreshrate.ui.screens.HomeScreen
-import com.yxlanyu.refreshrate.ui.screens.RemoteScreen
+import com.yxlanyu.refreshrate.ui.screens.MonitorScreen
 import com.yxlanyu.refreshrate.ui.screens.SettingsScreen
 import top.yukonga.miuix.kmp.basic.NavigationBar
 import top.yukonga.miuix.kmp.basic.NavigationBarItem
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.GridView
 import top.yukonga.miuix.kmp.icon.extended.Refresh
-import top.yukonga.miuix.kmp.icon.extended.ScreenMirroring
 import top.yukonga.miuix.kmp.icon.extended.Settings
 import top.yukonga.miuix.kmp.icon.extended.Tune
 
@@ -37,7 +37,7 @@ private enum class MainTab(
 ) {
     Home(R.string.nav_home, MiuixIcons.Refresh),
     Custom(R.string.nav_custom_app_refresh, MiuixIcons.Tune),
-    Remote(R.string.nav_remote, MiuixIcons.ScreenMirroring),
+    Tools(R.string.nav_tools, MiuixIcons.GridView),
     Settings(R.string.nav_settings, MiuixIcons.Settings),
 }
 
@@ -83,7 +83,7 @@ fun AppRoot() {
         when (tabs[currentTab]) {
             MainTab.Home -> HomeScreen(outerContentPadding = innerPadding)
             MainTab.Custom -> CustomScreen(outerContentPadding = innerPadding)
-            MainTab.Remote -> RemoteScreen(outerContentPadding = innerPadding)
+            MainTab.Tools -> MonitorScreen(outerContentPadding = innerPadding)
             MainTab.Settings -> SettingsScreen(outerContentPadding = innerPadding, updateController = updateController)
         }
         UpdateDialog(updateController)

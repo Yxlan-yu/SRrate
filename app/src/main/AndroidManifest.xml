@@ -41,11 +41,6 @@
             android:exported="false"
             android:foregroundServiceType="specialUse"
             android:stopWithTask="false" />
-        <service
-            android:name=".service.RemoteKeepAliveService"
-            android:exported="false"
-            android:foregroundServiceType="specialUse"
-            android:stopWithTask="false" />
         <receiver
             android:name=".service.OverclockRestartReceiver"
             android:exported="false"/>

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">刷新率</string>
     <string name="home_title">屏幕刷新率</string>
@@ -54,8 +54,7 @@
     <string name="settings_card_alpha">卡片透明度</string>
     <string name="settings_text_alpha">文字透明度</string>
     <string name="app_page_alpha_title">自定义应用刷新率页</string>
-    <string name="remote_page_alpha_title">远程刷新率页</string>
-    <string name="root_running_label">Root 运行</string>
+<string name="root_running_label">Root 运行</string>
     <string name="shizuku_running_label">Shizuku 运行</string>
     <string name="about_title">关于</string>
     <string name="version_label">版本: %1$s</string>
@@ -66,33 +65,7 @@
     <string name="language_ja">日本語</string>
     <string name="nav_home">主页</string>
     <string name="nav_custom_app_refresh">自定义</string>
-    <string name="nav_remote">远程刷新率</string>
-    <string name="remote_mode_wireless">无线连接</string>
-    <string name="remote_mode_usb">USB连接</string>
-    <string name="remote_ip_hint">设备 IP 地址</string>
-    <string name="remote_port_hint">连接端口</string>
-    <string name="remote_pair_hint">配对码</string>
-    <string name="remote_connect_btn">连接</string>
-    <string name="remote_status_idle">未连接</string>
-    <string name="remote_status_none">未连接设备</string>
-    <string name="remote_modes_title">被控端刷新率</string>
-    <string name="remote_hint">在被控手机开启「无线调试」，用「使用配对码配对设备」获取 IP、端口和配对码。</string>
-    <string name="remote_usb_hint">用数据线连接被控设备，并在被控端授权 USB 调试。</string>
-    <string name="remote_status_need_input">请输入 IP 地址和端口</string>
-    <string name="remote_pair_port_hint">配对端口</string>
-    <string name="remote_pair_btn">配对设备</string>
-    <string name="remote_section_pair">无线调试配对</string>
-    <string name="remote_blur_ip">隐藏 IP 地址（点击输入栏查看）</string>
-    <string name="remote_max_devices">最多同时连接 3 台设备</string>
-    <string name="remote_section_connect">连接</string>
-    <string name="remote_16kb_hint">提示：无线配对在 16KB 页大小设备（部分新版本系统）上可能不可用</string>
-    <string name="remote_need_pair_input">请填写 IP、配对端口和配对码</string>
-    <string name="remote_pairing">正在配对…</string>
-    <string name="remote_pair_ok">配对成功，请填连接端口后点连接</string>
-    <string name="remote_pair_fail">配对失败：%1$s</string>
-    <string name="remote_conn_wait">正在连接…</string>
-    <string name="remote_connected">已连接 %1$s</string>
-    <string name="remote_wireless_device">无线调试设备</string>
+    <string name="nav_tools">工具</string>
     <string name="debug_mode_title">调试模式</string>
     <string name="anim_engine_title">动画引擎</string>
     <string name="anim_effect_title">动画效果</string>
@@ -103,14 +76,6 @@
     <string name="anim_type_linear">线性运动</string>
     <string name="anim_type_fade">淡入淡出</string>
     <string name="anim_type_slide">滑动</string>
-    <string name="remote_conn_fail">连接失败：%1$s</string>
-    <string name="remote_switching">正在切换到 %1$d Hz…</string>
-    <string name="remote_switch_ok">已切换到 %1$d Hz</string>
-    <string name="remote_switch_fail">切换失败：%1$s</string>
-    <string name="remote_modes_parse_fail">无法读取刷新率，请确认设备已连接</string>
-    <string name="remote_history_title">历史记录</string>
-    <string name="remote_switch_sent">命令已发送（无法读取当前刷新率）</string>
-    <string name="remote_switch_actual">已发送，当前 %1$d Hz（该档位可能被锁定）</string>
     <string name="nav_settings">设置</string>
     <string name="log_dialog_title">运行日志</string>
     <string name="log_dialog_close">关闭</string>
@@ -251,5 +216,14 @@
     <string name="current_rate_format">当前 %1$d Hz · %2$s</string>
     <string name="settings_switch_toast">帧率切换弹出提醒</string>
     <string name="settings_switch_toast_desc">切换至已启用应用时弹出提示</string>
-
+<string name="monitor_title">实时帧率</string>
+<string name="monitor_history_title">实时曲线</string>
+<string name="monitor_current">当前刷新率</string>
+<string name="monitor_resolution">分辨率</string>
+<string name="monitor_modes_title">支持模式</string>
+<string name="settings_channel_title">更新通道</string>
+<string name="settings_channel_desc">稳定版（正式版）或测试版</string>
+<string name="channel_stable">稳定版（正式版）</string>
+<string name="channel_beta">测试版</string>
+    <string name="monitor_page_alpha_title">实时帧率页</string>
 </resources>

@@ -2,6 +2,7 @@ package com.yxlanyu.refreshrate.util
 
 import android.content.Context
 import android.util.Log
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.net.HttpURLConnection
@@ -25,35 +26,45 @@ object UpdateChecker {
         }
 
     private const val TAG = "SRrate_Upd"
-    private const val REPO_API = "https://api.github.com/repos/Yxlan-yu/SRrate/releases/latest"
+    private const val RELEASES_API = "https://api.github.com/repos/Yxlan-yu/SRrate/releases"
     private const val USER_AGENT = "SRrate-UpdateChecker"
     private const val TIMEOUT_MS = 8_000
 
     private const val PREFS_NAME = "s"
     private const val KEY_ETAG = "update_etag"
     private const val KEY_BODY = "update_cached_body"
+    const val KEY_CHANNEL = "update_channel"
 
-    private val API_SOURCES = listOf(
-        REPO_API,
-        "https://gh-proxy.com/$REPO_API",
-        "https://gh-proxy.org/$REPO_API",
+    private val API_BASES = listOf(
+        RELEASES_API,
+        "https://gh-proxy.com/$RELEASES_API",
+        "https://gh-proxy.org/$RELEASES_API",
     )
 
+    fun updateChannel(context: Context): String =
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getString(KEY_CHANNEL, null) ?: "stable"
+
+    fun isBetaChannel(context: Context): Boolean = updateChannel(context) == "beta"
+
     fun fetchLatestRelease(context: Context): UpdateInfo? {
-        for (source in API_SOURCES) {
-            val body = fetchBody(context, source) ?: continue
-            val result = parseRelease(body)
+        val channel = updateChannel(context)
+        val beta = channel == "beta"
+        val suffix = if (beta) "?per_page=8" else "/latest"
+        for (base in API_BASES) {
+            val body = fetchBody(context, "$base$suffix", channel) ?: continue
+            val result = if (beta) parseReleaseList(body) else parseRelease(body)
             if (result != null) return result
         }
-        val cached = cachedBody(context) ?: run {
+        val cached = cachedBody(context, channel) ?: run {
             Log.w(TAG, "fetchLatestRelease: no cached body")
             return null
         }
-        Log.i(TAG, "fetchLatestRelease: using cached body, len=${cached.length}")
-        return parseRelease(cached)
+        Log.i(TAG, "fetchLatestRelease: using cached body, len=${cached.length} channel=$channel")
+        return if (beta) parseReleaseList(cached) else parseRelease(cached)
     }
 
-    private fun fetchBody(context: Context, url: String): String? = try {
+    private fun fetchBody(context: Context, url: String, channel: String): String? = try {
         Log.i(TAG, "fetchBody start: $url at ${System.currentTimeMillis()}")
         val connection = URL(url).openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
@@ -61,21 +72,23 @@ object UpdateChecker {
         connection.readTimeout = TIMEOUT_MS
         connection.setRequestProperty("User-Agent", USER_AGENT)
         connection.setRequestProperty("Accept", "application/vnd.github+json")
-        val etag = prefs(context).getString(KEY_ETAG, null)
+        val etagKey = "$KEY_ETAG$channel"
+        val bodyKey = "$KEY_BODY$channel"
+        val etag = prefs(context).getString(etagKey, null)
         if (etag != null) connection.setRequestProperty("If-None-Match", etag)
         Log.i(TAG, "fetchBody: connecting $url")
         val code = connection.responseCode
         Log.i(TAG, "fetchBody: got response $code for $url at ${System.currentTimeMillis()}")
         val body = when {
-            code == 304 -> cachedBody(context)
+            code == 304 -> cachedBody(context, channel)
             code in 200..299 -> connection.inputStream.bufferedReader().use { it.readText() }
             else -> null
         }
         if (code in 200..299 && body != null) {
             val editor = prefs(context).edit()
             val newEtag = connection.getHeaderField("ETag")
-            if (newEtag != null) editor.putString(KEY_ETAG, newEtag)
-            editor.putString(KEY_BODY, body).apply()
+            if (newEtag != null) editor.putString(etagKey, newEtag)
+            editor.putString(bodyKey, body).apply()
         }
         connection.disconnect()
         Log.i(TAG, "fetchBody: done, bodyLen=${body?.length ?: -1}")
@@ -87,11 +100,11 @@ object UpdateChecker {
 
     private fun prefs(context: Context) = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    private fun cachedBody(context: Context): String? =
-        prefs(context).getString(KEY_BODY, null)?.takeIf { it.isNotEmpty() }
+    private fun cachedBody(context: Context, channel: String): String? =
+        prefs(context).getString("$KEY_BODY$channel", null)?.takeIf { it.isNotEmpty() }
 
-    private fun parseRelease(body: String): UpdateInfo? = try {
-        val json = JSONObject(body)
+    private fun parseReleaseJson(json: JSONObject): UpdateInfo? {
+        if (json.optBoolean("draft", false)) return null
         val tag = json.optString("tag_name", "").takeIf { it.isNotEmpty() } ?: return null
         val notes = json.optString("body", "")
         var apkUrl = ""
@@ -107,7 +120,24 @@ object UpdateChecker {
                 }
             }
         }
-        if (apkUrl.isEmpty()) null else UpdateInfo(tag, notes, apkUrl, apkSize)
+        if (apkUrl.isEmpty()) return null
+        return UpdateInfo(tag, notes, apkUrl, apkSize)
+    }
+
+    private fun parseRelease(body: String): UpdateInfo? = try {
+        parseReleaseJson(JSONObject(body))
+    } catch (t: Throwable) {
+        null
+    }
+
+    private fun parseReleaseList(body: String): UpdateInfo? = try {
+        val arr = JSONArray(body)
+        for (i in 0 until arr.length()) {
+            val item = arr.optJSONObject(i) ?: continue
+            val r = parseReleaseJson(item)
+            if (r != null) return r
+        }
+        null
     } catch (t: Throwable) {
         null
     }

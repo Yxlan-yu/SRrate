@@ -126,6 +126,8 @@ fun SettingsScreen(
     var monet by remember { mutableStateOf(prefs.getBoolean("monet", true)) }
     var themeColor by remember { mutableStateOf(prefs.getInt("theme_color", 0xFF3B76FD.toInt())) }
     var showColorPicker by remember { mutableStateOf(false) }
+    var updateChannel by remember { mutableStateOf(prefs.getString("update_channel", "stable") ?: "stable") }
+    var showChannelDialog by remember { mutableStateOf(false) }
     var showLog by remember { mutableStateOf(false) }
     var logText by remember { mutableStateOf("") }
 
@@ -294,6 +296,12 @@ fun SettingsScreen(
                                     autoCheck = checked
                                     prefs.edit().putBoolean("auto_check_update", checked).apply()
                                 },
+                            )
+                            ChevRow(
+                                title = stringResource(R.string.settings_channel_title),
+                                desc = stringResource(R.string.settings_channel_desc),
+                                icon = R.drawable.ic_update,
+                                onClick = { showChannelDialog = true },
                             )
                             ToggleRow(
                                 leadingIcon = R.drawable.ic_fic_radar,
@@ -530,6 +538,50 @@ fun SettingsScreen(
             },
             onCancel = { showColorPicker = false },
         )
+    }
+
+    RefrSheetDialog(
+        show = showChannelDialog,
+        title = stringResource(R.string.settings_channel_title),
+        onDismissRequest = { showChannelDialog = false },
+    ) {
+        val channelEntries = listOf(
+            "stable" to R.string.channel_stable,
+            "beta" to R.string.channel_beta,
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp, 0.dp, 14.dp, 14.dp),
+        ) {
+            channelEntries.forEachIndexed { index, (key, label) ->
+                val selected = key == updateChannel
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 12.dp, end = 14.dp, top = 10.dp, bottom = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(label),
+                        fontSize = 17.sp,
+                        color = MiuixTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f),
+                    )
+                    RadioButton(selected = selected, onClick = {
+                        updateChannel = key
+                        prefs.edit().putString("update_channel", key).apply()
+                        showChannelDialog = false
+                    })
+                }
+                if (index < channelEntries.lastIndex) {
+                    top.yukonga.miuix.kmp.basic.HorizontalDivider(
+                        modifier = Modifier.padding(start = 12.dp, end = 12.dp),
+                        thickness = 1.dp,
+                    )
+                }
+            }
+        }
     }
 }
 }
