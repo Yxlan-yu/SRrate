@@ -128,6 +128,7 @@ fun SettingsScreen(
     var showColorPicker by remember { mutableStateOf(false) }
     var updateChannel by remember { mutableStateOf(prefs.getString("update_channel", "stable") ?: "stable") }
     var showChannelDialog by remember { mutableStateOf(false) }
+    var lang by remember { mutableStateOf(LanguageUtils.getCurrentLang(context)) }
     var showLog by remember { mutableStateOf(false) }
     var logText by remember { mutableStateOf("") }
 
@@ -336,7 +337,6 @@ fun SettingsScreen(
                 }
             }
             SettingsPage.Language -> {
-                val current = LanguageUtils.getCurrentLang(context)
                 item(key = "lang") {
                     Card(
                         cornerRadius = 16.dp,
@@ -345,17 +345,15 @@ fun SettingsScreen(
                             .padding(14.dp, 14.dp, 14.dp, 0.dp),
                     ) {
                         LANG_OPTIONS.forEachIndexed { index, opt ->
-                            val selected = opt.key == current
-                            val onClick = {
-                                val activity = context as? Activity
-                                if (activity != null) {
-                                    LanguageUtils.setLanguageAndRecreate(activity, opt.key)
-                                }
+                            val selected = opt.key == lang
+                            val onSelect = {
+                                lang = opt.key
+                                prefs.edit().putString("language", opt.key).apply()
                             }
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { onClick }
+                                    .clickable { onSelect() }
                                     .padding(start = 12.dp, end = 14.dp, top = 8.dp, bottom = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
@@ -365,7 +363,7 @@ fun SettingsScreen(
                                     color = MiuixTheme.colorScheme.onSurface,
                                     modifier = Modifier.weight(1f),
                                 )
-                                RadioButton(selected = selected, onClick = onClick)
+                                RadioButton(selected = selected, onClick = onSelect)
                             }
                             if (index < LANG_OPTIONS.lastIndex) {
                                 top.yukonga.miuix.kmp.basic.HorizontalDivider(
@@ -560,7 +558,6 @@ fun SettingsScreen(
                 val onSelect = {
                     updateChannel = key
                     prefs.edit().putString("update_channel", key).apply()
-                    showChannelDialog = false
                 }
                 Row(
                     modifier = Modifier
