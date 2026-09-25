@@ -11,6 +11,8 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -32,12 +34,12 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.shape.RoundedCornerShape
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
 import top.yukonga.miuix.kmp.basic.Card
@@ -139,12 +141,18 @@ private fun RectangleFpsCard(fps: Int, modifier: Modifier = Modifier) {
                         modifier = Modifier.padding(bottom = 7.dp),
                     )
                 }
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = stringResource(R.string.monitor_current),
-                    fontSize = 12.sp,
-                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                )
+                Spacer(Modifier.height(9.dp))
+                Box(
+                    modifier = Modifier
+                        .background(MiuixTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
+                        .padding(horizontal = 8.dp, vertical = 2.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.monitor_current),
+                        fontSize = 12.sp,
+                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                    )
+                }
             }
             Spacer(Modifier.width(10.dp))
             FpsRing(modifier = Modifier.size(72.dp))
@@ -178,26 +186,28 @@ private fun FpsRing(modifier: Modifier) {
             size = arcSize,
             style = Stroke(stroke, cap = StrokeCap.Round),
         )
-        val band = Brush.sweepGradient(
-            0.0f to accent.copy(alpha = 0f),
-            0.15f to accent.copy(alpha = 0.95f),
-            0.6f to accent.copy(alpha = 0.35f),
-            1.0f to accent.copy(alpha = 0f),
+        drawArc(
+            color = accent,
+            startAngle = rotation,
+            sweepAngle = 42f,
+            useCenter = false,
+            topLeft = Offset(inset, inset),
+            size = arcSize,
+            style = Stroke(stroke, cap = StrokeCap.Round),
         )
-        rotate(rotation, pivot = center) {
-            drawArc(
-                brush = band,
-                startAngle = 0f,
-                sweepAngle = 140f,
-                useCenter = false,
-                topLeft = Offset(inset, inset),
-                size = arcSize,
-                style = Stroke(stroke, cap = StrokeCap.Round),
-            )
-        }
+        val glowRadius = 24.dp.toPx()
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(accent.copy(alpha = 0.45f), accent.copy(alpha = 0f)),
+                center = center,
+                radius = glowRadius,
+            ),
+            radius = glowRadius,
+            center = center,
+        )
         drawCircle(
             color = accent,
-            radius = 5.dp.toPx(),
+            radius = 8.dp.toPx(),
             center = center,
         )
     }
