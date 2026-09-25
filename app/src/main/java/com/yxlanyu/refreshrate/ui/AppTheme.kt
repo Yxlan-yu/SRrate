@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,6 +26,8 @@ import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.theme.ColorSchemeMode
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.ThemeController
+import top.yukonga.miuix.kmp.theme.darkColorScheme
+import top.yukonga.miuix.kmp.theme.lightColorScheme
 
 private val LightBg = Color(0xFFF2F4F7)
 private val LightCard = Color(0xFFFFFFFF)
@@ -135,19 +138,36 @@ fun AppTheme(content: @Composable () -> Unit) {
         onDispose { runCatching { context.unregisterReceiver(receiver) } }
     }
 
-    val themeController = remember(wallpaperAccent) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val monet = prefs.getBoolean(KEY_MONET, true)
-        ThemeController(
-            colorSchemeMode = ColorSchemeMode.MonetSystem,
-            keyColor = if (monet) {
-                Color(wallpaperAccent ?: DefaultAccent)
+    val prefs = remember { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
+    val monet = remember { prefs.getBoolean(KEY_MONET, true) }
+    val base = if (monet) {
+        remember(wallpaperAccent) {
+            ThemeController(
+                colorSchemeMode = ColorSchemeMode.MonetSystem,
+                keyColor = Color(wallpaperAccent ?: DefaultAccent),
+            )
+        }.currentColors()
+    } else {
+        val picked = Color(prefs.getInt(KEY_THEME_COLOR, DefaultAccent))
+        val onPicked = if (picked.luminance() > 0.5f) Color(0xFF000000) else Color(0xFFFFFFFF)
+        remember(picked, dark) {
+            if (dark) {
+                darkColorScheme(
+                    primary = picked,
+                    onPrimary = onPicked,
+                    primaryVariant = picked,
+                    onPrimaryVariant = onPicked,
+                )
             } else {
-                Color(prefs.getInt(KEY_THEME_COLOR, DefaultAccent))
-            },
-        )
+                lightColorScheme(
+                    primary = picked,
+                    onPrimary = onPicked,
+                    primaryVariant = picked,
+                    onPrimaryVariant = onPicked,
+                )
+            }
+        }
     }
-    val base = themeController.currentColors()
     val colors = remember(base, dark) {
         base.copy(
             background = if (dark) DarkBg else LightBg,
