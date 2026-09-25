@@ -37,8 +37,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -83,7 +86,7 @@ import top.yukonga.miuix.kmp.icon.extended.Translate
 import top.yukonga.miuix.kmp.icon.extended.Update
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-private enum class SettingsPage { Main, Language, About, Theme }
+private enum class SettingsPage { Main, Language, About, Theme, OpenSource }
 
 private data class LangOption(val key: String, val labelRes: Int)
 
@@ -194,6 +197,7 @@ fun SettingsScreen(
                 SettingsPage.Language -> 1
                 SettingsPage.About -> 2
                 SettingsPage.Theme -> 3
+                SettingsPage.OpenSource -> 4
             }
         },
     ) { p ->
@@ -205,6 +209,7 @@ fun SettingsScreen(
             SettingsPage.Language -> stringResource(R.string.language_page_title)
             SettingsPage.About -> stringResource(R.string.about_title)
             SettingsPage.Theme -> stringResource(R.string.settings_theme_title)
+            SettingsPage.OpenSource -> stringResource(R.string.open_source_title)
         },
         navigationIcon = if (page != SettingsPage.Main) {
             {
@@ -294,7 +299,6 @@ fun SettingsScreen(
                         title = stringResource(R.string.settings_section_general),
                         children = {
                             ToggleRow(
-                                leadingIcon = R.drawable.ic_fic_bell,
                                 title = stringResource(R.string.settings_switch_toast),
                                 desc = stringResource(R.string.settings_switch_toast_desc),
                                 checked = switchToast,
@@ -304,7 +308,6 @@ fun SettingsScreen(
                                 },
                             )
                             ToggleRow(
-                                leadingIcon = R.drawable.ic_update,
                                 title = stringResource(R.string.settings_auto_check),
                                 desc = stringResource(R.string.settings_auto_check_desc),
                                 checked = autoCheck,
@@ -316,19 +319,16 @@ fun SettingsScreen(
                             ChevRow(
                                 title = stringResource(R.string.settings_channel_title),
                                 desc = stringResource(R.string.settings_channel_desc),
-                                icon = R.drawable.ic_update,
                                 onClick = { showChannelDialog = true },
                             )
                             ChevRow(
                                 title = stringResource(R.string.settings_theme_title),
                                 desc = stringResource(R.string.settings_theme_desc),
-                                icon = R.drawable.ic_fic_grid,
                                 onClick = { page = SettingsPage.Theme },
                             )
                             ChevRow(
                                 title = stringResource(R.string.language_page_title),
                                 desc = stringResource(R.string.language_row_desc),
-                                icon = R.drawable.ic_translate,
                                 onClick = { page = SettingsPage.Language },
                             )
                             ChevRow(
@@ -416,13 +416,11 @@ fun SettingsScreen(
                         title = stringResource(R.string.about_menu_more),
                         children = {
                             AboutMenuRow(
-                                icon = MiuixIcons.Update,
                                 title = stringResource(R.string.check_update),
                                 desc = stringResource(R.string.about_check_update_desc),
                                 onClick = { updateController.checkAndShow() },
                             )
                             AboutMenuRow(
-                                icon = MiuixIcons.Link,
                                 title = stringResource(R.string.about_github_project),
                                 desc = stringResource(R.string.about_github_project_desc),
                                 onClick = {
@@ -430,7 +428,11 @@ fun SettingsScreen(
                                 },
                             )
                             AboutMenuRow(
-                                icon = MiuixIcons.ConvertFile,
+                                title = stringResource(R.string.open_source_title),
+                                desc = stringResource(R.string.open_source_sub),
+                                onClick = { page = SettingsPage.OpenSource },
+                            )
+                            AboutMenuRow(
                                 title = stringResource(R.string.about_source_code),
                                 desc = stringResource(R.string.about_source_desc),
                                 onClick = {
@@ -493,7 +495,6 @@ fun SettingsScreen(
                         title = stringResource(R.string.settings_theme_section_appearance),
                         children = {
                             ToggleRow(
-                                leadingIcon = R.drawable.ic_fic_radar,
                                 title = stringResource(R.string.settings_monet_title),
                                 desc = stringResource(R.string.settings_monet_desc),
                                 checked = monet,
@@ -506,7 +507,6 @@ fun SettingsScreen(
                             ChevRow(
                                 title = stringResource(R.string.settings_color_title),
                                 desc = stringResource(R.string.settings_color_desc),
-                                icon = R.drawable.ic_fic_grid,
                                 onClick = { showColorPicker = true },
                                 swatch = Color(themeColor).copy(alpha = if (monet) 0.4f else 1f),
                             )
@@ -520,7 +520,6 @@ fun SettingsScreen(
                         title = stringResource(R.string.settings_theme_section_interaction),
                         children = {
                             ToggleRow(
-                                leadingIcon = R.drawable.ic_fic_radar,
                                 title = stringResource(R.string.settings_material_title),
                                 desc = stringResource(R.string.settings_material_desc),
                                 checked = advancedMaterial,
@@ -538,6 +537,55 @@ fun SettingsScreen(
                         color = MiuixTheme.colorScheme.onSurfaceVariantSummary.copy(alpha = 0.7f),
                         modifier = Modifier.padding(14.dp, 6.dp),
                     )
+                }
+            }
+            SettingsPage.OpenSource -> {
+                item(key = "open_source") {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.open_source_sub),
+                            fontSize = 12.sp,
+                            color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                            modifier = Modifier.padding(16.dp, 8.dp),
+                        )
+                        SettingsSectionCard(
+                            title = stringResource(R.string.open_source_title),
+                            children = {
+                                OpenSourceRow(
+                                    name = stringResource(R.string.open_source_miuix_name),
+                                    info = stringResource(R.string.open_source_miuix_info),
+                                    url = "https://github.com/compose-miuix-ui/miuix",
+                                    context = context,
+                                )
+                                OpenSourceRow(
+                                    name = stringResource(R.string.open_source_liquid_name),
+                                    info = stringResource(R.string.open_source_liquid_info),
+                                    url = "https://github.com/Kyant0/AndroidLiquidGlass",
+                                    context = context,
+                                )
+                                OpenSourceRow(
+                                    name = stringResource(R.string.open_source_compose_name),
+                                    info = stringResource(R.string.open_source_compose_info),
+                                    url = "https://github.com/JetBrains/compose-multiplatform",
+                                    context = context,
+                                )
+                                OpenSourceRow(
+                                    name = stringResource(R.string.open_source_shizuku_name),
+                                    info = stringResource(R.string.open_source_shizuku_info),
+                                    url = "https://github.com/RikkaApps/Shizuku",
+                                    context = context,
+                                )
+                                OpenSourceRow(
+                                    name = stringResource(R.string.open_source_androidx_name),
+                                    info = stringResource(R.string.open_source_androidx_info),
+                                    url = "https://developer.android.com/",
+                                    context = context,
+                                )
+                            },
+                        )
+                    }
                 }
             }
         }
@@ -849,42 +897,46 @@ private fun NativeOverlayRow(
 
 @Composable
 private fun ToggleRow(
-    leadingIcon: Int,
     title: String,
     desc: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
+    leadingIcon: Int? = null,
 ) {
     SettingsRow(
         title = title,
         desc = desc,
-        leading = {
-            FicIcon(leadingIcon, accent = false)
-            Spacer(Modifier.width(12.dp))
-        },
+        leading = if (leadingIcon != null) {
+            {
+                FicIcon(leadingIcon, accent = false)
+                Spacer(Modifier.width(12.dp))
+            }
+        } else null,
         trailing = {
             Switch(checked = checked, onCheckedChange = onCheckedChange)
         },
     )
-    Divider(start = 52.dp)
+    Divider(start = if (leadingIcon != null) 52.dp else 14.dp)
 }
 
 @Composable
 private fun ChevRow(
     title: String,
     desc: String,
-    icon: Int = R.drawable.ic_fic_info,
     swatch: Color? = null,
     onClick: () -> Unit,
+    icon: Int? = null,
 ) {
     SettingsRow(
         title = title,
         desc = desc,
         onClick = onClick,
-        leading = {
-            FicIcon(icon, accent = false)
-            Spacer(Modifier.width(12.dp))
-        },
+        leading = if (icon != null) {
+            {
+                FicIcon(icon, accent = false)
+                Spacer(Modifier.width(12.dp))
+            }
+        } else null,
         trailing = {
             if (swatch != null) {
                 Box(
@@ -903,12 +955,34 @@ private fun ChevRow(
             )
         },
     )
-    Divider(start = 52.dp)
+    Divider(start = if (icon != null) 52.dp else 14.dp)
+}
+
+@Composable
+private fun OpenSourceRow(
+    name: String,
+    info: String,
+    url: String,
+    context: android.content.Context,
+) {
+    SettingsRow(
+        title = name,
+        desc = info,
+        onClick = { openInBrowser(context, url) },
+        trailing = {
+            top.yukonga.miuix.kmp.basic.Icon(
+                modifier = Modifier.size(16.dp),
+                imageVector = MiuixIcons.ChevronForward,
+                contentDescription = "chevron",
+                tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+            )
+        },
+    )
+    Divider(start = 14.dp)
 }
 
 @Composable
 private fun AboutMenuRow(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
     desc: String,
     onClick: () -> Unit,
@@ -925,24 +999,8 @@ private fun AboutMenuRow(
                 tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
             )
         },
-        leading = {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .background(Color(0xFFE8EEF3), RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center,
-            ) {
-                top.yukonga.miuix.kmp.basic.Icon(
-                    modifier = Modifier.size(20.dp),
-                    imageVector = icon,
-                    contentDescription = title,
-                    tint = MiuixTheme.colorScheme.primary,
-                )
-            }
-            Spacer(Modifier.width(12.dp))
-        },
     )
-    Divider(start = 52.dp)
+    Divider(start = 14.dp)
 }
 
 @Composable
@@ -1014,13 +1072,12 @@ private fun WallPreviewCard(
     accent: Color,
 ) {
     val dark = isSystemInDarkTheme()
-    val gradient = Brush.linearGradient(
-        colors = if (dark) {
-            listOf(Color(0xFF24304D), Color(0xFF3A3F66), Color(0xFF493B6B))
-        } else {
-            listOf(Color(0xFFBBD6FF), Color(0xFF7FA6F8), Color(0xFFB18CFF))
-        },
-    )
+    val baseColors = if (dark) {
+        listOf(Color(0xFF24304D), Color(0xFF3A3F66), Color(0xFF493B6B))
+    } else {
+        listOf(Color(0xFFBBD6FF), Color(0xFF7FA6F8), Color(0xFFB18CFF))
+    }
+    val colors = if (monet) baseColors else baseColors.map { it.grayish() }
     Card(
         cornerRadius = 14.dp,
         modifier = Modifier
@@ -1031,9 +1088,39 @@ private fun WallPreviewCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(88.dp)
-                .background(gradient),
+                .drawBehind {
+                    drawRect(brush = Brush.linearGradient(colors))
+                    if (monet) {
+                        val glows = if (dark) {
+                            listOf(
+                                Triple(Color(0xFF3A4E8C), 0.85f, Offset(size.width * 0.15f, size.height * 0.15f)),
+                                Triple(Color(0xFF784CAF), 0.8f, Offset(size.width * 0.85f, size.height * 0.8f)),
+                                Triple(Color(0xFF965A3C), 0.4f, Offset(size.width * 0.72f, size.height * 0.18f)),
+                            )
+                        } else {
+                            listOf(
+                                Triple(Color(0xFF78A0FF), 0.85f, Offset(size.width * 0.15f, size.height * 0.15f)),
+                                Triple(Color(0xFFB28CFF), 0.8f, Offset(size.width * 0.85f, size.height * 0.8f)),
+                                Triple(Color(0xFFFF9660), 0.45f, Offset(size.width * 0.72f, size.height * 0.18f)),
+                            )
+                        }
+                        val radius = size.maxDimension
+                        glows.forEach { (c, alpha, center) ->
+                            drawCircle(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(c.copy(alpha = alpha), c.copy(alpha = 0f)),
+                                    center = center,
+                                    radius = radius,
+                                ),
+                                radius = radius,
+                                center = center,
+                            )
+                        }
+                    }
+                },
         ) {
             val label = if (monet) colorToHex(accent) else stringResource(R.string.settings_theme_wall_custom)
+            val pillBg = if (monet) accent.copy(alpha = 0.92f) else Color(0x66333333)
             Text(
                 text = label,
                 fontSize = 11.sp,
@@ -1041,7 +1128,7 @@ private fun WallPreviewCard(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(10.dp)
-                    .background(Color(0x4D000000), RoundedCornerShape(8.dp))
+                    .background(pillBg, RoundedCornerShape(8.dp))
                     .padding(horizontal = 8.dp, vertical = 3.dp),
             )
             Column(
@@ -1063,6 +1150,11 @@ private fun WallPreviewCard(
         }
     }
     Spacer(Modifier.height(8.dp))
+}
+
+private fun Color.grayish(): Color {
+    val l = luminance() * 0.82f
+    return Color(l, l, l)
 }
 
 private fun colorToHex(color: Color): String {

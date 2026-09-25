@@ -51,7 +51,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.model.DisplayMode
-import com.yxlanyu.refreshrate.ui.components.FicIcon
 import com.yxlanyu.refreshrate.ui.components.PageTransitionContent
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
 import com.yxlanyu.refreshrate.ui.components.RefrSheetDialog
@@ -414,15 +413,11 @@ private fun MainContent(
             SettingsRow(
                 title = stringResource(R.string.auto_overclock_title),
                 desc = stringResource(R.string.auto_overclock_desc),
-                leading = {
-                    FicIcon(R.drawable.ic_fic_radar, accent = true)
-                    Spacer(Modifier.width(12.dp))
-                },
                 trailing = {
                     Switch(checked = ocOn, onCheckedChange = { applyOcSwitch(it) })
                 },
             )
-            Divider(start = 52.dp)
+            Divider(start = 14.dp)
             SettingsRow(
                 title = stringResource(R.string.target_resolution_label),
                 desc = if (ocRes.isEmpty()) "-" else ocRes.replace("x", "×"),
@@ -465,10 +460,6 @@ private fun MainContent(
             SettingsRow(
                 title = stringResource(R.string.custom_app_master_title),
                 desc = stringResource(R.string.custom_app_refresh_desc),
-                leading = {
-                    FicIcon(R.drawable.ic_fic_checkbox, accent = true)
-                    Spacer(Modifier.width(12.dp))
-                },
                 onClick = {
                     if (!customOn) {
                         if (!ensurePermission()) return@SettingsRow
@@ -548,10 +539,6 @@ private fun MainContent(
                 title = stringResource(R.string.app_list_title),
                 desc = stringResource(R.string.custom_app_master_desc),
                 onClick = openAppList,
-                leading = {
-                    FicIcon(R.drawable.ic_fic_grid)
-                    Spacer(Modifier.width(12.dp))
-                },
                 trailing = {
                     top.yukonga.miuix.kmp.basic.Icon(
                         modifier = Modifier.size(16.dp),
