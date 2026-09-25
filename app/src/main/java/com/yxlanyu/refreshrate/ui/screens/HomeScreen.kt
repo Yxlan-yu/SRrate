@@ -183,7 +183,7 @@ internal fun buildActiveModeId(context: Context): Int =
         dm.getDisplay(android.view.Display.DEFAULT_DISPLAY).mode.modeId
     }.getOrDefault(-1)
 
-private fun buildSortedList(context: Context, dumpedModes: List<DisplayMode>?): List<Any> {
+internal fun buildSortedList(context: Context, dumpedModes: List<DisplayMode>?): List<Any> {
     if (dumpedModes.isNullOrEmpty()) return fallback(context)
     val grouped = LinkedHashMap<String, MutableList<DisplayMode>>()
     for (m in dumpedModes) {

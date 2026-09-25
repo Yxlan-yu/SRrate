@@ -184,17 +184,17 @@ private fun HistoryCard(points: List<Float>) {
                 color = MiuixTheme.colorScheme.onSurface,
             )
             Spacer(Modifier.height(10.dp))
+            val gridColor = MiuixTheme.colorScheme.onSurfaceVariantSummary.copy(alpha = 0.18f)
             Canvas(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(150.dp),
             ) {
-                val grid = MiuixTheme.colorScheme.onSurfaceVariantSummary.copy(alpha = 0.18f)
                 val h = size.height
                 val w = size.width
                 for (i in 1..4) {
                     val y = h * i / 5f
-                    drawLine(grid, androidx.compose.ui.geometry.Offset(0f, y), androidx.compose.ui.geometry.Offset(w, y), 1f)
+                    drawLine(gridColor, androidx.compose.ui.geometry.Offset(0f, y), androidx.compose.ui.geometry.Offset(w, y), 1f)
                 }
                 if (points.size < 2) return@Canvas
                 var minR = points.minOrNull() ?: 0f
