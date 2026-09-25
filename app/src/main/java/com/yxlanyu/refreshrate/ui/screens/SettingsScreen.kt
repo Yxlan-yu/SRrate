@@ -355,6 +355,7 @@ fun SettingsScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .clickable { onClick }
                                     .padding(start = 12.dp, end = 14.dp, top = 8.dp, bottom = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
@@ -556,9 +557,15 @@ fun SettingsScreen(
         ) {
             channelEntries.forEachIndexed { index, (key, label) ->
                 val selected = key == updateChannel
+                val onSelect = {
+                    updateChannel = key
+                    prefs.edit().putString("update_channel", key).apply()
+                    showChannelDialog = false
+                }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clickable { onSelect() }
                         .padding(start = 12.dp, end = 14.dp, top = 10.dp, bottom = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -568,11 +575,7 @@ fun SettingsScreen(
                         color = MiuixTheme.colorScheme.onSurface,
                         modifier = Modifier.weight(1f),
                     )
-                    RadioButton(selected = selected, onClick = {
-                        updateChannel = key
-                        prefs.edit().putString("update_channel", key).apply()
-                        showChannelDialog = false
-                    })
+                    RadioButton(selected = selected, onClick = onSelect)
                 }
                 if (index < channelEntries.lastIndex) {
                     top.yukonga.miuix.kmp.basic.HorizontalDivider(
