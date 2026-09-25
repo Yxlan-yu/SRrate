@@ -105,6 +105,7 @@ internal val THEME_COLORS = listOf(
 fun SettingsScreen(
     outerContentPadding: androidx.compose.foundation.layout.PaddingValues,
     updateController: UpdateController,
+    onLanguageChanged: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("s", android.content.Context.MODE_PRIVATE) }
@@ -356,7 +357,8 @@ fun SettingsScreen(
                             val onSelect = {
                                 lang = opt.key
                                 prefs.edit().putString("language", opt.key).apply()
-                                recreateActivity()
+                                LanguageUtils.applyLanguage(context)
+                                onLanguageChanged()
                             }
                             Row(
                                 modifier = Modifier

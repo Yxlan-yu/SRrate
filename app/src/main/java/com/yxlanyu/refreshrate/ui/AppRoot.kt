@@ -44,6 +44,7 @@ private enum class MainTab(
 @Composable
 fun AppRoot() {
     var currentTab by rememberSaveable { mutableIntStateOf(0) }
+    var langVersion by rememberSaveable { mutableIntStateOf(0) }
     val tabs = MainTab.entries
     val context = LocalContext.current
     val updateController = rememberUpdateController()
@@ -65,6 +66,7 @@ fun AppRoot() {
         }
     }
 
+    val forceLangRecompose = langVersion
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
@@ -80,11 +82,19 @@ fun AppRoot() {
             }
         },
     ) { innerPadding ->
+        forceLangRecompose
         when (tabs[currentTab]) {
             MainTab.Home -> HomeScreen(outerContentPadding = innerPadding)
             MainTab.Custom -> CustomScreen(outerContentPadding = innerPadding)
             MainTab.Tools -> MonitorScreen(outerContentPadding = innerPadding)
-            MainTab.Settings -> SettingsScreen(outerContentPadding = innerPadding, updateController = updateController)
+            MainTab.Settings -> SettingsScreen(
+                outerContentPadding = innerPadding,
+                updateController = updateController,
+                onLanguageChanged = {
+                    activity?.refreshAppliedLang()
+                    langVersion++
+                },
+            )
         }
         UpdateDialog(updateController)
     }
