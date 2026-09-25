@@ -202,6 +202,12 @@
     <string name="settings_material_desc">底部導航欄使用 Liquid Glass 毛玻璃效果，需 Android 13+</string>
     <string name="settings_theme_title">主題</string>
     <string name="settings_theme_desc">莫奈取色 · 顏色 · 進階材質</string>
+    <string name="settings_theme_section_appearance">外觀</string>
+    <string name="settings_theme_section_interaction">互動</string>
+    <string name="settings_theme_wall_title">桌布預覽 · 目前提取</string>
+    <string name="settings_theme_wall_sub">開啟莫奈取色時從此處取色</string>
+    <string name="settings_theme_wall_custom">自訂</string>
+    <string name="settings_theme_glass_note">開啟後底欄變成置中懸浮的小玻璃膠囊</string>
     <string name="about_github_project">GitHub 專案</string>
     <string name="about_github_project_desc">github.com/Yxlan-yu/SRrate</string>
     <string name="about_source_code">原始碼</string>

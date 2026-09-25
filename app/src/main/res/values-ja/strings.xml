@@ -202,6 +202,12 @@
     <string name="settings_material_desc">Liquid Glass のすりガラス効果の下部ナビゲーションバー、Android 13+ が必要です</string>
     <string name="settings_theme_title">テーマ</string>
     <string name="settings_theme_desc">モネカラー · 色 · 高度なマテリアル</string>
+    <string name="settings_theme_section_appearance">外観</string>
+    <string name="settings_theme_section_interaction">操作</string>
+    <string name="settings_theme_wall_title">壁紙プレビュー · 現在の抽出</string>
+    <string name="settings_theme_wall_sub">モネカラー有効時はここから色を抽出</string>
+    <string name="settings_theme_wall_custom">カスタム</string>
+    <string name="settings_theme_glass_note">有効にすると、下部バーは中央に浮かぶ小さなガラスカプセルになります</string>
     <string name="about_github_project">GitHub 項目</string>
     <string name="about_github_project_desc">github.com/Yxlan-yu/SRrate</string>
     <string name="about_source_code">ソースコード</string>

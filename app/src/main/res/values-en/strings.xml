@@ -202,6 +202,12 @@
     <string name="settings_material_desc">Liquid Glass frosted-glass bottom navigation bar, requires Android 13+</string>
     <string name="settings_theme_title">Theme</string>
     <string name="settings_theme_desc">Monet colors · Colors · Advanced materials</string>
+    <string name="settings_theme_section_appearance">Appearance</string>
+    <string name="settings_theme_section_interaction">Interaction</string>
+    <string name="settings_theme_wall_title">Wallpaper preview · Current extract</string>
+    <string name="settings_theme_wall_sub">Colors are extracted from here when Monet is on</string>
+    <string name="settings_theme_wall_custom">Custom</string>
+    <string name="settings_theme_glass_note">After enabling, the bottom bar becomes a centered floating glass capsule</string>
     <string name="about_github_project">GitHub Project</string>
     <string name="about_github_project_desc">github.com/Yxlan-yu/SRrate</string>
     <string name="about_source_code">Source Code</string>

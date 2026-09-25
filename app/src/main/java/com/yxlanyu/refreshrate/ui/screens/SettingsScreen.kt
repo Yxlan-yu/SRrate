@@ -9,12 +9,14 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -37,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -486,41 +489,55 @@ fun SettingsScreen(
             }
             SettingsPage.Theme -> {
                 item(key = "theme") {
-                    Card(
-                        cornerRadius = 16.dp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(14.dp, 14.dp, 14.dp, 0.dp),
-                    ) {
-                        ToggleRow(
-                            leadingIcon = R.drawable.ic_fic_radar,
-                            title = stringResource(R.string.settings_monet_title),
-                            desc = stringResource(R.string.settings_monet_desc),
-                            checked = monet,
-                            onCheckedChange = { checked ->
-                                monet = checked
-                                prefs.edit().putBoolean("monet", checked).apply()
-                                recreateActivity()
-                            },
-                        )
-                        ChevRow(
-                            title = stringResource(R.string.settings_color_title),
-                            desc = stringResource(R.string.settings_color_desc),
-                            icon = R.drawable.ic_fic_grid,
-                            onClick = { showColorPicker = true },
-                        )
-                        ToggleRow(
-                            leadingIcon = R.drawable.ic_fic_radar,
-                            title = stringResource(R.string.settings_material_title),
-                            desc = stringResource(R.string.settings_material_desc),
-                            checked = advancedMaterial,
-                            onCheckedChange = { checked ->
-                                advancedMaterial = checked
-                                prefs.edit().putBoolean("advanced_material", checked).apply()
-                                onAdvancedMaterialChanged(checked)
-                            },
-                        )
-                    }
+                    SettingsSectionCard(
+                        title = stringResource(R.string.settings_theme_section_appearance),
+                        children = {
+                            ToggleRow(
+                                leadingIcon = R.drawable.ic_fic_radar,
+                                title = stringResource(R.string.settings_monet_title),
+                                desc = stringResource(R.string.settings_monet_desc),
+                                checked = monet,
+                                onCheckedChange = { checked ->
+                                    monet = checked
+                                    prefs.edit().putBoolean("monet", checked).apply()
+                                    recreateActivity()
+                                },
+                            )
+                            ChevRow(
+                                title = stringResource(R.string.settings_color_title),
+                                desc = stringResource(R.string.settings_color_desc),
+                                icon = R.drawable.ic_fic_grid,
+                                onClick = { showColorPicker = true },
+                                swatch = Color(themeColor).copy(alpha = if (monet) 0.4f else 1f),
+                            )
+                        },
+                    )
+                    WallPreviewCard(
+                        monet = monet,
+                        accent = MiuixTheme.colorScheme.primary,
+                    )
+                    SettingsSectionCard(
+                        title = stringResource(R.string.settings_theme_section_interaction),
+                        children = {
+                            ToggleRow(
+                                leadingIcon = R.drawable.ic_fic_radar,
+                                title = stringResource(R.string.settings_material_title),
+                                desc = stringResource(R.string.settings_material_desc),
+                                checked = advancedMaterial,
+                                onCheckedChange = { checked ->
+                                    advancedMaterial = checked
+                                    prefs.edit().putBoolean("advanced_material", checked).apply()
+                                    onAdvancedMaterialChanged(checked)
+                                },
+                            )
+                        },
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_theme_glass_note),
+                        fontSize = 12.sp,
+                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(14.dp, 6.dp),
+                    )
                 }
             }
         }
@@ -857,6 +874,7 @@ private fun ChevRow(
     title: String,
     desc: String,
     icon: Int = R.drawable.ic_fic_info,
+    swatch: Color? = null,
     onClick: () -> Unit,
 ) {
     SettingsRow(
@@ -868,6 +886,15 @@ private fun ChevRow(
             Spacer(Modifier.width(12.dp))
         },
         trailing = {
+            if (swatch != null) {
+                Box(
+                    modifier = Modifier
+                        .size(22.dp)
+                        .background(swatch, RoundedCornerShape(7.dp))
+                        .padding(0.dp),
+                )
+                Spacer(Modifier.width(10.dp))
+            }
             top.yukonga.miuix.kmp.basic.Icon(
                 modifier = Modifier.size(16.dp),
                 imageVector = MiuixIcons.ChevronForward,
@@ -979,4 +1006,66 @@ private fun Divider(start: Dp = 14.dp, end: Dp = 14.dp) {
         modifier = Modifier.padding(start = start, end = end),
         thickness = 1.dp,
     )
+}
+
+@Composable
+private fun WallPreviewCard(
+    monet: Boolean,
+    accent: Color,
+) {
+    val dark = isSystemInDarkTheme()
+    val gradient = Brush.linearGradient(
+        colors = if (dark) {
+            listOf(Color(0xFF24304D), Color(0xFF3A3F66), Color(0xFF493B6B))
+        } else {
+            listOf(Color(0xFFBBD6FF), Color(0xFF7FA6F8), Color(0xFFB18CFF))
+        },
+    )
+    Card(
+        cornerRadius = 14.dp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(14.dp, 8.dp, 14.dp, 0.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(88.dp)
+                .background(gradient),
+        ) {
+            val label = if (monet) colorToHex(accent) else stringResource(R.string.settings_theme_wall_custom)
+            Text(
+                text = label,
+                fontSize = 11.sp,
+                color = Color.White,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(10.dp)
+                    .background(Color(0x4D000000), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 8.dp, vertical = 3.dp),
+            )
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(12.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_theme_wall_title),
+                    fontSize = 12.5.sp,
+                    color = Color.White.copy(alpha = 0.92f),
+                )
+                Text(
+                    text = stringResource(R.string.settings_theme_wall_sub),
+                    fontSize = 10.5.sp,
+                    color = Color.White.copy(alpha = 0.85f),
+                )
+            }
+        }
+    }
+    Spacer(Modifier.height(8.dp))
+}
+
+private fun colorToHex(color: Color): String {
+    val argb = color.toArgb()
+    return String.format("#%06X", 0xFFFFFF and argb)
 }
