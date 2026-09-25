@@ -198,6 +198,8 @@
     <string name="settings_color_desc">选择应用强调色，关闭莫奈取色后生效</string>
     <string name="settings_color_cancel">取消</string>
     <string name="settings_color_confirm">确定</string>
+    <string name="settings_material_title">高级材质</string>
+    <string name="settings_material_desc">底部导航栏使用 Liquid Glass 毛玻璃效果，需 Android 13+</string>
     <string name="about_github_project">GitHub 项目</string>
     <string name="about_github_project_desc">github.com/Yxlan-yu/SRrate</string>
     <string name="about_source_code">源代码</string>

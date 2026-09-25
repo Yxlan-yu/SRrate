@@ -106,6 +106,7 @@ fun SettingsScreen(
     outerContentPadding: androidx.compose.foundation.layout.PaddingValues,
     updateController: UpdateController,
     onLanguageChanged: () -> Unit = {},
+    onAdvancedMaterialChanged: (Boolean) -> Unit = {},
 ) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("s", android.content.Context.MODE_PRIVATE) }
@@ -132,6 +133,7 @@ fun SettingsScreen(
     var switchToast by remember { mutableStateOf(prefs.getBoolean("switch_toast_enabled", true)) }
     var autoCheck by remember { mutableStateOf(prefs.getBoolean("auto_check_update", true)) }
     var monet by remember { mutableStateOf(prefs.getBoolean("monet", true)) }
+    var advancedMaterial by remember { mutableStateOf(prefs.getBoolean("advanced_material", false)) }
     var themeColor by remember { mutableStateOf(prefs.getInt("theme_color", 0xFF3B76FD.toInt())) }
     var showColorPicker by remember { mutableStateOf(false) }
     var updateChannel by remember { mutableStateOf(prefs.getString("update_channel", "stable") ?: "stable") }
@@ -311,6 +313,17 @@ fun SettingsScreen(
                                 desc = stringResource(R.string.settings_channel_desc),
                                 icon = R.drawable.ic_update,
                                 onClick = { showChannelDialog = true },
+                            )
+                            ToggleRow(
+                                leadingIcon = R.drawable.ic_fic_radar,
+                                title = stringResource(R.string.settings_material_title),
+                                desc = stringResource(R.string.settings_material_desc),
+                                checked = advancedMaterial,
+                                onCheckedChange = { checked ->
+                                    advancedMaterial = checked
+                                    prefs.edit().putBoolean("advanced_material", checked).apply()
+                                    onAdvancedMaterialChanged(checked)
+                                },
                             )
                             ToggleRow(
                                 leadingIcon = R.drawable.ic_fic_radar,
