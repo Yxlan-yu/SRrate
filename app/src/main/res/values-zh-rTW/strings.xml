@@ -217,10 +217,7 @@
     <string name="settings_switch_toast">幀率切換彈出提醒</string>
     <string name="settings_switch_toast_desc">切換至已啟用應用時彈出提示</string>
 <string name="monitor_title">即時更新率</string>
-<string name="monitor_history_title">即時曲線</string>
 <string name="monitor_current">目前更新率</string>
-<string name="monitor_resolution">解析度</string>
-<string name="monitor_modes_title">支援模式</string>
 <string name="settings_channel_title">更新通道</string>
 <string name="settings_channel_desc">穩定版（正式版）或測試版</string>
 <string name="channel_stable">穩定版（正式版）</string>

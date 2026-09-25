@@ -217,10 +217,7 @@
     <string name="settings_switch_toast">Frame-switch popup</string>
     <string name="settings_switch_toast_desc">Show a popup when switching to an enabled app</string>
 <string name="monitor_title">Real-time refresh rate</string>
-<string name="monitor_history_title">Live chart</string>
 <string name="monitor_current">Current refresh rate</string>
-<string name="monitor_resolution">Resolution</string>
-<string name="monitor_modes_title">Supported modes</string>
 <string name="settings_channel_title">Update channel</string>
 <string name="settings_channel_desc">Stable (Release) or Beta</string>
 <string name="channel_stable">Stable (Release)</string>

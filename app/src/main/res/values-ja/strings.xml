@@ -217,10 +217,7 @@
     <string name="settings_switch_toast">フレーム切替ポップアップ</string>
     <string name="settings_switch_toast_desc">有効化したアプリへの切り替え時に表示</string>
 <string name="monitor_title">リアルタイム更新率</string>
-<string name="monitor_history_title">リアルタイムグラフ</string>
 <string name="monitor_current">現在の更新率</string>
-<string name="monitor_resolution">解像度</string>
-<string name="monitor_modes_title">対応モード</string>
 <string name="settings_channel_title">更新チャンネル</string>
 <string name="settings_channel_desc">安定版（正式版）かベータ版</string>
 <string name="channel_stable">安定版（正式版）</string>

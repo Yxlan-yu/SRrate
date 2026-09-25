@@ -1,8 +1,19 @@
 package com.yxlanyu.refreshrate.ui.screens
 
-import android.content.Context
+import android.app.Activity
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
+import android.view.FrameMetrics
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -10,21 +21,19 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -32,53 +41,45 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yxlanyu.refreshrate.R
-import com.yxlanyu.refreshrate.model.DisplayMode
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
-import com.yxlanyu.refreshrate.util.AutoOverclockManager
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.basic.Card
-import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-private const val HISTORY_POINTS = 120
-private const val SAMPLE_MS = 500L
+private const val SAMPLE_WINDOW_MS = 500L
 
 @Composable
 fun MonitorScreen(outerContentPadding: PaddingValues) {
     val context = LocalContext.current
-    var rate by remember { mutableStateOf(0f) }
-    var res by remember { mutableStateOf("--") }
-    var history by remember { mutableStateOf(listOf<Float>()) }
-    var modes by remember { mutableStateOf<List<Any>>(emptyList()) }
-    var activeModeId by remember { mutableIntStateOf(-1) }
-    var subtitle by remember { mutableStateOf("") }
+    val activity = context as? Activity
+    val fpsState = remember { mutableIntStateOf(0) }
+    val fps = fpsState.intValue
 
-    fun sample(pushHistory: Boolean) {
-        val r = AutoOverclockManager.getCurrentRate(context)
-        val s = AutoOverclockManager.getCurrentResolution(context)
-        if (r != rate) rate = r
-        if (s != res) res = s
-        if (pushHistory && r > 0f) {
-            history = (history + r).takeLast(HISTORY_POINTS)
+    val onFrame = remember {
+        val queue = java.util.ArrayDeque<Long>()
+        FrameMetrics.OnFrameMetricsAvailableListener { _, _, _ ->
+            val now = SystemClock.elapsedRealtime()
+            queue.addLast(now)
+            while (queue.size > 1 && now - queue.peekFirst() > SAMPLE_WINDOW_MS) {
+                queue.removeFirst()
+            }
+            if (queue.size >= 2) {
+                val span = now - queue.peekFirst()
+                if (span > 0) {
+                    val computed = (queue.size * 1000f / span).toInt().coerceIn(0, 240)
+                    if (computed != fpsState.intValue) fpsState.intValue = computed
+                }
+            }
         }
-        val a = buildActiveModeId(context)
-        if (a != activeModeId) activeModeId = a
-        val sub = buildSubtitle(context)
-        if (sub != subtitle) subtitle = sub
     }
 
-    LaunchedEffect(Unit) {
-        val list = withContext(Dispatchers.IO) {
-            buildSortedList(context, AutoOverclockManager.getSupportedModes(context).ifEmpty { null })
+    DisposableEffect(activity) {
+        val a = activity
+        if (a != null) {
+            a.window.addOnFrameMetricsAvailableListener(onFrame, Handler(Looper.getMainLooper()))
         }
-        modes = list
-        sample(false)
-        while (true) {
-            delay(SAMPLE_MS)
-            sample(true)
+        onDispose {
+            a?.window?.removeOnFrameMetricsAvailableListener(onFrame)
         }
     }
 
@@ -86,194 +87,112 @@ fun MonitorScreen(outerContentPadding: PaddingValues) {
         title = stringResource(R.string.monitor_title),
         outerContentPadding = outerContentPadding,
         largeTitle = stringResource(R.string.monitor_title),
-        subtitle = if (subtitle.isEmpty()) "-" else subtitle,
     ) {
-        item(key = "big_rate") {
-            BigRateCard(rate = rate, res = res, context = context)
-        }
-        item(key = "history") {
-            HistoryCard(points = history)
-        }
-        if (modes.isNotEmpty()) {
-            item(key = "modes_title") {
-                SmallTitle(
-                    text = stringResource(R.string.monitor_modes_title),
-                    insideMargin = PaddingValues(28.dp, 8.dp),
-                )
-            }
-            modes.forEach { item ->
-                when (item) {
-                    is String -> item(key = item) {
-                        SmallTitle(
-                            text = item,
-                            insideMargin = PaddingValues(28.dp, 8.dp),
-                        )
-                    }
-                    is DisplayMode -> {
-                        val isCurrent = if (item.modeId >= 0) item.modeId == activeModeId else false
-                        item(key = itemKey(item)) {
-                            MonitorModeCard(mode = item, isCurrent = isCurrent)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun BigRateCard(rate: Float, res: String, context: Context) {
-    val rateName = DisplayMode(0, 0, rate, -1).getRateName(context)
-    val hz = rate.toInt()
-    Card(
-        cornerRadius = 16.dp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(14.dp, 14.dp, 14.dp, 0.dp),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(
-                    text = hz.toString(),
-                    fontSize = 56.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MiuixTheme.colorScheme.onSurface,
-                )
-                Spacer(Modifier.width(6.dp))
-                Text(
-                    text = "Hz",
-                    fontSize = 20.sp,
-                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                    modifier = Modifier.padding(bottom = 10.dp),
-                )
-            }
-            Spacer(Modifier.height(6.dp))
-            Text(
-                text = rateName,
-                fontSize = 15.sp,
-                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-            )
-            Spacer(Modifier.height(2.dp))
-            Text(
-                text = res,
-                fontSize = 14.sp,
-                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-            )
-        }
-    }
-}
-
-@Composable
-private fun HistoryCard(points: List<Float>) {
-    Card(
-        cornerRadius = 16.dp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(14.dp, 14.dp, 14.dp, 0.dp),
-    ) {
-        Column(Modifier.padding(14.dp)) {
-            Text(
-                text = stringResource(R.string.monitor_history_title),
-                fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MiuixTheme.colorScheme.onSurface,
-            )
-            Spacer(Modifier.height(10.dp))
-            val gridColor = MiuixTheme.colorScheme.onSurfaceVariantSummary.copy(alpha = 0.18f)
-            Canvas(
+        item(key = "round_fps") {
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp),
+                    .padding(top = 24.dp, bottom = 24.dp),
+                contentAlignment = Alignment.Center,
             ) {
-                val h = size.height
-                val w = size.width
-                for (i in 1..4) {
-                    val y = h * i / 5f
-                    drawLine(gridColor, androidx.compose.ui.geometry.Offset(0f, y), androidx.compose.ui.geometry.Offset(w, y), 1f)
-                }
-                if (points.size < 2) return@Canvas
-                var minR = points.minOrNull() ?: 0f
-                var maxR = points.maxOrNull() ?: 0f
-                if (maxR - minR < 1f) {
-                    minR -= 0.5f
-                    maxR += 0.5f
-                }
-                val span = maxR - minR
-                val path = Path()
-                val n = points.size
-                points.forEachIndexed { i, v ->
-                    val x = w * i / (n - 1)
-                    val y = h - (v - minR) / span * h
-                    if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
-                }
-                drawPath(
-                    path = path,
-                    color = Color(0xFF3B76FD),
-                    style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round),
-                )
-                val last = points.last()
-                val lx = w
-                val ly = h - (last - minR) / span * h
-                drawCircle(Color(0xFF3B76FD), radius = 4.dp.toPx(), center = androidx.compose.ui.geometry.Offset(lx, ly))
+                RoundFpsCard(fps = fps)
             }
         }
     }
 }
 
 @Composable
-private fun MonitorModeCard(mode: DisplayMode, isCurrent: Boolean) {
-    val ctx = LocalContext.current
-    val name = mode.getRateName(ctx)
-    val desc = mode.getRateDesc(ctx)
+private fun RoundFpsCard(fps: Int) {
     Card(
-        cornerRadius = 16.dp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(14.dp, 14.dp, 14.dp, 0.dp),
+        cornerRadius = 108.dp,
+        modifier = Modifier.size(216.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
+                .padding(horizontal = 18.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.End,
+            ) {
+                Row(verticalAlignment = Alignment.Bottom) {
                     Text(
-                        text = name,
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        text = if (fps > 0) fps.toString() else "--",
+                        fontSize = 46.sp,
+                        fontWeight = FontWeight.Bold,
                         color = MiuixTheme.colorScheme.onSurface,
                     )
-                    if (isCurrent) {
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(R.string.badge_current),
-                            fontSize = 12.sp,
-                            color = Color.White,
-                            modifier = Modifier
-                                .background(Color(0xFF2ECC71), RoundedCornerShape(8.dp))
-                                .padding(horizontal = 6.dp, vertical = 2.dp),
-                        )
-                    }
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = "Hz",
+                        fontSize = 14.sp,
+                        color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                        modifier = Modifier.padding(bottom = 7.dp),
+                    )
                 }
-                Spacer(Modifier.height(3.dp))
+                Spacer(Modifier.height(2.dp))
                 Text(
-                    text = desc,
-                    fontSize = 13.sp,
+                    text = stringResource(R.string.monitor_current),
+                    fontSize = 12.sp,
                     color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 )
             }
-            Text(
-                text = "${mode.getResolutionLabel()} · ${mode.getRateInt()}Hz",
-                fontSize = 13.sp,
-                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-            )
+            Spacer(Modifier.width(6.dp))
+            FpsSpinner(modifier = Modifier.size(64.dp))
         }
+    }
+}
+
+@Composable
+private fun FpsSpinner(modifier: Modifier) {
+    val accent = MiuixTheme.colorScheme.primary
+    val transition = rememberInfiniteTransition(label = "fps_spinner")
+    val rotation by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1600, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "rotation",
+    )
+    val sweep by transition.animateFloat(
+        initialValue = 40f,
+        targetValue = 270f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "sweep",
+    )
+    Canvas(modifier) {
+        val stroke = 5.dp.toPx()
+        val inset = stroke / 2f
+        val arcSize = Size(size.width - stroke, size.height - stroke)
+        drawArc(
+            color = accent.copy(alpha = 0.18f),
+            startAngle = 0f,
+            sweepAngle = 360f,
+            useCenter = false,
+            topLeft = Offset(inset, inset),
+            size = arcSize,
+            style = Stroke(stroke, cap = StrokeCap.Round),
+        )
+        drawArc(
+            color = accent,
+            startAngle = rotation - sweep / 2f,
+            sweepAngle = sweep,
+            useCenter = false,
+            topLeft = Offset(inset, inset),
+            size = arcSize,
+            style = Stroke(stroke, cap = StrokeCap.Round),
+        )
+        drawCircle(
+            color = accent,
+            radius = 5.dp.toPx(),
+            center = center,
+        )
     }
 }
