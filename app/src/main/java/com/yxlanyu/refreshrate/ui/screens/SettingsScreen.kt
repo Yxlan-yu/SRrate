@@ -29,6 +29,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -114,7 +116,12 @@ fun SettingsScreen(
         }.getOrDefault("")
     }
 
-    var page by remember { mutableStateOf(SettingsPage.Main) }
+    var page by rememberSaveable(
+        stateSaver = Saver<SettingsPage, String>(
+            save = { it.name },
+            restore = { SettingsPage.valueOf(it) },
+        ),
+    ) { mutableStateOf(SettingsPage.Main) }
     var authMode by remember { mutableStateOf(prefs.getString("auth_mode", "") ?: "") }
     var hasRoot by remember { mutableStateOf(false) }
     var shizukuAvail by remember { mutableStateOf(false) }
@@ -349,6 +356,7 @@ fun SettingsScreen(
                             val onSelect = {
                                 lang = opt.key
                                 prefs.edit().putString("language", opt.key).apply()
+                                recreateActivity()
                             }
                             Row(
                                 modifier = Modifier
