@@ -94,9 +94,9 @@ fun MonitorScreen(outerContentPadding: PaddingValues) {
     }
 
     RefreshPageScaffold(
-        title = stringResource(R.string.monitor_title),
+        title = stringResource(R.string.nav_tools),
         outerContentPadding = outerContentPadding,
-        largeTitle = stringResource(R.string.monitor_title),
+        largeTitle = stringResource(R.string.nav_tools),
     ) {
         item(key = "rect_fps") {
             RectangleFpsCard(
@@ -125,6 +125,12 @@ private fun RectangleFpsCard(fps: Int, modifier: Modifier = Modifier) {
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.Start,
             ) {
+                Text(
+                    text = stringResource(R.string.monitor_title),
+                    fontSize = 13.sp,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                )
+                Spacer(Modifier.height(7.dp))
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(
                         text = if (fps > 0) fps.toString() else "--",
