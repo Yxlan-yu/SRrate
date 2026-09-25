@@ -200,6 +200,8 @@
     <string name="settings_color_confirm">确定</string>
     <string name="settings_material_title">高级材质</string>
     <string name="settings_material_desc">底部导航栏使用 Liquid Glass 毛玻璃效果，需 Android 13+</string>
+    <string name="settings_theme_title">主题</string>
+    <string name="settings_theme_desc">莫奈取色 · 颜色 · 高级材质</string>
     <string name="about_github_project">GitHub 项目</string>
     <string name="about_github_project_desc">github.com/Yxlan-yu/SRrate</string>
     <string name="about_source_code">源代码</string>

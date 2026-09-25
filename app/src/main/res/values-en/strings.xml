@@ -200,6 +200,8 @@
     <string name="settings_color_confirm">Confirm</string>
     <string name="settings_material_title">Advanced Materials</string>
     <string name="settings_material_desc">Liquid Glass frosted-glass bottom navigation bar, requires Android 13+</string>
+    <string name="settings_theme_title">Theme</string>
+    <string name="settings_theme_desc">Monet colors · Colors · Advanced materials</string>
     <string name="about_github_project">GitHub Project</string>
     <string name="about_github_project_desc">github.com/Yxlan-yu/SRrate</string>
     <string name="about_source_code">Source Code</string>

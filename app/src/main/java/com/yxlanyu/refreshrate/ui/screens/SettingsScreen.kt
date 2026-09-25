@@ -80,7 +80,7 @@ import top.yukonga.miuix.kmp.icon.extended.Translate
 import top.yukonga.miuix.kmp.icon.extended.Update
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-private enum class SettingsPage { Main, Language, About }
+private enum class SettingsPage { Main, Language, About, Theme }
 
 private data class LangOption(val key: String, val labelRes: Int)
 
@@ -190,6 +190,7 @@ fun SettingsScreen(
                 SettingsPage.Main -> 0
                 SettingsPage.Language -> 1
                 SettingsPage.About -> 2
+                SettingsPage.Theme -> 3
             }
         },
     ) { p ->
@@ -200,6 +201,7 @@ fun SettingsScreen(
             SettingsPage.Main -> stringResource(R.string.settings_title)
             SettingsPage.Language -> stringResource(R.string.language_page_title)
             SettingsPage.About -> stringResource(R.string.about_title)
+            SettingsPage.Theme -> stringResource(R.string.settings_theme_title)
         },
         navigationIcon = if (page != SettingsPage.Main) {
             {
@@ -314,33 +316,11 @@ fun SettingsScreen(
                                 icon = R.drawable.ic_update,
                                 onClick = { showChannelDialog = true },
                             )
-                            ToggleRow(
-                                leadingIcon = R.drawable.ic_fic_radar,
-                                title = stringResource(R.string.settings_material_title),
-                                desc = stringResource(R.string.settings_material_desc),
-                                checked = advancedMaterial,
-                                onCheckedChange = { checked ->
-                                    advancedMaterial = checked
-                                    prefs.edit().putBoolean("advanced_material", checked).apply()
-                                    onAdvancedMaterialChanged(checked)
-                                },
-                            )
-                            ToggleRow(
-                                leadingIcon = R.drawable.ic_fic_radar,
-                                title = stringResource(R.string.settings_monet_title),
-                                desc = stringResource(R.string.settings_monet_desc),
-                                checked = monet,
-                                onCheckedChange = { checked ->
-                                    monet = checked
-                                    prefs.edit().putBoolean("monet", checked).apply()
-                                    recreateActivity()
-                                },
-                            )
                             ChevRow(
-                                title = stringResource(R.string.settings_color_title),
-                                desc = stringResource(R.string.settings_color_desc),
+                                title = stringResource(R.string.settings_theme_title),
+                                desc = stringResource(R.string.settings_theme_desc),
                                 icon = R.drawable.ic_fic_grid,
-                                onClick = { showColorPicker = true },
+                                onClick = { page = SettingsPage.Theme },
                             )
                             ChevRow(
                                 title = stringResource(R.string.language_page_title),
@@ -502,6 +482,45 @@ fun SettingsScreen(
                             )
                         },
                     )
+                }
+            }
+            SettingsPage.Theme -> {
+                item(key = "theme") {
+                    Card(
+                        cornerRadius = 16.dp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp, 14.dp, 14.dp, 0.dp),
+                    ) {
+                        ToggleRow(
+                            leadingIcon = R.drawable.ic_fic_radar,
+                            title = stringResource(R.string.settings_monet_title),
+                            desc = stringResource(R.string.settings_monet_desc),
+                            checked = monet,
+                            onCheckedChange = { checked ->
+                                monet = checked
+                                prefs.edit().putBoolean("monet", checked).apply()
+                                recreateActivity()
+                            },
+                        )
+                        ChevRow(
+                            title = stringResource(R.string.settings_color_title),
+                            desc = stringResource(R.string.settings_color_desc),
+                            icon = R.drawable.ic_fic_grid,
+                            onClick = { showColorPicker = true },
+                        )
+                        ToggleRow(
+                            leadingIcon = R.drawable.ic_fic_radar,
+                            title = stringResource(R.string.settings_material_title),
+                            desc = stringResource(R.string.settings_material_desc),
+                            checked = advancedMaterial,
+                            onCheckedChange = { checked ->
+                                advancedMaterial = checked
+                                prefs.edit().putBoolean("advanced_material", checked).apply()
+                                onAdvancedMaterialChanged(checked)
+                            },
+                        )
+                    }
                 }
             }
         }

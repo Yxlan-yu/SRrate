@@ -360,29 +360,42 @@ fun LiquidGlassNavigationBar(
                 horizontalAlignment = CenterHorizontally,
             ) {
                 Icon(
-                    modifier = Modifier.size(22.dp),
+                    modifier = Modifier.size(if (isBlurActive) 20.dp else 22.dp),
                     imageVector = item.icon,
-                    // Decorative: the adjacent label names the item; avoids TalkBack double-read.
-                    contentDescription = null,
+                    // Compact (blur) mode is icon-only: the label becomes the content description.
+                    contentDescription = if (isBlurActive) item.label else null,
                 )
-                Text(
-                    text = item.label,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Normal,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                if (!isBlurActive) {
+                    Text(
+                        text = item.label,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Normal,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
     }
 
+    // Compact blur mode: a narrow centered capsule (60dp per tab, 40dp visible).
+    // Non-blur path is unused by AppRoot but kept structurally identical.
+    val capsuleWidthDp = if (isBlurActive) 60.dp * tabsCount else null
+
     Column(modifier = modifier.fillMaxWidth()) {
         Box(
             modifier = Modifier
-                .padding(bottom = bottomPaddingValue, start = 24.dp, end = 24.dp)
+                .padding(bottom = bottomPaddingValue, start = 8.dp, end = 8.dp)
                 .fillMaxWidth(),
-            contentAlignment = Alignment.CenterStart,
+            contentAlignment = Alignment.Center,
         ) {
+            Box(
+                modifier = Modifier
+                    .then(
+                        if (isBlurActive) Modifier.width(capsuleWidthDp!!) else Modifier.fillMaxWidth(),
+                    ),
+                contentAlignment = Alignment.CenterStart,
+            ) {
             CompositionLocalProvider(LocalContentColor provides tabContentColor) {
                 Row(
                     modifier = Modifier
@@ -442,7 +455,7 @@ fun LiquidGlassNavigationBar(
                             },
                         )
                         .then(dampedDrag.modifier)
-                        .height(64.dp)
+                        .height(if (isBlurActive) 48.dp else 64.dp)
                         .padding(4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     content = tabsContent,
@@ -474,7 +487,7 @@ fun LiquidGlassNavigationBar(
                                 onDrawSurface = { drawRect(containerColor) },
                             )
                             .then(interactiveHighlight.modifier)
-                            .height(56.dp)
+                            .height(40.dp)
                             .padding(horizontal = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         content = tabsContent,
@@ -529,7 +542,7 @@ fun LiquidGlassNavigationBar(
                                     alpha = dampedDrag.pressProgress,
                                 )
                             }
-                            .height(56.dp)
+                            .height(if (isBlurActive) 40.dp else 56.dp)
                             .width(tabWidthDp),
                     )
                 } else {
@@ -542,7 +555,7 @@ fun LiquidGlassNavigationBar(
                             }
                             .clip(pillShape)
                             .background(accentColor.copy(alpha = 0.15f), pillShape)
-                            .height(56.dp)
+                            .height(if (isBlurActive) 40.dp else 56.dp)
                             .width(tabWidthDp),
                         contentAlignment = Alignment.CenterStart,
                     ) {
@@ -552,7 +565,7 @@ fun LiquidGlassNavigationBar(
                                     .clearAndSetSemantics {}
                                     .wrapContentWidth(align = Alignment.Start, unbounded = true)
                                     .requiredWidth(with(density) { (totalWidthPx - 8.dp.toPx()).toDp() })
-                                    .height(56.dp)
+                                    .height(if (isBlurActive) 40.dp else 56.dp)
                                     .graphicsLayer {
                                         val progressOffset = dampedDrag.value * tabWidthPx
                                         translationX = if (isLtr) -progressOffset else progressOffset
@@ -566,4 +579,5 @@ fun LiquidGlassNavigationBar(
             }
         }
     }
+}
 }

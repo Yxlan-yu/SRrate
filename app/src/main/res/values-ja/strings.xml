@@ -200,6 +200,8 @@
     <string name="settings_color_confirm">確定</string>
     <string name="settings_material_title">高度なマテリアル</string>
     <string name="settings_material_desc">Liquid Glass のすりガラス効果の下部ナビゲーションバー、Android 13+ が必要です</string>
+    <string name="settings_theme_title">テーマ</string>
+    <string name="settings_theme_desc">モネカラー · 色 · 高度なマテリアル</string>
     <string name="about_github_project">GitHub 項目</string>
     <string name="about_github_project_desc">github.com/Yxlan-yu/SRrate</string>
     <string name="about_source_code">ソースコード</string>
