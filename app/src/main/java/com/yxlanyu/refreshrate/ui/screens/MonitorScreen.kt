@@ -34,6 +34,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -174,7 +175,7 @@ private fun FpsRing(modifier: Modifier) {
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1600, easing = LinearEasing),
+            animation = tween(durationMillis = 2000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart,
         ),
         label = "rotation",
@@ -183,33 +184,26 @@ private fun FpsRing(modifier: Modifier) {
         val stroke = 5.dp.toPx()
         val inset = stroke / 2f
         val arcSize = Size(size.width - stroke, size.height - stroke)
-        drawArc(
-            color = accent.copy(alpha = 0.18f),
-            startAngle = 0f,
-            sweepAngle = 360f,
-            useCenter = false,
-            topLeft = Offset(inset, inset),
-            size = arcSize,
-            style = Stroke(stroke, cap = StrokeCap.Round),
+        val conic = Brush.sweepGradient(
+            colorStops = arrayOf(
+                0.00f to accent,
+                0.333f to accent,
+                0.583f to accent.copy(alpha = 0.18f),
+                1.00f to accent,
+            ),
+            center = center,
         )
-        drawArc(
-            color = accent,
-            startAngle = rotation,
-            sweepAngle = 60f,
-            useCenter = false,
-            topLeft = Offset(inset, inset),
-            size = arcSize,
-            style = Stroke(stroke, cap = StrokeCap.Round),
-        )
-        drawArc(
-            color = accent.copy(alpha = 0.18f),
-            startAngle = rotation + 60f,
-            sweepAngle = 90f,
-            useCenter = false,
-            topLeft = Offset(inset, inset),
-            size = arcSize,
-            style = Stroke(stroke, cap = StrokeCap.Round),
-        )
+        rotate(rotation, pivot = center) {
+            drawArc(
+                brush = conic,
+                startAngle = 0f,
+                sweepAngle = 360f,
+                useCenter = false,
+                topLeft = Offset(inset, inset),
+                size = arcSize,
+                style = Stroke(stroke, cap = StrokeCap.Round),
+            )
+        }
         val glowRadius = 24.dp.toPx()
         drawCircle(
             brush = Brush.radialGradient(
