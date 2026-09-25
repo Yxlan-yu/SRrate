@@ -29,8 +29,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -38,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
-import kotlin.math.abs
 import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -57,12 +58,11 @@ fun MonitorScreen(outerContentPadding: PaddingValues) {
         val intervals = java.util.ArrayDeque<Float>()
         var prev = 0L
         var lastShown = 0L
-        android.view.Window.OnFrameMetricsAvailableListener { _, _, dropCount ->
+        android.view.Window.OnFrameMetricsAvailableListener { _, _, _ ->
             val now = SystemClock.elapsedRealtime()
             if (prev != 0L) {
                 val gap = (now - prev).toFloat()
-                val frames = (1 + dropCount).toFloat().coerceAtLeast(1f)
-                intervals.addLast(gap / frames)
+                if (gap > 0f) intervals.addLast(gap)
                 while (intervals.size > MAX_FRAMES) {
                     intervals.removeFirst()
                 }
@@ -127,7 +127,8 @@ private fun RectangleFpsCard(fps: Int, modifier: Modifier = Modifier) {
                     Text(
                         text = if (fps > 0) fps.toString() else "--",
                         fontSize = 44.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = (-0.5).sp,
                         color = MiuixTheme.colorScheme.onSurface,
                     )
                     Spacer(Modifier.width(4.dp))
@@ -177,17 +178,17 @@ private fun FpsRing(modifier: Modifier) {
             size = arcSize,
             style = Stroke(stroke, cap = StrokeCap.Round),
         )
-        val seg = 12f
-        val steps = 10
-        val half = steps / 2
-        for (i in 0 until steps) {
-            val offset = i - half
-            val angle = rotation + offset * seg
-            val a = (1f - abs(offset) / half.toFloat()) * 0.75f + 0.25f
+        val band = Brush.sweepGradient(
+            0.0f to accent.copy(alpha = 0f),
+            0.15f to accent.copy(alpha = 0.95f),
+            0.6f to accent.copy(alpha = 0.35f),
+            1.0f to accent.copy(alpha = 0f),
+        )
+        rotate(rotation, pivot = center) {
             drawArc(
-                color = accent.copy(alpha = a.coerceIn(0.25f, 1f)),
-                startAngle = angle,
-                sweepAngle = seg,
+                brush = band,
+                startAngle = 0f,
+                sweepAngle = 140f,
                 useCenter = false,
                 topLeft = Offset(inset, inset),
                 size = arcSize,
