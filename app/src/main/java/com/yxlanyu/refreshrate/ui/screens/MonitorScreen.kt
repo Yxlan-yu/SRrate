@@ -195,7 +195,16 @@ private fun FpsRing(modifier: Modifier) {
         drawArc(
             color = accent,
             startAngle = rotation,
-            sweepAngle = 42f,
+            sweepAngle = 60f,
+            useCenter = false,
+            topLeft = Offset(inset, inset),
+            size = arcSize,
+            style = Stroke(stroke, cap = StrokeCap.Round),
+        )
+        drawArc(
+            color = accent.copy(alpha = 0.18f),
+            startAngle = rotation + 60f,
+            sweepAngle = 90f,
             useCenter = false,
             topLeft = Offset(inset, inset),
             size = arcSize,
