@@ -693,6 +693,10 @@ fun SettingsScreen(
                 val onSelect = {
                     updateChannel = key
                     prefs.edit().putString("update_channel", key).apply()
+                    if (!selected) {
+                        showChannelDialog = false
+                        updateController.checkAndShow()
+                    }
                 }
                 Row(
                     modifier = Modifier
