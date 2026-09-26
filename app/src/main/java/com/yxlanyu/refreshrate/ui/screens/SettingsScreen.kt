@@ -571,15 +571,16 @@ fun SettingsScreen(
                                     url = "https://github.com/RikkaApps/Shizuku",
                                     context = context,
                                 )
-                            OpenSourceRow(
-                                name = stringResource(R.string.open_source_androidx_name),
-                                info = stringResource(R.string.open_source_androidx_info),
-                                url = "https://developer.android.com/",
-                                context = context,
-                            )
+                                OpenSourceRow(
+                                    name = stringResource(R.string.open_source_androidx_name),
+                                    info = stringResource(R.string.open_source_androidx_info),
+                                    url = "https://developer.android.com/",
+                                    context = context,
+                                )
                         },
                     )
                 }
+            }
             }
             SettingsPage.Update -> {
                 item(key = "update") {
@@ -615,7 +616,6 @@ fun SettingsScreen(
                     }
                 }
             }
-        }
         }
     }
 
