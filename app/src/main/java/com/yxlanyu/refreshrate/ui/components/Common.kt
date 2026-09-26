@@ -30,9 +30,6 @@ import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
-import top.yukonga.miuix.kmp.blur.isRuntimeShaderSupported
-import top.yukonga.miuix.kmp.blur.layerBackdrop
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
@@ -50,14 +47,10 @@ fun RefreshPageScaffold(
     content: LazyListScope.() -> Unit,
 ) {
     val scrollBehavior = MiuixScrollBehavior()
-    val blurAvailable = isRuntimeShaderSupported()
-    val surfaceColor = MiuixTheme.colorScheme.surface
-    val backdrop = rememberLayerBackdrop {
-        drawRect(surfaceColor)
-        drawContent()
-    }
-    val barColor = if (blurAvailable) Color.Transparent else surfaceColor
-    val barModifier = if (blurAvailable) Modifier.themedEave(backdrop) else Modifier
+    // 顶栏背景透明，由 Modifier.themedEave() 刷出 CZeroX 渐进遮罩。
+    // 这里刻意不接任何 backdrop 模糊：MIUI libhwui 的 MiBackgroundBlurBlend 会在
+    // 处理带模糊的 RenderNode 时于 RenderThread 原生崩溃。
+    val eaveModifier = Modifier.themedEave()
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -66,8 +59,8 @@ fun RefreshPageScaffold(
                     title = title,
                     largeTitle = largeTitle,
                     subtitle = subtitle,
-                    modifier = barModifier,
-                    color = barColor,
+                    modifier = eaveModifier,
+                    color = Color.Transparent,
                     navigationIcon = navigationIcon ?: {},
                     actions = actions ?: {},
                     scrollBehavior = scrollBehavior,
@@ -75,8 +68,8 @@ fun RefreshPageScaffold(
             } else {
                 SmallTopAppBar(
                     title = title,
-                    modifier = barModifier,
-                    color = barColor,
+                    modifier = eaveModifier,
+                    color = Color.Transparent,
                     navigationIcon = navigationIcon ?: {},
                     actions = actions ?: {},
                     scrollBehavior = scrollBehavior,
@@ -84,20 +77,17 @@ fun RefreshPageScaffold(
             }
         },
     ) { innerPadding ->
-        ProvideThemedBackdrop(backdrop) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(if (blurAvailable) Modifier.layerBackdrop(backdrop) else Modifier)
-                    .overScrollVertical()
-                    .nestedScroll(scrollBehavior.nestedScrollConnection),
-                contentPadding = PaddingValues(
-                    top = innerPadding.calculateTopPadding(),
-                    bottom = outerContentPadding.calculateBottomPadding(),
-                ),
-            ) {
-                content()
-            }
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .overScrollVertical()
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
+            contentPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding(),
+                bottom = outerContentPadding.calculateBottomPadding(),
+            ),
+        ) {
+            content()
         }
     }
 }
