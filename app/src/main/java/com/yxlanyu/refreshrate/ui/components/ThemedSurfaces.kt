@@ -120,7 +120,10 @@ fun Modifier.themedAcrylicCard(cornerRadius: Dp): Modifier {
         Modifier
     }
     return this
-        .dropShadow(shape, Shadow(radius = ShadowRadiusDp.dp, color = Color.Black, alpha = shadowAlpha))
+        .dropShadow(
+            shape = shape,
+            shadow = Shadow(radius = ShadowRadiusDp.dp, color = Color.Black, alpha = shadowAlpha),
+        )
         .clip(shape)
         .then(frost)
         .drawBehind {
@@ -128,8 +131,8 @@ fun Modifier.themedAcrylicCard(cornerRadius: Dp): Modifier {
             drawRect(color = baseTint)
             drawRect(
                 brush = Brush.radialGradient(
-                    colorStops = bloomStops,
-                    center = center,
+                    *bloomStops.toTypedArray(),
+                    center = size.center,
                     radius = sqrt(size.width * size.width + size.height * size.height) / 2f,
                 ),
             )
