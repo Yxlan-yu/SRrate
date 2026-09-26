@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
@@ -132,7 +133,7 @@ fun Modifier.themedAcrylicCard(cornerRadius: Dp): Modifier {
             drawRect(
                 brush = Brush.radialGradient(
                     *bloomStops.toTypedArray(),
-                    center = size.center,
+                    center = Offset(size.width / 2f, size.height / 2f),
                     radius = sqrt(size.width * size.width + size.height * size.height) / 2f,
                 ),
             )
