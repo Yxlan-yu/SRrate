@@ -192,6 +192,8 @@
     <string name="update_notif_content">タップして確認・更新</string>
     <string name="settings_auto_check">アップデートを自動確認</string>
     <string name="settings_auto_check_desc">起動時に GitHub の新バージョンを確認し、見つかったらお知らせします</string>
+    <string name="settings_auto_check_on">自動チェックオン</string>
+    <string name="settings_auto_check_off">自動チェックオフ</string>
     <string name="settings_monet_title">モネカラー</string>
     <string name="settings_monet_desc">システムのダイナミックカラーを使用し、壁紙の色調に自動で合わせます</string>
     <string name="settings_color_title">色のオプション</string>

@@ -192,6 +192,8 @@
     <string name="update_notif_content">點擊查看並更新</string>
     <string name="settings_auto_check">自動檢查更新</string>
     <string name="settings_auto_check_desc">開啟應用程式時檢查 GitHub 上的新版本，發現新版本時跳出提醒</string>
+    <string name="settings_auto_check_on">自動檢查已開啟</string>
+    <string name="settings_auto_check_off">自動檢查已關閉</string>
     <string name="settings_monet_title">莫奈取色</string>
     <string name="settings_monet_desc">使用系統動態取色，自動配合桌布色調</string>
     <string name="settings_color_title">顏色選項</string>

@@ -86,7 +86,7 @@ import top.yukonga.miuix.kmp.icon.extended.Translate
 import top.yukonga.miuix.kmp.icon.extended.Update
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-private enum class SettingsPage { Main, Language, About, Theme, OpenSource }
+private enum class SettingsPage { Main, Language, About, Theme, OpenSource, Update }
 
 private data class LangOption(val key: String, val labelRes: Int)
 
@@ -198,6 +198,7 @@ fun SettingsScreen(
                 SettingsPage.About -> 2
                 SettingsPage.Theme -> 3
                 SettingsPage.OpenSource -> 4
+                SettingsPage.Update -> 5
             }
         },
     ) { p ->
@@ -210,6 +211,7 @@ fun SettingsScreen(
             SettingsPage.About -> stringResource(R.string.about_title)
             SettingsPage.Theme -> stringResource(R.string.settings_theme_title)
             SettingsPage.OpenSource -> stringResource(R.string.open_source_title)
+            SettingsPage.Update -> stringResource(R.string.update_btn)
         },
         navigationIcon = if (page != SettingsPage.Main) {
             {
@@ -307,20 +309,6 @@ fun SettingsScreen(
                                     prefs.edit().putBoolean("switch_toast_enabled", checked).apply()
                                 },
                             )
-                            ToggleRow(
-                                title = stringResource(R.string.settings_auto_check),
-                                desc = stringResource(R.string.settings_auto_check_desc),
-                                checked = autoCheck,
-                                onCheckedChange = { checked ->
-                                    autoCheck = checked
-                                    prefs.edit().putBoolean("auto_check_update", checked).apply()
-                                },
-                            )
-                            ChevRow(
-                                title = stringResource(R.string.settings_channel_title),
-                                desc = stringResource(R.string.settings_channel_desc),
-                                onClick = { showChannelDialog = true },
-                            )
                             ChevRow(
                                 title = stringResource(R.string.settings_theme_title),
                                 desc = stringResource(R.string.settings_theme_desc),
@@ -330,6 +318,17 @@ fun SettingsScreen(
                                 title = stringResource(R.string.language_page_title),
                                 desc = stringResource(R.string.language_row_desc),
                                 onClick = { page = SettingsPage.Language },
+                            )
+                            ChevRow(
+                                title = stringResource(R.string.update_btn),
+                                desc = stringResource(
+                                    if (updateChannel == "beta") R.string.channel_beta
+                                    else R.string.channel_stable
+                                ) + " · " + stringResource(
+                                    if (autoCheck) R.string.settings_auto_check_on
+                                    else R.string.settings_auto_check_off
+                                ),
+                                onClick = { page = SettingsPage.Update },
                             )
                             ChevRow(
                                 title = stringResource(R.string.about_title),
@@ -415,11 +414,6 @@ fun SettingsScreen(
                     SettingsSectionCard(
                         title = stringResource(R.string.about_menu_more),
                         children = {
-                            AboutMenuRow(
-                                title = stringResource(R.string.check_update),
-                                desc = stringResource(R.string.about_check_update_desc),
-                                onClick = { updateController.checkAndShow() },
-                            )
                             AboutMenuRow(
                                 title = stringResource(R.string.about_github_project),
                                 desc = stringResource(R.string.about_github_project_desc),
@@ -577,17 +571,51 @@ fun SettingsScreen(
                                     url = "https://github.com/RikkaApps/Shizuku",
                                     context = context,
                                 )
-                                OpenSourceRow(
-                                    name = stringResource(R.string.open_source_androidx_name),
-                                    info = stringResource(R.string.open_source_androidx_info),
-                                    url = "https://developer.android.com/",
-                                    context = context,
-                                )
+                            OpenSourceRow(
+                                name = stringResource(R.string.open_source_androidx_name),
+                                info = stringResource(R.string.open_source_androidx_info),
+                                url = "https://developer.android.com/",
+                                context = context,
+                            )
+                        },
+                    )
+                }
+            }
+            SettingsPage.Update -> {
+                item(key = "update") {
+                    Card(
+                        cornerRadius = 16.dp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp, 0.dp, 14.dp, 0.dp),
+                    ) {
+                        ToggleRow(
+                            title = stringResource(R.string.settings_auto_check),
+                            desc = stringResource(R.string.settings_auto_check_desc),
+                            checked = autoCheck,
+                            onCheckedChange = { checked ->
+                                autoCheck = checked
+                                prefs.edit().putBoolean("auto_check_update", checked).apply()
                             },
+                        )
+                        ChevRow(
+                            title = stringResource(R.string.check_update),
+                            desc = stringResource(R.string.about_check_update_desc),
+                            onClick = { updateController.checkAndShow() },
+                        )
+                        ChevRow(
+                            title = stringResource(R.string.settings_channel_title),
+                            desc = stringResource(R.string.settings_channel_desc),
+                            value = stringResource(
+                                if (updateChannel == "beta") R.string.channel_beta
+                                else R.string.channel_stable
+                            ),
+                            onClick = { showChannelDialog = true },
                         )
                     }
                 }
             }
+        }
         }
     }
 
@@ -908,6 +936,7 @@ private fun ChevRow(
     title: String,
     desc: String,
     swatch: Color? = null,
+    value: String? = null,
     onClick: () -> Unit,
     icon: Int? = null,
 ) {
@@ -928,6 +957,14 @@ private fun ChevRow(
                         .size(22.dp)
                         .background(swatch, RoundedCornerShape(7.dp))
                         .padding(0.dp),
+                )
+                Spacer(Modifier.width(10.dp))
+            }
+            if (value != null) {
+                Text(
+                    text = value,
+                    fontSize = 14.sp,
+                    color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                 )
                 Spacer(Modifier.width(10.dp))
             }

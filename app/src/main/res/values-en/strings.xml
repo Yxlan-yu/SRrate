@@ -192,6 +192,8 @@
     <string name="update_notif_content">Tap to view and update</string>
     <string name="settings_auto_check">Auto check updates</string>
     <string name="settings_auto_check_desc">Check GitHub for new versions when the app opens and show a reminder if found</string>
+    <string name="settings_auto_check_on">Auto check on</string>
+    <string name="settings_auto_check_off">Auto check off</string>
     <string name="settings_monet_title">Monet colors</string>
     <string name="settings_monet_desc">Use the system dynamic color scheme to match the wallpaper tone</string>
     <string name="settings_color_title">Color options</string>
