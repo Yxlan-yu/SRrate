@@ -30,6 +30,9 @@ import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.blur.isRuntimeShaderSupported
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
@@ -47,6 +50,14 @@ fun RefreshPageScaffold(
     content: LazyListScope.() -> Unit,
 ) {
     val scrollBehavior = MiuixScrollBehavior()
+    val blurAvailable = isRuntimeShaderSupported()
+    val surfaceColor = MiuixTheme.colorScheme.surface
+    val backdrop = rememberLayerBackdrop {
+        drawRect(surfaceColor)
+        drawContent()
+    }
+    val barColor = if (blurAvailable) Color.Transparent else surfaceColor
+    val barModifier = if (blurAvailable) Modifier.themedEave(backdrop) else Modifier
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -55,6 +66,8 @@ fun RefreshPageScaffold(
                     title = title,
                     largeTitle = largeTitle,
                     subtitle = subtitle,
+                    modifier = barModifier,
+                    color = barColor,
                     navigationIcon = navigationIcon ?: {},
                     actions = actions ?: {},
                     scrollBehavior = scrollBehavior,
@@ -62,6 +75,8 @@ fun RefreshPageScaffold(
             } else {
                 SmallTopAppBar(
                     title = title,
+                    modifier = barModifier,
+                    color = barColor,
                     navigationIcon = navigationIcon ?: {},
                     actions = actions ?: {},
                     scrollBehavior = scrollBehavior,
@@ -69,17 +84,20 @@ fun RefreshPageScaffold(
             }
         },
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .overScrollVertical()
-                .nestedScroll(scrollBehavior.nestedScrollConnection),
-            contentPadding = PaddingValues(
-                top = innerPadding.calculateTopPadding(),
-                bottom = outerContentPadding.calculateBottomPadding(),
-            ),
-        ) {
-            content()
+        ProvideThemedBackdrop(backdrop) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(if (blurAvailable) Modifier.layerBackdrop(backdrop) else Modifier)
+                    .overScrollVertical()
+                    .nestedScroll(scrollBehavior.nestedScrollConnection),
+                contentPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding(),
+                    bottom = outerContentPadding.calculateBottomPadding(),
+                ),
+            ) {
+                content()
+            }
         }
     }
 }

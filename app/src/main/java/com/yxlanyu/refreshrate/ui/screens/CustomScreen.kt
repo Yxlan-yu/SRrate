@@ -54,6 +54,7 @@ import com.yxlanyu.refreshrate.model.DisplayMode
 import com.yxlanyu.refreshrate.ui.components.PageTransitionContent
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
 import com.yxlanyu.refreshrate.ui.components.RefrSheetDialog
+import com.yxlanyu.refreshrate.ui.components.themedAcrylicCard
 import com.yxlanyu.refreshrate.util.AccessibilityUtils
 import com.yxlanyu.refreshrate.util.AutoOverclockManager
 import com.yxlanyu.refreshrate.util.RootUtils
@@ -64,6 +65,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.RadioButton
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Switch
@@ -968,9 +970,11 @@ private fun SettingsSectionCard(
     )
     Card(
         cornerRadius = 16.dp,
+        colors = CardDefaults.defaultColors(color = Color.Transparent),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(14.dp, 0.dp, 14.dp, 0.dp),
+            .padding(14.dp, 0.dp, 14.dp, 0.dp)
+            .themedAcrylicCard(16.dp),
     ) {
         children()
     }

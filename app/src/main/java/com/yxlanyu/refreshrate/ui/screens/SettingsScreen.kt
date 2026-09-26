@@ -56,6 +56,7 @@ import com.yxlanyu.refreshrate.ui.components.FicIcon
 import com.yxlanyu.refreshrate.ui.components.PageTransitionContent
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
 import com.yxlanyu.refreshrate.ui.components.RefrSheetDialog
+import com.yxlanyu.refreshrate.ui.components.themedAcrylicCard
 import com.yxlanyu.refreshrate.ui.components.UpdateController
 import com.yxlanyu.refreshrate.util.AccessibilityUtils
 import com.yxlanyu.refreshrate.util.LanguageUtils
@@ -69,6 +70,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.RadioButton
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Switch
@@ -343,9 +345,11 @@ fun SettingsScreen(
                 item(key = "lang") {
                     Card(
                         cornerRadius = 16.dp,
+                        colors = CardDefaults.defaultColors(color = Color.Transparent),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(14.dp, 14.dp, 14.dp, 0.dp),
+                            .padding(14.dp, 14.dp, 14.dp, 0.dp)
+                            .themedAcrylicCard(16.dp),
                     ) {
                         LANG_OPTIONS.forEachIndexed { index, opt ->
                             val selected = opt.key == lang
@@ -586,9 +590,11 @@ fun SettingsScreen(
                 item(key = "update") {
                     Card(
                         cornerRadius = 16.dp,
+                        colors = CardDefaults.defaultColors(color = Color.Transparent),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(14.dp, 0.dp, 14.dp, 0.dp),
+                            .padding(14.dp, 0.dp, 14.dp, 0.dp)
+                            .themedAcrylicCard(16.dp),
                     ) {
                         ToggleRow(
                             title = stringResource(R.string.settings_auto_check),
@@ -772,9 +778,11 @@ private fun SettingsSectionCard(
     )
     Card(
         cornerRadius = 16.dp,
+        colors = CardDefaults.defaultColors(color = Color.Transparent),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(14.dp, 0.dp, 14.dp, 0.dp),
+            .padding(14.dp, 0.dp, 14.dp, 0.dp)
+            .themedAcrylicCard(16.dp),
     ) {
         children()
     }
@@ -1105,9 +1113,11 @@ private fun WallPreviewCard(
     val colors = if (monet) baseColors else baseColors.map { it.grayish() }
     Card(
         cornerRadius = 14.dp,
+        colors = CardDefaults.defaultColors(color = Color.Transparent),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(14.dp, 8.dp, 14.dp, 0.dp),
+            .padding(14.dp, 8.dp, 14.dp, 0.dp)
+            .themedAcrylicCard(14.dp),
     ) {
         Box(
             modifier = Modifier

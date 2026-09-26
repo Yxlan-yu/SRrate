@@ -43,7 +43,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
+import com.yxlanyu.refreshrate.ui.components.themedAcrylicCard
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -114,7 +116,8 @@ fun MonitorScreen(outerContentPadding: PaddingValues) {
 private fun RectangleFpsCard(fps: Int, modifier: Modifier = Modifier) {
     Card(
         cornerRadius = 26.dp,
-        modifier = modifier,
+        colors = CardDefaults.defaultColors(color = Color.Transparent),
+        modifier = modifier.themedAcrylicCard(26.dp),
     ) {
         Row(
             modifier = Modifier

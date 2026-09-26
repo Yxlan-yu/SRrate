@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.model.DisplayMode
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
+import com.yxlanyu.refreshrate.ui.components.themedAcrylicCard
 import com.yxlanyu.refreshrate.util.AutoOverclockManager
 import com.yxlanyu.refreshrate.util.RootUtils
 import com.yxlanyu.refreshrate.util.ShizukuUtils
@@ -40,6 +41,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.CardDefaults
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -246,9 +248,11 @@ private fun RateCard(
     Card(
         onClick = onClick,
         cornerRadius = 16.dp,
+        colors = CardDefaults.defaultColors(color = Color.Transparent),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(14.dp, 14.dp, 14.dp, 0.dp),
+            .padding(14.dp, 14.dp, 14.dp, 0.dp)
+            .themedAcrylicCard(16.dp),
     ) {
         Row(
             modifier = Modifier
