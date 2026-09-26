@@ -8,15 +8,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-import kotlin.math.sqrt
 
 /**
  * 上檐渐进遮罩（CZeroX ProgressiveBlur 曲线的纯绘制实现）。
@@ -60,41 +61,36 @@ fun Modifier.themedEave(): Modifier {
     return this.drawBehind { drawRect(brush = brush) }
 }
 
-private const val AcrylicBaseAlpha = 0.85f
-private const val ShadowRadiusDp = 16f
-private const val HighlightHeightDp = 2f
-
-private val LightBloomAlphas = listOf(
-    0.00f to 0.48f, 0.30f to 0.34f, 0.55f to 0.22f, 0.78f to 0.14f, 1.00f to 0.09f,
-)
-
-private val DarkBloomAlphas = listOf(
-    0.00f to 0.62f, 0.30f to 0.46f, 0.55f to 0.30f, 0.78f to 0.19f, 1.00f to 0.12f,
-)
+private const val GlassBaseAlpha = 0.78f
+private const val ShadowRadiusDp = 10f
+private const val EdgeLineDp = 1f
+private const val InnerShadowDepthDp = 10f
 
 /**
- * 亚克力卡片表面：中性底 + 主题色中心径向晕染 + 顶部高光边 + 中心柔影。
+ * 玻璃卡片表面：与底栏「高级材质」同构的纯绘制实现。
  *
- * 径向渐变使用 farthest-side 语义（半径取半对角线）且所有 stop 均保留非零 alpha，
- * 保证主题色铺满整卡、中心浓边缘淡但不回白；整体裁剪在圆角内，不会溢出卡外。
+ * 保留底栏的容器底色 / 高光描边 / 外投影 / 内阴影四项，去掉真模糊与透镜
+ * （MIUI libhwui 的 MiBackgroundBlurBlend 会让 RenderThread 原生崩溃，详见文件头说明）。
+ *
+ * 边缘工艺全部用渐变手绘，不依赖 Modifier.innerShadow / RenderEffect：
+ *   * 底色   surfaceContainer @ 78%（叠在纯色页面上）
+ *   * 内阴影 上下左右四条渐变，模拟玻璃板的厚度
+ *   * 高光   顶部 1dp 亮线 + 底部 1dp 弱线 + 1dp 内缩描边
+ *   * 外投影 10dp / 黑 10%（深色 20%），与底栏一致
+ *
  * 卡片自身的 CardColors 需设为透明，由本 modifier 负责底色绘制。
- *
- * 底色不透明度由 0.62 提升到 0.85：原值依赖背后的模糊层提供实体感，去掉模糊后
- * 需要更实的底色才能维持同样的观感。
  */
 @Composable
 fun Modifier.themedAcrylicCard(cornerRadius: Dp): Modifier {
     val dark = isSystemInDarkTheme()
     val container = MiuixTheme.colorScheme.surfaceContainer
-    val primary = MiuixTheme.colorScheme.primary
     val shape = remember(cornerRadius) { RoundedCornerShape(cornerRadius) }
-    val baseTint = remember(container) { container.copy(alpha = AcrylicBaseAlpha) }
-    val bloomStops = remember(primary, dark) {
-        val alphas = if (dark) DarkBloomAlphas else LightBloomAlphas
-        alphas.map { (pos, alpha) -> pos to primary.copy(alpha = alpha) }
-    }
-    val edgeAlpha = if (dark) 0.10f else 0.55f
-    val shadowAlpha = if (dark) 0.38f else 0.10f
+    val baseTint = remember(container) { container.copy(alpha = GlassBaseAlpha) }
+    val shadowAlpha = if (dark) 0.20f else 0.10f
+    val innerAlpha = if (dark) 0.30f else 0.14f
+    val rimAlpha = if (dark) 0.13f else 0.22f
+    val topLineAlpha = if (dark) 0.24f else 0.62f
+    val bottomLineAlpha = if (dark) 0.07f else 0.18f
     return this
         .dropShadow(
             shape = shape,
@@ -102,21 +98,64 @@ fun Modifier.themedAcrylicCard(cornerRadius: Dp): Modifier {
         )
         .clip(shape)
         .drawBehind {
-            val highlightHeight = HighlightHeightDp.dp.toPx()
+            val line = EdgeLineDp.dp.toPx()
+            val depth = InnerShadowDepthDp.dp.toPx()
+            val radius = cornerRadius.toPx()
+
             drawRect(color = baseTint)
+
+            val inner = Color.Black.copy(alpha = innerAlpha)
             drawRect(
-                brush = Brush.radialGradient(
-                    *bloomStops.toTypedArray(),
-                    center = Offset(size.width / 2f, size.height / 2f),
-                    radius = sqrt(size.width * size.width + size.height * size.height) / 2f,
-                ),
+                brush = Brush.verticalGradient(listOf(inner, Color.Transparent), endY = depth),
+                size = Size(size.width, depth),
             )
             drawRect(
                 brush = Brush.verticalGradient(
-                    colors = listOf(Color.White.copy(alpha = edgeAlpha), Color.Transparent),
-                    endY = highlightHeight,
+                    colors = listOf(Color.Transparent, inner),
+                    startY = size.height - depth,
+                    endY = size.height,
                 ),
-                size = Size(size.width, highlightHeight),
+                size = Size(size.width, depth),
+                topLeft = Offset(0f, size.height - depth),
+            )
+            drawRect(
+                brush = Brush.horizontalGradient(listOf(inner, Color.Transparent), endX = depth),
+                size = Size(depth, size.height),
+            )
+            drawRect(
+                brush = Brush.horizontalGradient(
+                    colors = listOf(Color.Transparent, inner),
+                    startX = size.width - depth,
+                    endX = size.width,
+                ),
+                size = Size(depth, size.height),
+                topLeft = Offset(size.width - depth, 0f),
+            )
+
+            drawRect(
+                brush = Brush.verticalGradient(
+                    colors = listOf(Color.White.copy(alpha = topLineAlpha), Color.Transparent),
+                    endY = line,
+                ),
+                size = Size(size.width, line),
+            )
+            drawRect(
+                brush = Brush.verticalGradient(
+                    colors = listOf(Color.Transparent, Color.White.copy(alpha = bottomLineAlpha)),
+                    startY = size.height - line,
+                    endY = size.height,
+                ),
+                size = Size(size.width, line),
+                topLeft = Offset(0f, size.height - line),
+            )
+
+            val rimRadius = (radius - line / 2f).coerceAtLeast(0f)
+            drawRoundRect(
+                color = Color.White.copy(alpha = rimAlpha),
+                topLeft = Offset(line / 2f, line / 2f),
+                size = Size(size.width - line, size.height - line),
+                cornerRadius = CornerRadius(rimRadius, rimRadius),
+                style = Stroke(width = line),
             )
         }
 }
