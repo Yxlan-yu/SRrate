@@ -20,7 +20,10 @@ import androidx.compose.ui.unit.dp
 import com.yxlanyu.refreshrate.ui.components.liquid.InnerShadow
 import com.yxlanyu.refreshrate.ui.components.liquid.innerShadow
 import com.yxlanyu.refreshrate.ui.components.liquid.iosIndicatorSpecular
+import com.yxlanyu.refreshrate.ui.components.liquid.lens
+import com.yxlanyu.refreshrate.ui.components.liquid.vibrancy
 import top.yukonga.miuix.kmp.blur.Backdrop
+import top.yukonga.miuix.kmp.blur.blur
 import top.yukonga.miuix.kmp.blur.drawBackdrop
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
