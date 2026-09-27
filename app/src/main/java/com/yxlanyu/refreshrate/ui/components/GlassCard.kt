@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -50,7 +50,7 @@ fun GlassCard(
     val tint = (base + if (isDark) TINT_DARK_BONUS else 0f).coerceIn(0f, 1f)
     val tintColor = surfaceContainer.copy(alpha = tint)
 
-    Box(
+    Column(
         modifier = modifier
             .dropShadow(
                 shape = shape,
