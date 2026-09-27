@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -21,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import com.yxlanyu.refreshrate.MainActivity
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.service.UpdateWorker
+import com.yxlanyu.refreshrate.ui.components.LocalGlassBackdrop
 import com.yxlanyu.refreshrate.ui.components.UpdateDialog
 import com.yxlanyu.refreshrate.ui.components.liquid.LiquidGlassNavigationBar
 import com.yxlanyu.refreshrate.ui.components.rememberUpdateController
@@ -29,8 +31,6 @@ import com.yxlanyu.refreshrate.ui.screens.HomeScreen
 import com.yxlanyu.refreshrate.ui.screens.MonitorScreen
 import com.yxlanyu.refreshrate.ui.screens.SettingsScreen
 import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.basic.NavigationBar
-import top.yukonga.miuix.kmp.basic.NavigationBarItem
 import top.yukonga.miuix.kmp.basic.NavigationItem
 import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.blur.isRuntimeShaderSupported
@@ -90,80 +90,52 @@ fun AppRoot() {
     val scope = rememberCoroutineScope()
 
     val forceLangRecompose = langVersion
-    if (isBlurActive) {
-        val backgroundColor = MiuixTheme.colorScheme.surface
-        val backdrop = rememberLayerBackdrop {
-            drawRect(backgroundColor)
+
+    // 1.4.1: one backdrop, one pager, one bottom bar. "Advanced material" only decides
+    // whether that backdrop is handed to the real blur shader or left null so every
+    // card and the capsule fall back to the identical hand-drawn recipe. The backdrop
+    // is only created when the runtime can actually sample it (Android 13+).
+    val surfaceColor = MiuixTheme.colorScheme.surface
+    val backdrop = if (isBlurActive) {
+        rememberLayerBackdrop {
+            drawRect(surfaceColor)
             drawContent()
         }
-        val items = tabs.map { tab ->
-            NavigationItem(
-                label = stringResource(tab.labelRes),
-                icon = tab.icon,
+    } else {
+        null
+    }
+    val items = tabs.map { tab ->
+        NavigationItem(
+            label = stringResource(tab.labelRes),
+            icon = tab.icon,
+        )
+    }
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        bottomBar = {
+            val current = pagerState.currentPage
+            LiquidGlassNavigationBar(
+                items = items,
+                selectedIndex = current,
+                onItemClick = { index ->
+                    scope.launch { pagerState.animateScrollToPage(index) }
+                },
+                backdrop = backdrop,
+                isBlurActive = isBlurActive,
             )
-        }
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            bottomBar = {
-                val current = pagerState.currentPage
-                LiquidGlassNavigationBar(
-                    items = items,
-                    selectedIndex = current,
-                    onItemClick = { index ->
-                        scope.launch { pagerState.animateScrollToPage(index) }
-                    },
-                    backdrop = backdrop,
-                    isBlurActive = true,
-                )
-            },
-        ) { innerPadding ->
-            forceLangRecompose
+        },
+    ) { innerPadding ->
+        forceLangRecompose
+        CompositionLocalProvider(LocalGlassBackdrop provides backdrop) {
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier
                     .fillMaxSize()
-                    .layerBackdrop(backdrop),
+                    .then(
+                        if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier,
+                    ),
             ) { page ->
-                when (tabs[page]) {
-                    MainTab.Home -> HomeScreen(outerContentPadding = innerPadding)
-                    MainTab.Custom -> CustomScreen(outerContentPadding = innerPadding)
-                    MainTab.Tools -> MonitorScreen(outerContentPadding = innerPadding)
-                    MainTab.Settings -> SettingsScreen(
-                        outerContentPadding = innerPadding,
-                        updateController = updateController,
-                        onLanguageChanged = {
-                            activity?.refreshAppliedLang()
-                            langVersion++
-                        },
-                        onAdvancedMaterialChanged = { checked ->
-                            advancedMaterial = checked
-                        },
-                    )
-                }
-            }
-            UpdateDialog(updateController)
-        }
-    } else {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            bottomBar = {
-                val current = pagerState.currentPage
-                NavigationBar {
-                    tabs.forEachIndexed { index, tab ->
-                        NavigationBarItem(
-                            selected = index == current,
-                            onClick = {
-                                scope.launch { pagerState.animateScrollToPage(index) }
-                            },
-                            icon = tab.icon,
-                            label = stringResource(tab.labelRes),
-                        )
-                    }
-                }
-            },
-        ) { innerPadding ->
-            forceLangRecompose
-            HorizontalPager(state = pagerState) { page ->
                 when (tabs[page]) {
                     MainTab.Home -> HomeScreen(outerContentPadding = innerPadding)
                     MainTab.Custom -> CustomScreen(outerContentPadding = innerPadding)

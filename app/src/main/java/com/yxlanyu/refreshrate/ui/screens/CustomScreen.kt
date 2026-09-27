@@ -51,6 +51,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.model.DisplayMode
+import com.yxlanyu.refreshrate.ui.components.GlassCard
 import com.yxlanyu.refreshrate.ui.components.PageTransitionContent
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
 import com.yxlanyu.refreshrate.ui.components.RefrSheetDialog
@@ -63,7 +64,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.RadioButton
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Switch
@@ -449,7 +449,7 @@ private fun MainContent(
             SettingsRow(
                 title = stringResource(R.string.guard_enabled),
                 desc = guardLog.ifEmpty { stringResource(R.string.guard_stopped) },
-                descColor = if (ocOn) Color(0xFF2ECC71) else Color(0xFF888888),
+                descColor = if (ocOn) MiuixTheme.colorScheme.primary else Color(0xFF888888),
             )
         },
     )
@@ -515,7 +515,7 @@ private fun MainContent(
                             Text(
                                 text = stringResource(R.string.app_enabled_badge),
                                 fontSize = 12.sp,
-                                color = Color(0xFF2ECC71),
+                                color = MiuixTheme.colorScheme.primary,
                             )
                             Spacer(Modifier.width(2.dp))
                             top.yukonga.miuix.kmp.basic.Icon(
@@ -966,8 +966,7 @@ private fun SettingsSectionCard(
         text = title,
         insideMargin = PaddingValues(28.dp, 12.dp),
     )
-    Card(
-        cornerRadius = 16.dp,
+    GlassCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(14.dp, 0.dp, 14.dp, 0.dp),

@@ -53,6 +53,8 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.ui.components.FicIcon
+import com.yxlanyu.refreshrate.ui.components.GlassCard
+import com.yxlanyu.refreshrate.ui.components.GlassEmphasis
 import com.yxlanyu.refreshrate.ui.components.PageTransitionContent
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
 import com.yxlanyu.refreshrate.ui.components.RefrSheetDialog
@@ -68,7 +70,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.basic.Button
-import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.RadioButton
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Switch
@@ -273,7 +274,6 @@ fun SettingsScreen(
                                     }
                                 },
                             )
-                            AccessibilityRow(a11yEnabled = a11yEnabled, onClick = openA11y)
                             NativeOverlayRow(
                                 checked = nativeOverlay,
                                 onCheckedChange = { checked ->
@@ -293,6 +293,7 @@ fun SettingsScreen(
                                     }
                                 },
                             )
+                            AccessibilityRow(a11yEnabled = a11yEnabled, onClick = openA11y)
                         },
                     )
                 }
@@ -341,8 +342,7 @@ fun SettingsScreen(
             }
             SettingsPage.Language -> {
                 item(key = "lang") {
-                    Card(
-                        cornerRadius = 16.dp,
+                    GlassCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(14.dp, 14.dp, 14.dp, 0.dp),
@@ -584,8 +584,7 @@ fun SettingsScreen(
             }
             SettingsPage.Update -> {
                 item(key = "update") {
-                    Card(
-                        cornerRadius = 16.dp,
+                    GlassCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(14.dp, 0.dp, 14.dp, 0.dp),
@@ -770,8 +769,7 @@ private fun SettingsSectionCard(
         text = title,
         insideMargin = androidx.compose.foundation.layout.PaddingValues(28.dp, 12.dp),
     )
-    Card(
-        cornerRadius = 16.dp,
+    GlassCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(14.dp, 0.dp, 14.dp, 0.dp),
@@ -834,7 +832,7 @@ private fun RootRow(
     SettingsRow(
         title = stringResource(R.string.root_running_label),
         desc = stringResource(if (hasRoot) R.string.settings_root_granted else R.string.settings_root_denied),
-        descColor = if (hasRoot) Color(0xFF2ECC71) else Color(0xFFE74C3C),
+        descColor = if (hasRoot) MiuixTheme.colorScheme.primary else Color(0xFFE74C3C),
         trailing = {
             Switch(checked = checked, onCheckedChange = onCheckedChange)
         },
@@ -858,7 +856,7 @@ private fun ShizukuRow(
     val descColor = when {
         !avail -> Color(0xFF888888)
         !perm -> Color(0xFFE74C3C)
-        else -> Color(0xFF2ECC71)
+        else -> MiuixTheme.colorScheme.primary
     }
     SettingsRow(
         title = stringResource(R.string.shizuku_running_label),
@@ -881,18 +879,13 @@ private fun ShizukuRow(
 
 @Composable
 private fun AccessibilityRow(a11yEnabled: Boolean, onClick: () -> Unit) {
+    // No Switch here: it was permanently disabled, so the row only carries status text
+    // and stays tappable for the settings hand-off.
     SettingsRow(
         title = stringResource(R.string.accessibility_running_label),
         desc = stringResource(if (a11yEnabled) R.string.accessibility_enabled else R.string.accessibility_disabled),
-        descColor = if (a11yEnabled) Color(0xFF2ECC71) else Color(0xFFE74C3C),
+        descColor = if (a11yEnabled) MiuixTheme.colorScheme.primary else Color(0xFFE74C3C),
         onClick = onClick,
-        trailing = {
-            Switch(
-                checked = a11yEnabled,
-                onCheckedChange = { onClick() },
-                enabled = false,
-            )
-        },
     )
     Divider(start = 14.dp)
 }
@@ -1103,8 +1096,8 @@ private fun WallPreviewCard(
         listOf(Color(0xFFBBD6FF), Color(0xFF7FA6F8), Color(0xFFB18CFF))
     }
     val colors = if (monet) baseColors else baseColors.map { it.grayish() }
-    Card(
-        cornerRadius = 14.dp,
+    GlassCard(
+        emphasis = GlassEmphasis.Sub,
         modifier = Modifier
             .fillMaxWidth()
             .padding(14.dp, 8.dp, 14.dp, 0.dp),

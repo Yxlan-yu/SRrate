@@ -23,7 +23,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -31,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.model.DisplayMode
+import com.yxlanyu.refreshrate.ui.components.GlassCard
+import com.yxlanyu.refreshrate.ui.components.GlassEmphasis
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
 import com.yxlanyu.refreshrate.util.AutoOverclockManager
 import com.yxlanyu.refreshrate.util.RootUtils
@@ -39,7 +40,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -243,9 +243,9 @@ private fun RateCard(
     val desc = mode.getRateDesc(ctx)
     val isFallback = mode.modeId < 0
 
-    Card(
+    GlassCard(
         onClick = onClick,
-        cornerRadius = 16.dp,
+        emphasis = if (isCurrent) GlassEmphasis.Hero else GlassEmphasis.Sub,
         modifier = Modifier
             .fillMaxWidth()
             .padding(14.dp, 14.dp, 14.dp, 0.dp),
@@ -269,9 +269,9 @@ private fun RateCard(
                         Text(
                             text = stringResource(R.string.badge_current),
                             fontSize = 12.sp,
-                            color = Color.White,
+                            color = MiuixTheme.colorScheme.onPrimary,
                             modifier = Modifier
-                                .background(Color(0xFF2ECC71), RoundedCornerShape(8.dp))
+                                .background(MiuixTheme.colorScheme.primary, RoundedCornerShape(8.dp))
                                 .padding(horizontal = 6.dp, vertical = 2.dp),
                         )
                     }

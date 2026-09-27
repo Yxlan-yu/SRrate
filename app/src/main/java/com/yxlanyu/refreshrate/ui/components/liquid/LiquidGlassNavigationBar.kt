@@ -9,6 +9,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -51,6 +52,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.shadow.Shadow
@@ -68,18 +70,15 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import com.yxlanyu.refreshrate.ui.components.liquid.animation.DampedDragAnimation
 import com.yxlanyu.refreshrate.ui.components.liquid.animation.InteractiveHighlight
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.Icon
 import top.yukonga.miuix.kmp.basic.NavigationItem
-import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import top.yukonga.miuix.kmp.blur.blur
 import top.yukonga.miuix.kmp.blur.drawBackdrop
@@ -102,7 +101,9 @@ import kotlin.math.sin
 
 private val LocalIosTabScale = staticCompositionLocalOf { { 1f } }
 
-private val iosIndicatorSpecular: Highlight = Highlight(
+// Shared with GlassCard so cards and the bottom bar carry the exact same 1dp dual-peak
+// stroke instead of pulling in a second highlight definition.
+internal val iosIndicatorSpecular: Highlight = Highlight(
     width = 1.dp,
     alpha = 1f,
     style = BloomStroke(
@@ -188,6 +189,11 @@ private fun rememberGravityRotatedHighlight(
     }
 }
 
+/** 1.4.1 fixed capsule geometry: 288dp wide, 44dp tall, 22dp icons. */
+internal val NavCapsuleWidth = 288.dp
+internal val NavCapsuleHeight = 44.dp
+internal val NavCapsuleIcon = 22.dp
+
 @Composable
 fun LiquidGlassNavigationBar(
     items: List<NavigationItem>,
@@ -202,7 +208,9 @@ fun LiquidGlassNavigationBar(
     val accentColor = MiuixTheme.colorScheme.primary
     val tabContentColor = MiuixTheme.colorScheme.onSurface
     val surfaceContainer = MiuixTheme.colorScheme.surfaceContainer
-    val containerColor = if (isBlurActive) surfaceContainer.copy(alpha = 0.4f) else surfaceContainer
+    // Both modes share one tint so switching "advanced material" only changes the
+    // material, never the surface colour.
+    val containerColor = surfaceContainer.copy(alpha = if (isDark) 0.46f else 0.40f)
 
     val tabsBackdrop = rememberLayerBackdrop()
     val density = LocalDensity.current
@@ -322,7 +330,7 @@ fun LiquidGlassNavigationBar(
     val combinedBackdrop = backdrop?.let { rememberCombinedBackdrop(it, tabsBackdrop) }
 
     val navBarBottomPadding = WindowInsets.navigationBars.only(WindowInsetsSides.Bottom).asPaddingValues().calculateBottomPadding()
-    val bottomPaddingValue = if (navBarBottomPadding != 0.dp) 8.dp + navBarBottomPadding else 36.dp
+    val bottomPaddingValue = if (navBarBottomPadding != 0.dp) 8.dp + navBarBottomPadding else 30.dp
 
     val tabsContent: @Composable RowScope.() -> Unit = {
         val tabScale = LocalIosTabScale.current
@@ -360,27 +368,19 @@ fun LiquidGlassNavigationBar(
                 horizontalAlignment = CenterHorizontally,
             ) {
                 Icon(
-                    modifier = Modifier.size(if (isBlurActive) 20.dp else 22.dp),
+                    modifier = Modifier.size(NavCapsuleIcon),
                     imageVector = item.icon,
-                    // Compact (blur) mode is icon-only: the label becomes the content description.
-                    contentDescription = if (isBlurActive) item.label else null,
+                    // Icon-only in every 1.4.1 mode, so the label is the content description.
+                    contentDescription = item.label,
                 )
-                if (!isBlurActive) {
-                    Text(
-                        text = item.label,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Normal,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
             }
         }
     }
 
-    // Compact blur mode: a narrow centered capsule (60dp per tab, 40dp visible).
-    // Non-blur path is unused by AppRoot but kept structurally identical.
-    val capsuleWidthDp = if (isBlurActive) 60.dp * tabsCount else null
+    // 1.4.1: the bar is a fixed 288x44dp centered capsule in every mode. "Advanced
+    // material" only swaps real blur for the hand-drawn recipe of the same shape, it
+    // never changes the silhouette, so the shape maths below stay constant too.
+    val capsuleWidth = NavCapsuleWidth
 
     Column(modifier = modifier.fillMaxWidth()) {
         Box(
@@ -390,10 +390,7 @@ fun LiquidGlassNavigationBar(
             contentAlignment = Alignment.Center,
         ) {
             Box(
-                modifier = Modifier
-                    .then(
-                        if (isBlurActive) Modifier.width(capsuleWidthDp!!) else Modifier.fillMaxWidth(),
-                    ),
+                modifier = Modifier.width(capsuleWidth),
                 contentAlignment = Alignment.CenterStart,
             ) {
             CompositionLocalProvider(LocalContentColor provides tabContentColor) {
@@ -443,8 +440,27 @@ fun LiquidGlassNavigationBar(
                                     onDrawSurface = { drawRect(containerColor) },
                                 )
                             } else {
+                                // Hand-drawn twin of the blurred pill: same tint, same
+                                // 1dp dual-peak stroke, same inner shadow.
                                 Modifier
                                     .background(containerColor, pillShape)
+                                    .border(
+                                        width = 1.dp,
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.White.copy(alpha = 0.55f),
+                                                Color.White.copy(alpha = 0.16f),
+                                            ),
+                                        ),
+                                        shape = pillShape,
+                                    )
+                                    .innerShadow(shape = pillShape) {
+                                        InnerShadow(
+                                            radius = 8.dp,
+                                            offset = DpOffset(0.dp, 5.dp),
+                                            color = Color.Black.copy(alpha = 0.15f),
+                                        )
+                                    }
                             },
                         )
                         .then(
@@ -455,7 +471,7 @@ fun LiquidGlassNavigationBar(
                             },
                         )
                         .then(dampedDrag.modifier)
-                        .height(if (isBlurActive) 48.dp else 64.dp)
+                        .height(NavCapsuleHeight)
                         .padding(4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     content = tabsContent,
@@ -487,7 +503,7 @@ fun LiquidGlassNavigationBar(
                                 onDrawSurface = { drawRect(containerColor) },
                             )
                             .then(interactiveHighlight.modifier)
-                            .height(40.dp)
+                            .height(NavCapsuleHeight)
                             .padding(horizontal = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         content = tabsContent,
@@ -542,7 +558,7 @@ fun LiquidGlassNavigationBar(
                                     alpha = dampedDrag.pressProgress,
                                 )
                             }
-                            .height(if (isBlurActive) 40.dp else 56.dp)
+                            .height(NavCapsuleHeight)
                             .width(tabWidthDp),
                     )
                 } else {
@@ -555,7 +571,7 @@ fun LiquidGlassNavigationBar(
                             }
                             .clip(pillShape)
                             .background(accentColor.copy(alpha = 0.15f), pillShape)
-                            .height(if (isBlurActive) 40.dp else 56.dp)
+                            .height(NavCapsuleHeight)
                             .width(tabWidthDp),
                         contentAlignment = Alignment.CenterStart,
                     ) {
@@ -565,7 +581,7 @@ fun LiquidGlassNavigationBar(
                                     .clearAndSetSemantics {}
                                     .wrapContentWidth(align = Alignment.Start, unbounded = true)
                                     .requiredWidth(with(density) { (totalWidthPx - 8.dp.toPx()).toDp() })
-                                    .height(if (isBlurActive) 40.dp else 56.dp)
+                                    .height(NavCapsuleHeight)
                                     .graphicsLayer {
                                         val progressOffset = dampedDrag.value * tabWidthPx
                                         translationX = if (isLtr) -progressOffset else progressOffset

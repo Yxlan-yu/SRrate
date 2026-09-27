@@ -42,8 +42,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.yxlanyu.refreshrate.R
+import com.yxlanyu.refreshrate.ui.components.GlassCard
+import com.yxlanyu.refreshrate.ui.components.GlassEmphasis
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
-import top.yukonga.miuix.kmp.basic.Card
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -112,8 +113,10 @@ fun MonitorScreen(outerContentPadding: PaddingValues) {
 
 @Composable
 private fun RectangleFpsCard(fps: Int, modifier: Modifier = Modifier) {
-    Card(
+    // 26dp is the shipped radius for this card and stays out of the 24dp standard.
+    GlassCard(
         cornerRadius = 26.dp,
+        emphasis = GlassEmphasis.Hero,
         modifier = modifier,
     ) {
         Row(
