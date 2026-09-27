@@ -12,7 +12,7 @@ android {
         minSdk 24
         targetSdk 34
 versionCode 145
-    versionName "1.4.0-beta6"
+    versionName "1.4.0"
     }
 
     signingConfigs {
