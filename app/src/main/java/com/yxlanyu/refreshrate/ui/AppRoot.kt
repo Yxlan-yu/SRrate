@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -22,7 +21,6 @@ import androidx.compose.ui.res.stringResource
 import com.yxlanyu.refreshrate.MainActivity
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.service.UpdateWorker
-import com.yxlanyu.refreshrate.ui.components.LocalGlassBackdrop
 import com.yxlanyu.refreshrate.ui.components.UpdateDialog
 import com.yxlanyu.refreshrate.ui.components.liquid.LiquidGlassNavigationBar
 import com.yxlanyu.refreshrate.ui.components.rememberUpdateController
@@ -92,9 +90,10 @@ fun AppRoot() {
     val forceLangRecompose = langVersion
 
     // 1.4.1: one backdrop, one pager, one bottom bar. "Advanced material" only decides
-    // whether that backdrop is handed to the real blur shader or left null so every
-    // card and the capsule fall back to the identical hand-drawn recipe. The backdrop
-    // is only created when the runtime can actually sample it (Android 13+).
+    // whether the bottom bar capsule gets the real blur shader or the identical
+    // hand-drawn recipe; cards never sample this backdrop, because a drawBackdrop node
+    // nested inside the recorded node promotes itself to a background-blur layer and
+    // blows the RenderThread stack (SIGSEGV in libhwui prepareTreeImpl).
     val surfaceColor = MiuixTheme.colorScheme.surface
     val backdrop = if (isBlurActive) {
         rememberLayerBackdrop {
@@ -127,33 +126,31 @@ fun AppRoot() {
         },
     ) { innerPadding ->
         forceLangRecompose
-        CompositionLocalProvider(LocalGlassBackdrop provides backdrop) {
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(
-                        if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier,
-                    ),
-            ) { page ->
-                when (tabs[page]) {
-                    MainTab.Home -> HomeScreen(outerContentPadding = innerPadding)
-                    MainTab.Custom -> CustomScreen(outerContentPadding = innerPadding)
-                    MainTab.Tools -> MonitorScreen(outerContentPadding = innerPadding)
-                    MainTab.Settings -> SettingsScreen(
-                        outerContentPadding = innerPadding,
-                        updateController = updateController,
-                        onLanguageChanged = {
-                            activity?.refreshAppliedLang()
-                            langVersion++
-                        },
-                        onAdvancedMaterialChanged = { checked ->
-                            advancedMaterial = checked
-                        },
-                    )
-                }
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxSize()
+                .then(
+                    if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier,
+                ),
+        ) { page ->
+            when (tabs[page]) {
+                MainTab.Home -> HomeScreen(outerContentPadding = innerPadding)
+                MainTab.Custom -> CustomScreen(outerContentPadding = innerPadding)
+                MainTab.Tools -> MonitorScreen(outerContentPadding = innerPadding)
+                MainTab.Settings -> SettingsScreen(
+                    outerContentPadding = innerPadding,
+                    updateController = updateController,
+                    onLanguageChanged = {
+                        activity?.refreshAppliedLang()
+                        langVersion++
+                    },
+                    onAdvancedMaterialChanged = { checked ->
+                        advancedMaterial = checked
+                    },
+                )
             }
-            UpdateDialog(updateController)
         }
+        UpdateDialog(updateController)
     }
 }
