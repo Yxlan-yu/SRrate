@@ -535,7 +535,7 @@ fun SettingsScreen(
                                     onAdvancedMaterialChanged(checked)
                                 },
                             )
-                            HorizontalDivider()
+                            Divider()
                             // 1.4.1-beta3: capsule width / height / glass strength. Defaults are
                             // the CZeroX measurements; drag previews live, the pref is written on
                             // release so a single gesture is one disk write.
