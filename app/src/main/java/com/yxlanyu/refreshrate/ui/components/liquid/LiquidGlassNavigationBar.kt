@@ -230,7 +230,7 @@ private const val INDICATOR_REST = 0.5f
 private const val INDICATOR_RIM_TOP_ALPHA = 0.55f
 private const val INDICATOR_RIM_BOTTOM_ALPHA = 0.16f
 private const val INDICATOR_INNER_SHADOW_ALPHA = 0.15f
-private const val INDICATOR_INNER_SHADOW_RADIUS = 8.dp
+private val INDICATOR_INNER_SHADOW_RADIUS = 8.dp
 
 private fun restingPress(press: Float): Float = INDICATOR_REST + (1f - INDICATOR_REST) * press
 
