@@ -8,6 +8,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,11 +19,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.yxlanyu.refreshrate.MainActivity
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.service.UpdateWorker
 import com.yxlanyu.refreshrate.ui.components.UpdateDialog
 import com.yxlanyu.refreshrate.ui.components.liquid.LiquidGlassNavigationBar
+import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleHeightDefault
+import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleWidthDefault
+import com.yxlanyu.refreshrate.ui.components.liquid.NavGlassStrengthDefault
 import com.yxlanyu.refreshrate.ui.components.rememberUpdateController
 import com.yxlanyu.refreshrate.ui.screens.CustomScreen
 import com.yxlanyu.refreshrate.ui.screens.HomeScreen
@@ -80,6 +85,10 @@ fun AppRoot() {
     }
     var advancedMaterial by remember { mutableStateOf(prefs.getBoolean("advanced_material", false)) }
     val isBlurActive = advancedMaterial && isRuntimeShaderSupported()
+    // 1.4.1-beta3 bottom bar geometry, all adjustable from Settings > Theme > Interaction.
+    var capsuleWidth by remember { mutableFloatStateOf(prefs.getFloat("nav_capsule_width", NavCapsuleWidthDefault.value)) }
+    var capsuleHeight by remember { mutableFloatStateOf(prefs.getFloat("nav_capsule_height", NavCapsuleHeightDefault.value)) }
+    var glassStrength by remember { mutableFloatStateOf(prefs.getFloat("nav_glass_strength", NavGlassStrengthDefault)) }
 
     val pagerState = rememberPagerState(
         initialPage = 0,
@@ -122,6 +131,9 @@ fun AppRoot() {
                 },
                 backdrop = backdrop,
                 isBlurActive = isBlurActive,
+                capsuleWidth = capsuleWidth.dp,
+                capsuleHeight = capsuleHeight.dp,
+                glassStrength = glassStrength,
             )
         },
     ) { innerPadding ->
@@ -147,6 +159,11 @@ fun AppRoot() {
                     },
                     onAdvancedMaterialChanged = { checked ->
                         advancedMaterial = checked
+                    },
+                    onNavGeometryChanged = { widthDp, heightDp, strength ->
+                        capsuleWidth = widthDp
+                        capsuleHeight = heightDp
+                        glassStrength = strength
                     },
                 )
             }

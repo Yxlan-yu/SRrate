@@ -189,10 +189,32 @@ private fun rememberGravityRotatedHighlight(
     }
 }
 
-/** 1.4.1 fixed capsule geometry: 288dp wide, 44dp tall, 22dp icons. */
-internal val NavCapsuleWidth = 288.dp
-internal val NavCapsuleHeight = 44.dp
+/**
+ * 1.4.1-beta3 capsule geometry, measured off the CZeroX capture (923x2000 image of a
+ * 1080x2340 @440dpi screen, so 1dp = 0.42549 image px):
+ *
+ *   visible capsule  625x131 px -> 266 x 56 dp
+ *   icon ink         48..55 px  -> ~22 dp
+ *   tab pitch        153..155 px -> 64.5 dp (266/4 with a 4dp liner per side)
+ *   indicator        133x107 px -> 58 x 46 dp, ~5dp inset top and bottom
+ *   pill -> screen   67 px      -> 28.5 dp
+ *
+ * `capsuleWidth`/`capsuleHeight` are *visible* sizes: the pill's background, border and
+ * blur are attached outside `.height()`, so the drawn capsule is exactly the value passed
+ * in, and the 4dp liner only insets the tab content inside it. The indicator is driven by
+ * the same `capsuleHeight`, because the two used to be written out six times by hand and
+ * silently drifted apart.
+ */
+internal val NavCapsuleInset = 4.dp
 internal val NavCapsuleIcon = 22.dp
+internal val NavCapsuleWidthDefault = 266.dp
+internal val NavCapsuleHeightDefault = 56.dp
+internal val NavCapsuleBottomPadding = 5.dp
+internal val NavGlassStrengthDefault = 0.5f
+
+/** 1.4.1-beta3 slider ranges; the defaults are the CZeroX measurements above. */
+internal val NavCapsuleWidthRange = 200f..340f
+internal val NavCapsuleHeightRange = 40f..72f
 
 @Composable
 fun LiquidGlassNavigationBar(
@@ -202,15 +224,27 @@ fun LiquidGlassNavigationBar(
     backdrop: LayerBackdrop?,
     isBlurActive: Boolean,
     modifier: Modifier = Modifier,
+    capsuleWidth: Dp = NavCapsuleWidthDefault,
+    capsuleHeight: Dp = NavCapsuleHeightDefault,
+    bottomPadding: Dp = NavCapsuleBottomPadding,
+    glassStrength: Float = NavGlassStrengthDefault,
 ) {
     val isDark = isSystemInDarkTheme()
     val pillShape = remember { CircleShape }
     val accentColor = MiuixTheme.colorScheme.primary
     val tabContentColor = MiuixTheme.colorScheme.onSurface
     val surfaceContainer = MiuixTheme.colorScheme.surfaceContainer
+    // 1.4.1-beta3: glass strength drives the whole "how much glass" read of the capsule.
+    // At the 0.5 default these reproduce the 1.4.1 numbers exactly (0.40 light / 0.46 dark
+    // tint, 4dp blur, 0.75 specular), so the shipped look is unchanged at the default.
+    val strength = glassStrength.coerceIn(0f, 1f)
+    val blurRadius = lerp(0f, 8f, strength).dp
+    val specularAlpha = lerp(0.5f, 1f, strength)
     // Both modes share one tint so switching "advanced material" only changes the
     // material, never the surface colour.
-    val containerColor = surfaceContainer.copy(alpha = if (isDark) 0.46f else 0.40f)
+    val containerColor = surfaceContainer.copy(
+        alpha = lerp(0.24f, 0.56f, strength).let { if (isDark) it * 1.15f else it },
+    )
 
     val tabsBackdrop = rememberLayerBackdrop()
     val density = LocalDensity.current
@@ -239,7 +273,7 @@ fun LiquidGlassNavigationBar(
 
     fun indexAt(positionX: Float): Int {
         if (tabWidthPx == 0f) return currentIndex
-        val horizontalPaddingPx = with(density) { 4.dp.toPx() }
+        val horizontalPaddingPx = with(density) { NavCapsuleInset.toPx() }
         val logicalX = if (isLtr) positionX else totalWidthPx - positionX
         return ((logicalX - horizontalPaddingPx) / tabWidthPx)
             .toInt()
@@ -330,7 +364,7 @@ fun LiquidGlassNavigationBar(
     val combinedBackdrop = backdrop?.let { rememberCombinedBackdrop(it, tabsBackdrop) }
 
     val navBarBottomPadding = WindowInsets.navigationBars.only(WindowInsetsSides.Bottom).asPaddingValues().calculateBottomPadding()
-    val bottomPaddingValue = if (navBarBottomPadding != 0.dp) 8.dp + navBarBottomPadding else 30.dp
+    val bottomPaddingValue = bottomPadding + navBarBottomPadding
 
     val tabsContent: @Composable RowScope.() -> Unit = {
         val tabScale = LocalIosTabScale.current
@@ -377,10 +411,9 @@ fun LiquidGlassNavigationBar(
         }
     }
 
-    // 1.4.1: the bar is a fixed 288x44dp centered capsule in every mode. "Advanced
-    // material" only swaps real blur for the hand-drawn recipe of the same shape, it
-    // never changes the silhouette, so the shape maths below stay constant too.
-    val capsuleWidth = NavCapsuleWidth
+    // 1.4.1-beta3: the bar is a centered capsule in every mode, and its size is user
+    // adjustable from Settings > Theme > Interaction. "Advanced material" only swaps real
+    // blur for the hand-drawn recipe of the same shape, so it never changes the silhouette.
 
     Column(modifier = modifier.fillMaxWidth()) {
         Box(
@@ -399,7 +432,7 @@ fun LiquidGlassNavigationBar(
                         .selectableGroup()
                         .onSizeChanged { coords ->
                             totalWidthPx = coords.width.toFloat()
-                            val contentWidthPx = totalWidthPx - with(density) { 8.dp.toPx() }
+                            val contentWidthPx = totalWidthPx - with(density) { (NavCapsuleInset * 2).toPx() }
                             tabWidthPx = (contentWidthPx / tabsCount).coerceAtLeast(0f)
                         }
                         .graphicsLayer { translationX = panelOffset }
@@ -422,15 +455,15 @@ fun LiquidGlassNavigationBar(
                                         padding = maxOf(padding, 40.dp.toPx())
                                         vibrancy()
                                         blur(
-                                            4.dp.toPx(),
-                                            4.dp.toPx(),
+                                            blurRadius.toPx(),
+                                            blurRadius.toPx(),
                                         )
                                         lens(
                                             refractionHeight = 24.dp.toPx(),
                                             refractionAmount = 24.dp.toPx(),
                                         )
                                     },
-                                    highlight = { baseHighlight.value.copy(alpha = 0.75f) },
+                                    highlight = { baseHighlight.value.copy(alpha = specularAlpha) },
                                     layerBlock = {
                                         val width = size.width.coerceAtLeast(1f)
                                         val s = lerp(1f, 1f + 16.dp.toPx() / width, dampedDrag.pressProgress)
@@ -471,7 +504,7 @@ fun LiquidGlassNavigationBar(
                             },
                         )
                         .then(dampedDrag.modifier)
-                        .height(NavCapsuleHeight)
+                        .height(capsuleHeight)
                         .padding(4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     content = tabsContent,
@@ -494,7 +527,7 @@ fun LiquidGlassNavigationBar(
                                 shape = { pillShape },
                                 effects = {
                                     vibrancy()
-                                    blur(4.dp.toPx(), 4.dp.toPx())
+                                    blur(blurRadius.toPx(), blurRadius.toPx())
                                     lens(
                                         refractionHeight = 24.dp.toPx(),
                                         refractionAmount = 24.dp.toPx(),
@@ -503,7 +536,7 @@ fun LiquidGlassNavigationBar(
                                 onDrawSurface = { drawRect(containerColor) },
                             )
                             .then(interactiveHighlight.modifier)
-                            .height(NavCapsuleHeight)
+                            .height(capsuleHeight)
                             .padding(horizontal = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         content = tabsContent,
@@ -558,7 +591,7 @@ fun LiquidGlassNavigationBar(
                                     alpha = dampedDrag.pressProgress,
                                 )
                             }
-                            .height(NavCapsuleHeight)
+                            .height(capsuleHeight)
                             .width(tabWidthDp),
                     )
                 } else {
@@ -571,7 +604,7 @@ fun LiquidGlassNavigationBar(
                             }
                             .clip(pillShape)
                             .background(accentColor.copy(alpha = 0.15f), pillShape)
-                            .height(NavCapsuleHeight)
+                            .height(capsuleHeight)
                             .width(tabWidthDp),
                         contentAlignment = Alignment.CenterStart,
                     ) {
@@ -580,8 +613,8 @@ fun LiquidGlassNavigationBar(
                                 modifier = Modifier
                                     .clearAndSetSemantics {}
                                     .wrapContentWidth(align = Alignment.Start, unbounded = true)
-                                    .requiredWidth(with(density) { (totalWidthPx - 8.dp.toPx()).toDp() })
-                                    .height(NavCapsuleHeight)
+                                    .requiredWidth(with(density) { (totalWidthPx - (NavCapsuleInset * 2).toPx()).toDp() })
+                                    .height(capsuleHeight)
                                     .graphicsLayer {
                                         val progressOffset = dampedDrag.value * tabWidthPx
                                         translationX = if (isLtr) -progressOffset else progressOffset

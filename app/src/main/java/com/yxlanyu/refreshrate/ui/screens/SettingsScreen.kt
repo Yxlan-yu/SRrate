@@ -28,6 +28,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -59,6 +60,11 @@ import com.yxlanyu.refreshrate.ui.components.PageTransitionContent
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
 import com.yxlanyu.refreshrate.ui.components.RefrSheetDialog
 import com.yxlanyu.refreshrate.ui.components.UpdateController
+import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleHeightDefault
+import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleHeightRange
+import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleWidthDefault
+import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleWidthRange
+import com.yxlanyu.refreshrate.ui.components.liquid.NavGlassStrengthDefault
 import com.yxlanyu.refreshrate.util.AccessibilityUtils
 import com.yxlanyu.refreshrate.util.LanguageUtils
 import com.yxlanyu.refreshrate.util.RootUtils
@@ -71,6 +77,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.basic.Button
 import top.yukonga.miuix.kmp.basic.RadioButton
+import top.yukonga.miuix.kmp.basic.Slider
 import top.yukonga.miuix.kmp.basic.SmallTitle
 import top.yukonga.miuix.kmp.basic.Switch
 import top.yukonga.miuix.kmp.basic.Text
@@ -114,6 +121,7 @@ fun SettingsScreen(
     updateController: UpdateController,
     onLanguageChanged: () -> Unit = {},
     onAdvancedMaterialChanged: (Boolean) -> Unit = {},
+    onNavGeometryChanged: (Float, Float, Float) -> Unit = { _, _, _ -> },
 ) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("s", android.content.Context.MODE_PRIVATE) }
@@ -141,6 +149,10 @@ fun SettingsScreen(
     var autoCheck by remember { mutableStateOf(prefs.getBoolean("auto_check_update", true)) }
     var monet by remember { mutableStateOf(prefs.getBoolean("monet", true)) }
     var advancedMaterial by remember { mutableStateOf(prefs.getBoolean("advanced_material", false)) }
+    // 1.4.1-beta3 bottom bar geometry, defaults are the measured CZeroX capsule.
+    var capsuleWidth by remember { mutableFloatStateOf(prefs.getFloat("nav_capsule_width", NavCapsuleWidthDefault.value)) }
+    var capsuleHeight by remember { mutableFloatStateOf(prefs.getFloat("nav_capsule_height", NavCapsuleHeightDefault.value)) }
+    var glassStrength by remember { mutableFloatStateOf(prefs.getFloat("nav_glass_strength", NavGlassStrengthDefault)) }
     var themeColor by remember { mutableStateOf(prefs.getInt("theme_color", 0xFF3B76FD.toInt())) }
     var showColorPicker by remember { mutableStateOf(false) }
     var updateChannel by remember { mutableStateOf(prefs.getString("update_channel", "stable") ?: "stable") }
@@ -521,6 +533,52 @@ fun SettingsScreen(
                                     advancedMaterial = checked
                                     prefs.edit().putBoolean("advanced_material", checked).apply()
                                     onAdvancedMaterialChanged(checked)
+                                },
+                            )
+                            HorizontalDivider()
+                            // 1.4.1-beta3: capsule width / height / glass strength. Defaults are
+                            // the CZeroX measurements; drag previews live, the pref is written on
+                            // release so a single gesture is one disk write.
+                            SliderRow(
+                                title = stringResource(R.string.settings_nav_width_title),
+                                desc = stringResource(R.string.settings_nav_width_desc),
+                                valueLabel = "${capsuleWidth.toInt()}dp",
+                                value = capsuleWidth,
+                                valueRange = NavCapsuleWidthRange,
+                                steps = 69,
+                                enabled = true,
+                                onValueChange = { capsuleWidth = it },
+                                onValueChangeFinished = {
+                                    prefs.edit().putFloat("nav_capsule_width", capsuleWidth).apply()
+                                    onNavGeometryChanged(capsuleWidth, capsuleHeight, glassStrength)
+                                },
+                            )
+                            SliderRow(
+                                title = stringResource(R.string.settings_nav_height_title),
+                                desc = stringResource(R.string.settings_nav_height_desc),
+                                valueLabel = "${capsuleHeight.toInt()}dp",
+                                value = capsuleHeight,
+                                valueRange = NavCapsuleHeightRange,
+                                steps = 15,
+                                enabled = true,
+                                onValueChange = { capsuleHeight = it },
+                                onValueChangeFinished = {
+                                    prefs.edit().putFloat("nav_capsule_height", capsuleHeight).apply()
+                                    onNavGeometryChanged(capsuleWidth, capsuleHeight, glassStrength)
+                                },
+                            )
+                            SliderRow(
+                                title = stringResource(R.string.settings_glass_strength_title),
+                                desc = stringResource(R.string.settings_glass_strength_desc),
+                                valueLabel = "${(glassStrength * 100).toInt()}%",
+                                value = glassStrength,
+                                valueRange = 0f..1f,
+                                steps = 0,
+                                enabled = advancedMaterial,
+                                onValueChange = { glassStrength = it },
+                                onValueChangeFinished = {
+                                    prefs.edit().putFloat("nav_glass_strength", glassStrength).apply()
+                                    onNavGeometryChanged(capsuleWidth, capsuleHeight, glassStrength)
                                 },
                             )
                         },
@@ -926,6 +984,48 @@ private fun ToggleRow(
         },
     )
     Divider(start = if (leadingIcon != null) 52.dp else 14.dp)
+}
+
+@Composable
+private fun SliderRow(
+    title: String,
+    desc: String,
+    valueLabel: String,
+    value: Float,
+    valueRange: ClosedFloatingPointRange<Float>,
+    steps: Int,
+    enabled: Boolean,
+    onValueChange: (Float) -> Unit,
+    onValueChangeFinished: () -> Unit,
+) {
+    SettingsRow(
+        title = title,
+        desc = desc,
+        trailing = {
+            Text(
+                text = valueLabel,
+                fontSize = 14.sp,
+                color = if (enabled) {
+                    MiuixTheme.colorScheme.onSurfaceVariantSummary
+                } else {
+                    MiuixTheme.colorScheme.onSurfaceVariantSummary.copy(alpha = 0.4f)
+                },
+            )
+        },
+    )
+    Slider(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 14.dp)
+            .padding(bottom = 12.dp),
+        enabled = enabled,
+        valueRange = valueRange,
+        steps = steps,
+        onValueChangeFinished = onValueChangeFinished,
+    )
+    Divider(start = 14.dp)
 }
 
 @Composable

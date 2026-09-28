@@ -210,6 +210,12 @@
     <string name="settings_theme_wall_sub">Colors are extracted from here when Monet is on</string>
     <string name="settings_theme_wall_custom">Custom</string>
     <string name="settings_theme_glass_note">After enabling, the bottom bar becomes a centered floating glass capsule</string>
+    <string name="settings_nav_width_title">Bar width</string>
+    <string name="settings_nav_width_desc">Horizontal size of the centered glass capsule</string>
+    <string name="settings_nav_height_title">Bar height</string>
+    <string name="settings_nav_height_desc">Vertical size of the centered glass capsule</string>
+    <string name="settings_glass_strength_title">Glass strength</string>
+    <string name="settings_glass_strength_desc">How translucent and blurred advanced material looks</string>
     <string name="about_github_project">GitHub Project</string>
     <string name="about_github_project_desc">github.com/Yxlan-yu/SRrate</string>
     <string name="about_source_code">Source Code</string>
