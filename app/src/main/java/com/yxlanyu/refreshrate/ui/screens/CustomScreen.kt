@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -44,6 +43,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -157,14 +157,25 @@ fun CustomScreen(outerContentPadding: PaddingValues) {
             }
         },
     ) { p ->
+    // 1.4.1-beta4: the bar title follows the page. Previously it was hardcoded to
+    // "自定义", so entering the list or an app's config left the collapsed bar claiming to
+    // be the Custom page.
+    val pageTitle = when (p) {
+        CustomPage.Main -> stringResource(R.string.nav_custom_app_refresh)
+        CustomPage.AppList -> stringResource(R.string.app_list_title)
+        CustomPage.AppConfig -> stringResource(R.string.app_refresh_config_title)
+    }
     RefreshPageScaffold(
-        title = stringResource(R.string.nav_custom_app_refresh),
+        title = pageTitle,
         outerContentPadding = outerContentPadding,
+        // App config is a short, fixed page: a large title would leave nothing to scroll, so
+        // it drops to the static SmallTopAppBar and stops consuming vertical gestures.
         largeTitle = when (p) {
             CustomPage.Main -> stringResource(R.string.nav_custom_app_refresh)
             CustomPage.AppList -> stringResource(R.string.app_list_title)
-            CustomPage.AppConfig -> stringResource(R.string.app_refresh_config_title)
+            CustomPage.AppConfig -> ""
         },
+        scrollEnabled = p != CustomPage.AppConfig,
         navigationIcon = if (page != CustomPage.Main) {
             {
                 top.yukonga.miuix.kmp.basic.IconButton(onClick = { backToPrevious() }) {
@@ -203,7 +214,13 @@ fun CustomScreen(outerContentPadding: PaddingValues) {
                     )
                 }
                 item(key = "syswitch") {
-                    Column {
+                    // 1.4.1-beta4: the filter row is a card like every other settings surface,
+                    // so the page stops being a bare column of text on the page background.
+                    GlassCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp, 0.dp, 14.dp, 0.dp),
+                    ) {
                         SettingsRow(
                             title = stringResource(R.string.show_system_apps),
                             desc = stringResource(
@@ -220,7 +237,6 @@ fun CustomScreen(outerContentPadding: PaddingValues) {
                                 })
                             },
                         )
-                        Divider()
                     }
                 }
                 if (appFiltered.isEmpty()) {
@@ -235,29 +251,44 @@ fun CustomScreen(outerContentPadding: PaddingValues) {
                         )
                     }
                 } else {
-                    items(appFiltered, key = { it.pkg }) { app ->
-                        SettingsRow(
-                            title = app.name,
-                            desc = app.pkg,
-                            onClick = {
-                                configFrom = CustomPage.AppList
-                                configPkg = app.pkg
-                                page = CustomPage.AppConfig
-                            },
-                            leading = {
-                                AppAvatar(app.name, app.pkg)
-                                Spacer(Modifier.width(12.dp))
-                            },
-                            trailing = {
-                                top.yukonga.miuix.kmp.basic.Icon(
-                                    modifier = Modifier.size(16.dp),
-                                    imageVector = MiuixIcons.ChevronForward,
-                                    contentDescription = "chevron",
-                                    tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                                )
-                            },
-                        )
-                        Divider(start = 52.dp)
+                    // 1.4.1-beta4: one card around the whole list rather than one row per
+                    // card. Keeping every app in a single item means the list is no longer
+                    // lazy, which is the point: the rounded surface has to be continuous.
+                    item(key = "applist") {
+                        GlassCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(14.dp, 0.dp, 14.dp, 0.dp),
+                        ) {
+                            Column {
+                                appFiltered.forEach { app ->
+                                    SettingsRow(
+                                        title = app.name,
+                                        desc = app.pkg,
+                                        onClick = {
+                                            configFrom = CustomPage.AppList
+                                            configPkg = app.pkg
+                                            page = CustomPage.AppConfig
+                                        },
+                                        leading = {
+                                            AppAvatar(app.name, app.pkg)
+                                            Spacer(Modifier.width(12.dp))
+                                        },
+                                        trailing = {
+                                            top.yukonga.miuix.kmp.basic.Icon(
+                                                modifier = Modifier.size(16.dp),
+                                                imageVector = MiuixIcons.ChevronForward,
+                                                contentDescription = "chevron",
+                                                tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                                            )
+                                        },
+                                    )
+                                    if (app.pkg != appFiltered.last().pkg) {
+                                        Divider(start = 52.dp)
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -686,28 +717,34 @@ private fun AppConfigContent(
         }
     }
 
+    // 1.4.1-beta4: identity moves to the right so the label column owns the row and a long
+    // package name truncates instead of shoving the avatar off the edge.
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        AppAvatar(appName, pkg)
-        Spacer(Modifier.width(14.dp))
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = appName,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = MiuixTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             Spacer(Modifier.size(3.dp))
             Text(
                 text = pkg,
                 fontSize = 12.sp,
                 color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
+        Spacer(Modifier.width(14.dp))
+        AppAvatar(appName, pkg)
     }
     SettingsSectionCard(
         title = stringResource(R.string.enable_single_app_refresh),

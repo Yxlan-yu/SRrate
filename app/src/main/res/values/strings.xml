@@ -216,6 +216,8 @@
     <string name="settings_nav_height_desc">居中玻璃胶囊的竖向尺寸</string>
     <string name="settings_glass_strength_title">玻璃强度</string>
     <string name="settings_glass_strength_desc">调节高级材质的通透与模糊程度</string>
+    <string name="settings_nav_bottom_offset_title">底栏间距</string>
+    <string name="settings_nav_bottom_offset_desc">玻璃胶囊与屏幕底部的距离</string>
     <string name="about_github_project">GitHub 项目</string>
     <string name="about_github_project_desc">github.com/Yxlan-yu/SRrate</string>
     <string name="about_source_code">源代码</string>

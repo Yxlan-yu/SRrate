@@ -216,6 +216,8 @@
     <string name="settings_nav_height_desc">中央のガラスカプセル型の縦サイズ</string>
     <string name="settings_glass_strength_title">ガラスの濃さ</string>
     <string name="settings_glass_strength_desc">高度なマテリアルの透過とぼかしの強さを調整</string>
+    <string name="settings_nav_bottom_offset_title">バー下端の余白</string>
+    <string name="settings_nav_bottom_offset_desc">ガラスカプセルと画面下端の距離</string>
     <string name="about_github_project">GitHub 項目</string>
     <string name="about_github_project_desc">github.com/Yxlan-yu/SRrate</string>
     <string name="about_source_code">ソースコード</string>

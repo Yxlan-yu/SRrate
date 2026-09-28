@@ -11,8 +11,8 @@ android {
         applicationId "com.yxlanyu.refreshrate"
         minSdk 24
         targetSdk 34
-versionCode 148
-    versionName "1.4.1-beta3"
+versionCode 149
+    versionName "1.4.1-beta4"
     }
 
     signingConfigs {

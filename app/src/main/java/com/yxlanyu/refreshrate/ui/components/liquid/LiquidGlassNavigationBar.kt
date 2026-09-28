@@ -197,14 +197,16 @@ private fun rememberGravityRotatedHighlight(
  *   visible capsule  625x131 px -> 266 x 56 dp
  *   icon ink         48..55 px  -> ~22 dp
  *   tab pitch        153..155 px -> 64.5 dp (266/4 with a 4dp liner per side)
- *   indicator        133x107 px -> 58 x 46 dp, ~5dp inset top and bottom
+ *   indicator        133x107 px -> 58 x 46 dp, ~4dp inset top and bottom
  *   pill -> screen   67 px      -> 28.5 dp
  *
  * `capsuleWidth`/`capsuleHeight` are *visible* sizes: the pill's background, border and
  * blur are attached outside `.height()`, so the drawn capsule is exactly the value passed
  * in, and the 4dp liner only insets the tab content inside it. The indicator is driven by
  * the same `capsuleHeight`, because the two used to be written out six times by hand and
- * silently drifted apart.
+ * silently drifted apart. 1.4.1-beta4 finally gives the indicator the measured 4dp vertical
+ * inset (`capsuleHeight - 8.dp`) plus a half-strength resting rim, which is what makes it
+ * read as a ball floating in the capsule rather than a slab filling it.
  */
 internal val NavCapsuleInset = 4.dp
 internal val NavCapsuleIcon = 22.dp
@@ -216,6 +218,28 @@ internal val NavGlassStrengthDefault = 0.5f
 /** 1.4.1-beta3 slider ranges; the defaults are the CZeroX measurements above. */
 internal val NavCapsuleWidthRange = 200f..340f
 internal val NavCapsuleHeightRange = 40f..72f
+
+/** 1.4.1-beta4 slider range: the capsule's gap to the bottom of the screen, above the inset. */
+internal val NavCapsuleBottomOffsetRange = 0f..40f
+
+// 1.4.1-beta4: the indicator keeps a visible rim at rest instead of a full-height slab, and
+// reaches the full recipe under a press. [restingPress] is read inside draw-phase lambdas on
+// purpose -- pressProgress is a plain Float that invalidates the draw, so hoisting it into
+// composition would freeze the rim at its initial value.
+private const val INDICATOR_REST = 0.5f
+private const val INDICATOR_RIM_TOP_ALPHA = 0.55f
+private const val INDICATOR_RIM_BOTTOM_ALPHA = 0.16f
+private const val INDICATOR_INNER_SHADOW_ALPHA = 0.15f
+private const val INDICATOR_INNER_SHADOW_RADIUS = 8.dp
+
+private fun restingPress(press: Float): Float = INDICATOR_REST + (1f - INDICATOR_REST) * press
+
+// The hand-drawn twin of the blurred indicator, at the same resting strength, so turning
+// "advanced material" off changes the material and never the silhouette.
+private val IndicatorRimTop = Color.White.copy(alpha = INDICATOR_RIM_TOP_ALPHA * INDICATOR_REST)
+private val IndicatorRimBottom = Color.White.copy(alpha = INDICATOR_RIM_BOTTOM_ALPHA * INDICATOR_REST)
+private val IndicatorInnerShadowColor =
+    Color.Black.copy(alpha = INDICATOR_INNER_SHADOW_ALPHA * INDICATOR_REST)
 
 @Composable
 fun LiquidGlassNavigationBar(
@@ -568,7 +592,9 @@ fun LiquidGlassNavigationBar(
                                         chromaticAberration = 0.5f,
                                     )
                                 },
-                                highlight = { pillHighlight.value.copy(alpha = dampedDrag.pressProgress) },
+                                highlight = {
+                                    pillHighlight.value.copy(alpha = restingPress(dampedDrag.pressProgress))
+                                },
                                 layerBlock = {
                                     scaleX = dampedDrag.scaleX
                                     scaleY = dampedDrag.scaleY
@@ -587,12 +613,14 @@ fun LiquidGlassNavigationBar(
                             )
                             .innerShadow(shape = pillShape) {
                                 InnerShadow(
-                                    radius = 8.dp * dampedDrag.pressProgress,
-                                    color = Color.Black.copy(alpha = 0.15f),
-                                    alpha = dampedDrag.pressProgress,
+                                    radius = INDICATOR_INNER_SHADOW_RADIUS * restingPress(dampedDrag.pressProgress),
+                                    color = Color.Black.copy(alpha = INDICATOR_INNER_SHADOW_ALPHA),
+                                    alpha = restingPress(dampedDrag.pressProgress),
                                 )
                             }
-                            .height(capsuleHeight)
+                            // 4dp of breathing room top and bottom turns the indicator into a
+                            // ball floating inside the capsule, matching the CZeroX measurement.
+                            .height(capsuleHeight - 8.dp)
                             .width(tabWidthDp),
                     )
                 } else {
@@ -605,7 +633,21 @@ fun LiquidGlassNavigationBar(
                             }
                             .clip(pillShape)
                             .background(accentColor.copy(alpha = 0.15f), pillShape)
-                            .height(capsuleHeight)
+                            .border(
+                                width = 1.dp,
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(IndicatorRimTop, IndicatorRimBottom),
+                                ),
+                                shape = pillShape,
+                            )
+                            .innerShadow(shape = pillShape) {
+                                InnerShadow(
+                                    radius = INDICATOR_INNER_SHADOW_RADIUS * INDICATOR_REST,
+                                    offset = DpOffset(0.dp, 5.dp),
+                                    color = IndicatorInnerShadowColor,
+                                )
+                            }
+                            .height(capsuleHeight - 8.dp)
                             .width(tabWidthDp),
                         contentAlignment = Alignment.CenterStart,
                     ) {

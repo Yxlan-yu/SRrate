@@ -60,6 +60,8 @@ import com.yxlanyu.refreshrate.ui.components.PageTransitionContent
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
 import com.yxlanyu.refreshrate.ui.components.RefrSheetDialog
 import com.yxlanyu.refreshrate.ui.components.UpdateController
+import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleBottomOffsetRange
+import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleBottomPadding
 import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleHeightDefault
 import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleHeightRange
 import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleWidthDefault
@@ -121,7 +123,7 @@ fun SettingsScreen(
     updateController: UpdateController,
     onLanguageChanged: () -> Unit = {},
     onAdvancedMaterialChanged: (Boolean) -> Unit = {},
-    onNavGeometryChanged: (Float, Float, Float) -> Unit = { _, _, _ -> },
+    onNavGeometryChanged: (Float, Float, Float, Float) -> Unit = { _, _, _, _ -> },
 ) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("s", android.content.Context.MODE_PRIVATE) }
@@ -153,6 +155,7 @@ fun SettingsScreen(
     var capsuleWidth by remember { mutableFloatStateOf(prefs.getFloat("nav_capsule_width", NavCapsuleWidthDefault.value)) }
     var capsuleHeight by remember { mutableFloatStateOf(prefs.getFloat("nav_capsule_height", NavCapsuleHeightDefault.value)) }
     var glassStrength by remember { mutableFloatStateOf(prefs.getFloat("nav_glass_strength", NavGlassStrengthDefault)) }
+    var navBarBottomOffset by remember { mutableFloatStateOf(prefs.getFloat("nav_bar_bottom_offset", NavCapsuleBottomPadding.value)) }
     var themeColor by remember { mutableStateOf(prefs.getInt("theme_color", 0xFF3B76FD.toInt())) }
     var showColorPicker by remember { mutableStateOf(false) }
     var updateChannel by remember { mutableStateOf(prefs.getString("update_channel", "stable") ?: "stable") }
@@ -550,7 +553,7 @@ fun SettingsScreen(
                                 onValueChange = { capsuleWidth = it },
                                 onValueChangeFinished = {
                                     prefs.edit().putFloat("nav_capsule_width", capsuleWidth).apply()
-                                    onNavGeometryChanged(capsuleWidth, capsuleHeight, glassStrength)
+                                    onNavGeometryChanged(capsuleWidth, capsuleHeight, navBarBottomOffset, glassStrength)
                                 },
                             )
                             SliderRow(
@@ -564,7 +567,7 @@ fun SettingsScreen(
                                 onValueChange = { capsuleHeight = it },
                                 onValueChangeFinished = {
                                     prefs.edit().putFloat("nav_capsule_height", capsuleHeight).apply()
-                                    onNavGeometryChanged(capsuleWidth, capsuleHeight, glassStrength)
+                                    onNavGeometryChanged(capsuleWidth, capsuleHeight, navBarBottomOffset, glassStrength)
                                 },
                             )
                             SliderRow(
@@ -578,7 +581,21 @@ fun SettingsScreen(
                                 onValueChange = { glassStrength = it },
                                 onValueChangeFinished = {
                                     prefs.edit().putFloat("nav_glass_strength", glassStrength).apply()
-                                    onNavGeometryChanged(capsuleWidth, capsuleHeight, glassStrength)
+                                    onNavGeometryChanged(capsuleWidth, capsuleHeight, navBarBottomOffset, glassStrength)
+                                },
+                            )
+                            SliderRow(
+                                title = stringResource(R.string.settings_nav_bottom_offset_title),
+                                desc = stringResource(R.string.settings_nav_bottom_offset_desc),
+                                valueLabel = "${navBarBottomOffset.toInt()}dp",
+                                value = navBarBottomOffset,
+                                valueRange = NavCapsuleBottomOffsetRange,
+                                steps = 40,
+                                enabled = true,
+                                onValueChange = { navBarBottomOffset = it },
+                                onValueChangeFinished = {
+                                    prefs.edit().putFloat("nav_bar_bottom_offset", navBarBottomOffset).apply()
+                                    onNavGeometryChanged(capsuleWidth, capsuleHeight, navBarBottomOffset, glassStrength)
                                 },
                             )
                         },

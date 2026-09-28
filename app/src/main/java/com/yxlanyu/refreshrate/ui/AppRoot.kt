@@ -6,10 +6,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -23,8 +25,11 @@ import androidx.compose.ui.unit.dp
 import com.yxlanyu.refreshrate.MainActivity
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.service.UpdateWorker
+import com.yxlanyu.refreshrate.ui.components.LocalBackdropEnabled
+import com.yxlanyu.refreshrate.ui.components.LocalBackdropSink
 import com.yxlanyu.refreshrate.ui.components.UpdateDialog
 import com.yxlanyu.refreshrate.ui.components.liquid.LiquidGlassNavigationBar
+import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleBottomPadding
 import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleHeightDefault
 import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleWidthDefault
 import com.yxlanyu.refreshrate.ui.components.liquid.NavGlassStrengthDefault
@@ -36,15 +41,13 @@ import com.yxlanyu.refreshrate.ui.screens.SettingsScreen
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.basic.NavigationItem
 import top.yukonga.miuix.kmp.basic.Scaffold
+import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import top.yukonga.miuix.kmp.blur.isRuntimeShaderSupported
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
-import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.GridView
 import top.yukonga.miuix.kmp.icon.extended.Refresh
 import top.yukonga.miuix.kmp.icon.extended.Settings
 import top.yukonga.miuix.kmp.icon.extended.Tune
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 private enum class MainTab(
     val labelRes: Int,
@@ -88,6 +91,7 @@ fun AppRoot() {
     // 1.4.1-beta3 bottom bar geometry, all adjustable from Settings > Theme > Interaction.
     var capsuleWidth by remember { mutableFloatStateOf(prefs.getFloat("nav_capsule_width", NavCapsuleWidthDefault.value)) }
     var capsuleHeight by remember { mutableFloatStateOf(prefs.getFloat("nav_capsule_height", NavCapsuleHeightDefault.value)) }
+    var navBarBottomOffset by remember { mutableFloatStateOf(prefs.getFloat("nav_bar_bottom_offset", NavCapsuleBottomPadding.value)) }
     var glassStrength by remember { mutableFloatStateOf(prefs.getFloat("nav_glass_strength", NavGlassStrengthDefault)) }
 
     val pagerState = rememberPagerState(
@@ -98,20 +102,14 @@ fun AppRoot() {
 
     val forceLangRecompose = langVersion
 
-    // 1.4.1: one backdrop, one pager, one bottom bar. "Advanced material" only decides
-    // whether the bottom bar capsule gets the real blur shader or the identical
-    // hand-drawn recipe; cards never sample this backdrop, because a drawBackdrop node
-    // nested inside the recorded node promotes itself to a background-blur layer and
-    // blows the RenderThread stack (SIGSEGV in libhwui prepareTreeImpl).
-    val surfaceColor = MiuixTheme.colorScheme.surface
-    val backdrop = if (isBlurActive) {
-        rememberLayerBackdrop {
-            drawRect(surfaceColor)
-            drawContent()
-        }
-    } else {
-        null
-    }
+    // 1.4.1-beta4: the recording moved down into RefreshPageScaffold, so each page hands up
+    // the backdrop of *its own* list. A page-level recording is the only safe one here: a
+    // pager-wide recording would contain the neighbouring pages' top bar frost, i.e. a
+    // drawBackdrop nested inside the recorded node, which promotes itself to a
+    // background-blur layer and blows the RenderThread stack (SIGSEGV in libhwui
+    // prepareTreeImpl). The value is (owner identity, backdrop) so that a page disposed
+    // mid-transition can only clear its own entry. Cards still never sample a backdrop.
+    val pageBackdrops = remember { mutableStateMapOf<Int, Pair<Any, LayerBackdrop>>() }
     val items = tabs.map { tab ->
         NavigationItem(
             label = stringResource(tab.labelRes),
@@ -129,23 +127,33 @@ fun AppRoot() {
                 onItemClick = { index ->
                     scope.launch { pagerState.animateScrollToPage(index) }
                 },
-                backdrop = backdrop,
+                backdrop = if (isBlurActive) pageBackdrops[current]?.second else null,
                 isBlurActive = isBlurActive,
                 capsuleWidth = capsuleWidth.dp,
                 capsuleHeight = capsuleHeight.dp,
+                bottomPadding = navBarBottomOffset.dp,
                 glassStrength = glassStrength,
             )
         },
     ) { innerPadding ->
         forceLangRecompose
+        CompositionLocalProvider(LocalBackdropEnabled provides isBlurActive) {
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier
-                .fillMaxSize()
-                .then(
-                    if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier,
-                ),
+            modifier = Modifier.fillMaxSize(),
         ) { page ->
+            // Provided per pager page so the sink captures a stable `page`, never
+            // pagerState.currentPage, which two pages mid-swipe would race over.
+            val reportForPage: (Any, LayerBackdrop?) -> Unit = remember(page) {
+                { owner: Any, backdrop: LayerBackdrop? ->
+                    if (backdrop == null) {
+                        if (pageBackdrops[page]?.first === owner) pageBackdrops.remove(page)
+                    } else {
+                        pageBackdrops[page] = owner to backdrop
+                    }
+                }
+            }
+            CompositionLocalProvider(LocalBackdropSink provides reportForPage) {
             when (tabs[page]) {
                 MainTab.Home -> HomeScreen(outerContentPadding = innerPadding)
                 MainTab.Custom -> CustomScreen(outerContentPadding = innerPadding)
@@ -160,13 +168,16 @@ fun AppRoot() {
                     onAdvancedMaterialChanged = { checked ->
                         advancedMaterial = checked
                     },
-                    onNavGeometryChanged = { widthDp, heightDp, strength ->
+                    onNavGeometryChanged = { widthDp, heightDp, offsetDp, strength ->
                         capsuleWidth = widthDp
                         capsuleHeight = heightDp
+                        navBarBottomOffset = offsetDp
                         glassStrength = strength
                     },
                 )
             }
+            }
+        }
         }
         UpdateDialog(updateController)
     }
