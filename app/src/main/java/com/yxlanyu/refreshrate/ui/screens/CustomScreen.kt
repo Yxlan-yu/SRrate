@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -55,6 +56,7 @@ import com.yxlanyu.refreshrate.ui.components.GlassCard
 import com.yxlanyu.refreshrate.ui.components.PageTransitionContent
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
 import com.yxlanyu.refreshrate.ui.components.RefrSheetDialog
+import com.yxlanyu.refreshrate.ui.components.StaticPageScaffold
 import com.yxlanyu.refreshrate.util.AccessibilityUtils
 import com.yxlanyu.refreshrate.util.AutoOverclockManager
 import com.yxlanyu.refreshrate.util.RootUtils
@@ -165,27 +167,40 @@ fun CustomScreen(outerContentPadding: PaddingValues) {
         CustomPage.AppList -> stringResource(R.string.app_list_title)
         CustomPage.AppConfig -> stringResource(R.string.app_refresh_config_title)
     }
+    val backIcon = if (p != CustomPage.Main) {
+        {
+            top.yukonga.miuix.kmp.basic.IconButton(onClick = { backToPrevious() }) {
+                top.yukonga.miuix.kmp.basic.Icon(
+                    imageVector = MiuixIcons.Back,
+                    contentDescription = "back",
+                )
+            }
+        }
+    } else {
+        null
+    }
+    // 1.4.1-beta4: an app's config is a short, fixed page. RefreshPageScaffold always keeps a
+    // LazyColumn in the tree, so "no scrolling" there is only a gesture opt-out and the large
+    // title still folds away. StaticPageScaffold has neither, so this page cannot scroll and
+    // its title cannot collapse.
+    if (p == CustomPage.AppConfig) {
+        StaticPageScaffold(
+            title = pageTitle,
+            outerContentPadding = outerContentPadding,
+            navigationIcon = backIcon,
+        ) {
+            AppConfigContent(
+                context = context,
+                prefs = prefs,
+                pkg = configPkg,
+            )
+        }
+    } else {
     RefreshPageScaffold(
         title = pageTitle,
         outerContentPadding = outerContentPadding,
-        // App config is a short, fixed page: a large title would leave nothing to scroll, so
-        // it drops to the static SmallTopAppBar and stops consuming vertical gestures.
-        largeTitle = when (p) {
-            CustomPage.Main -> stringResource(R.string.nav_custom_app_refresh)
-            CustomPage.AppList -> stringResource(R.string.app_list_title)
-            CustomPage.AppConfig -> ""
-        },
-        scrollEnabled = p != CustomPage.AppConfig,
-        navigationIcon = if (page != CustomPage.Main) {
-            {
-                top.yukonga.miuix.kmp.basic.IconButton(onClick = { backToPrevious() }) {
-                    top.yukonga.miuix.kmp.basic.Icon(
-                        imageVector = MiuixIcons.Back,
-                        contentDescription = "back",
-                    )
-                }
-            }
-        } else null,
+        largeTitle = pageTitle,
+        navigationIcon = backIcon,
     ) {
         when (p) {
             CustomPage.Main -> item(key = "main") {
@@ -208,33 +223,48 @@ fun CustomScreen(outerContentPadding: PaddingValues) {
                         onValueChange = { appQuery = it },
                         label = stringResource(R.string.app_list_search_hint),
                         useLabelAsPlaceholder = true,
+                        // 1.4.1-beta4: match the glass cards' 24dp corner so the bare search
+                        // field reads as part of the same surface grid.
+                        cornerRadius = 24.dp,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(14.dp, 4.dp),
                     )
                 }
                 item(key = "syswitch") {
-                    // 1.4.1-beta4: the filter row is a card like every other settings surface,
-                    // so the page stops being a bare column of text on the page background.
-                    GlassCard(
+                    // 1.4.1-beta4: deliberately NOT a glass card. It is a view switch, not a
+                    // settings surface, so it stays a bare row aligned to the card edges.
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(14.dp, 0.dp, 14.dp, 0.dp),
-                    ) {
-                        SettingsRow(
-                            title = stringResource(R.string.show_system_apps),
-                            desc = stringResource(
-                                if (appShowSystem) R.string.app_list_all_hint else R.string.app_list_third_party_hint,
-                            ),
-                            onClick = {
+                            .padding(horizontal = 14.dp, vertical = 8.dp)
+                            .clickable {
                                 appShowSystem = !appShowSystem
                                 prefs.edit().putBoolean("show_system_apps_in_list", appShowSystem).apply()
                             },
-                            trailing = {
-                                Switch(checked = appShowSystem, onCheckedChange = {
-                                    appShowSystem = it
-                                    prefs.edit().putBoolean("show_system_apps_in_list", it).apply()
-                                })
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.show_system_apps),
+                                fontSize = 17.sp,
+                                color = MiuixTheme.colorScheme.onSurface,
+                            )
+                            Text(
+                                text = stringResource(
+                                    if (appShowSystem) R.string.app_list_all_hint else R.string.app_list_third_party_hint,
+                                ),
+                                fontSize = 13.sp,
+                                color = MiuixTheme.colorScheme.onSurfaceVariantSummary,
+                                modifier = Modifier.padding(top = 3.dp),
+                            )
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Switch(
+                            checked = appShowSystem,
+                            onCheckedChange = {
+                                appShowSystem = it
+                                prefs.edit().putBoolean("show_system_apps_in_list", it).apply()
                             },
                         )
                     }
@@ -251,55 +281,45 @@ fun CustomScreen(outerContentPadding: PaddingValues) {
                         )
                     }
                 } else {
-                    // 1.4.1-beta4: one card around the whole list rather than one row per
-                    // card. Keeping every app in a single item means the list is no longer
-                    // lazy, which is the point: the rounded surface has to be continuous.
-                    item(key = "applist") {
+                    // 1.4.1-beta4: one glass card per app, not one card around the whole list.
+                    // The single card forced every app into a non-lazy Column, so a device
+                    // with a few hundred apps built one node tens of thousands of dp tall.
+                    // Per-app cards keep items() lazy; the 5dp vertical padding on each card
+                    // leaves a 10dp gap between them.
+                    items(appFiltered, key = { it.pkg }) { app ->
                         GlassCard(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(14.dp, 0.dp, 14.dp, 0.dp),
+                                .padding(14.dp, 5.dp, 14.dp, 5.dp),
                         ) {
-                            Column {
-                                appFiltered.forEach { app ->
-                                    SettingsRow(
-                                        title = app.name,
-                                        desc = app.pkg,
-                                        onClick = {
-                                            configFrom = CustomPage.AppList
-                                            configPkg = app.pkg
-                                            page = CustomPage.AppConfig
-                                        },
-                                        leading = {
-                                            AppAvatar(app.name, app.pkg)
-                                            Spacer(Modifier.width(12.dp))
-                                        },
-                                        trailing = {
-                                            top.yukonga.miuix.kmp.basic.Icon(
-                                                modifier = Modifier.size(16.dp),
-                                                imageVector = MiuixIcons.ChevronForward,
-                                                contentDescription = "chevron",
-                                                tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
-                                            )
-                                        },
+                            SettingsRow(
+                                title = app.name,
+                                desc = app.pkg,
+                                onClick = {
+                                    configFrom = CustomPage.AppList
+                                    configPkg = app.pkg
+                                    page = CustomPage.AppConfig
+                                },
+                                leading = {
+                                    AppAvatar(app.name, app.pkg)
+                                    Spacer(Modifier.width(12.dp))
+                                },
+                                trailing = {
+                                    top.yukonga.miuix.kmp.basic.Icon(
+                                        modifier = Modifier.size(16.dp),
+                                        imageVector = MiuixIcons.ChevronForward,
+                                        contentDescription = "chevron",
+                                        tint = MiuixTheme.colorScheme.onSurfaceVariantSummary,
                                     )
-                                    if (app.pkg != appFiltered.last().pkg) {
-                                        Divider(start = 52.dp)
-                                    }
-                                }
-                            }
+                                },
+                            )
                         }
                     }
                 }
             }
-            CustomPage.AppConfig -> item(key = "appcfg") {
-                AppConfigContent(
-                    context = context,
-                    prefs = prefs,
-                    pkg = configPkg,
-                )
-            }
+            CustomPage.AppConfig -> Unit
         }
+    }
     }
     }
 }
@@ -718,11 +738,13 @@ private fun AppConfigContent(
     }
 
     // 1.4.1-beta4: identity moves to the right so the label column owns the row and a long
-    // package name truncates instead of shoving the avatar off the edge.
+    // package name truncates instead of shoving the avatar off the edge. The 28dp horizontal
+    // padding is not a guess: 14dp card inset + 14dp SettingsRow inset puts every settings
+    // label in this app at 28dp, so the identity line lands on the same left edge.
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(start = 28.dp, end = 28.dp, top = 16.dp, bottom = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
