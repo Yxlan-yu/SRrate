@@ -19,15 +19,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.yxlanyu.refreshrate.MainActivity
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.service.UpdateWorker
 import com.yxlanyu.refreshrate.ui.components.UpdateDialog
 import com.yxlanyu.refreshrate.ui.components.liquid.LiquidGlassNavigationBar
 import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleBottomPadding
-import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleHeightDefault
-import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleWidthDefault
+import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleHeight
+import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleWidth
 import com.yxlanyu.refreshrate.ui.components.liquid.NavGlassStrengthDefault
 import com.yxlanyu.refreshrate.ui.components.rememberUpdateController
 import com.yxlanyu.refreshrate.ui.screens.CustomScreen
@@ -86,11 +85,11 @@ fun AppRoot() {
     }
     var advancedMaterial by remember { mutableStateOf(prefs.getBoolean("advanced_material", false)) }
     val isBlurActive = advancedMaterial && isRuntimeShaderSupported()
-    // 1.4.1-beta3 bottom bar geometry, all adjustable from Settings > Theme > Interaction.
-    var capsuleWidth by remember { mutableFloatStateOf(prefs.getFloat("nav_capsule_width", NavCapsuleWidthDefault.value)) }
-    var capsuleHeight by remember { mutableFloatStateOf(prefs.getFloat("nav_capsule_height", NavCapsuleHeightDefault.value)) }
+    // 1.4.1-beta4: the capsule geometry (width / height / gap to the bottom) is pinned in
+    // LiquidGlassNavigationBar and no longer read from prefs -- its sliders are gone. Glass
+    // strength is the one bottom bar number still adjustable, from Settings > Theme >
+    // Interaction, because it tracks the wallpaper rather than the device.
     var glassStrength by remember { mutableFloatStateOf(prefs.getFloat("nav_glass_strength", NavGlassStrengthDefault)) }
-    var navBarBottomOffset by remember { mutableFloatStateOf(prefs.getFloat("nav_bar_bottom_offset", NavCapsuleBottomPadding.value)) }
 
     val pagerState = rememberPagerState(
         initialPage = 0,
@@ -133,9 +132,9 @@ fun AppRoot() {
                 },
                 backdrop = backdrop,
                 isBlurActive = isBlurActive,
-                capsuleWidth = capsuleWidth.dp,
-                capsuleHeight = capsuleHeight.dp,
-                bottomPadding = navBarBottomOffset.dp,
+                capsuleWidth = NavCapsuleWidth,
+                capsuleHeight = NavCapsuleHeight,
+                bottomPadding = NavCapsuleBottomPadding,
                 glassStrength = glassStrength,
             )
         },
@@ -163,10 +162,7 @@ fun AppRoot() {
                     onAdvancedMaterialChanged = { checked ->
                         advancedMaterial = checked
                     },
-                    onNavGeometryChanged = { widthDp, heightDp, offsetDp, strength ->
-                        capsuleWidth = widthDp
-                        capsuleHeight = heightDp
-                        navBarBottomOffset = offsetDp
+                    onGlassStrengthChanged = { strength ->
                         glassStrength = strength
                     },
                 )

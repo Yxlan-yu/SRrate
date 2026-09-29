@@ -210,17 +210,19 @@ private fun rememberGravityRotatedHighlight(
  */
 internal val NavCapsuleInset = 4.dp
 internal val NavCapsuleIcon = 22.dp
-internal val NavCapsuleWidthDefault = 266.dp
-internal val NavCapsuleHeightDefault = 56.dp
-internal val NavCapsuleBottomPadding = 5.dp
+
+/**
+ * 1.4.1-beta4: the capsule geometry is no longer adjustable. The three sliders that used to
+ * drive these numbers are gone from Settings > Theme > Interaction, so every device gets the
+ * same capsule: 256 x 52dp, sitting 15dp above the navigation bar inset. These are the values
+ * that were tuned by hand on the reference device, so they are pinned rather than defaulted --
+ * reading them back from a pref would let a stale value from an older build win again.
+ * Only the glass *strength* is still a setting, because that one genuinely tracks the wallpaper.
+ */
+internal val NavCapsuleWidth = 256.dp
+internal val NavCapsuleHeight = 52.dp
+internal val NavCapsuleBottomPadding = 15.dp
 internal val NavGlassStrengthDefault = 0.5f
-
-/** 1.4.1-beta3 slider ranges; the defaults are the CZeroX measurements above. */
-internal val NavCapsuleWidthRange = 200f..340f
-internal val NavCapsuleHeightRange = 40f..72f
-
-/** 1.4.1-beta4 slider range: the capsule's gap to the bottom of the screen, above the inset. */
-internal val NavCapsuleBottomOffsetRange = 0f..40f
 
 // 1.4.1-beta4: the indicator keeps a visible rim at rest instead of a full-height slab, and
 // reaches the full recipe under a press. [restingPress] is read inside draw-phase lambdas on
@@ -249,8 +251,8 @@ fun LiquidGlassNavigationBar(
     backdrop: LayerBackdrop?,
     isBlurActive: Boolean,
     modifier: Modifier = Modifier,
-    capsuleWidth: Dp = NavCapsuleWidthDefault,
-    capsuleHeight: Dp = NavCapsuleHeightDefault,
+    capsuleWidth: Dp = NavCapsuleWidth,
+    capsuleHeight: Dp = NavCapsuleHeight,
     bottomPadding: Dp = NavCapsuleBottomPadding,
     glassStrength: Float = NavGlassStrengthDefault,
 ) {

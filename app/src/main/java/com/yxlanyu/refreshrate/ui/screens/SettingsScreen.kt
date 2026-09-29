@@ -60,12 +60,6 @@ import com.yxlanyu.refreshrate.ui.components.PageTransitionContent
 import com.yxlanyu.refreshrate.ui.components.RefreshPageScaffold
 import com.yxlanyu.refreshrate.ui.components.RefrSheetDialog
 import com.yxlanyu.refreshrate.ui.components.UpdateController
-import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleBottomOffsetRange
-import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleBottomPadding
-import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleHeightDefault
-import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleHeightRange
-import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleWidthDefault
-import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleWidthRange
 import com.yxlanyu.refreshrate.ui.components.liquid.NavGlassStrengthDefault
 import com.yxlanyu.refreshrate.util.AccessibilityUtils
 import com.yxlanyu.refreshrate.util.LanguageUtils
@@ -123,7 +117,7 @@ fun SettingsScreen(
     updateController: UpdateController,
     onLanguageChanged: () -> Unit = {},
     onAdvancedMaterialChanged: (Boolean) -> Unit = {},
-    onNavGeometryChanged: (Float, Float, Float, Float) -> Unit = { _, _, _, _ -> },
+    onGlassStrengthChanged: (Float) -> Unit = {},
 ) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("s", android.content.Context.MODE_PRIVATE) }
@@ -151,11 +145,9 @@ fun SettingsScreen(
     var autoCheck by remember { mutableStateOf(prefs.getBoolean("auto_check_update", true)) }
     var monet by remember { mutableStateOf(prefs.getBoolean("monet", true)) }
     var advancedMaterial by remember { mutableStateOf(prefs.getBoolean("advanced_material", false)) }
-    // 1.4.1-beta3 bottom bar geometry, defaults are the measured CZeroX capsule.
-    var capsuleWidth by remember { mutableFloatStateOf(prefs.getFloat("nav_capsule_width", NavCapsuleWidthDefault.value)) }
-    var capsuleHeight by remember { mutableFloatStateOf(prefs.getFloat("nav_capsule_height", NavCapsuleHeightDefault.value)) }
+    // 1.4.1-beta4: glass strength is the only bottom bar number left adjustable; the
+    // capsule geometry is pinned in LiquidGlassNavigationBar and has no state here.
     var glassStrength by remember { mutableFloatStateOf(prefs.getFloat("nav_glass_strength", NavGlassStrengthDefault)) }
-    var navBarBottomOffset by remember { mutableFloatStateOf(prefs.getFloat("nav_bar_bottom_offset", NavCapsuleBottomPadding.value)) }
     var themeColor by remember { mutableStateOf(prefs.getInt("theme_color", 0xFF3B76FD.toInt())) }
     var showColorPicker by remember { mutableStateOf(false) }
     var updateChannel by remember { mutableStateOf(prefs.getString("update_channel", "stable") ?: "stable") }
@@ -539,37 +531,12 @@ fun SettingsScreen(
                                 },
                             )
                             Divider()
-                            // 1.4.1-beta3: capsule width / height / glass strength. Defaults are
-                            // the CZeroX measurements; drag previews live, the pref is written on
-                            // release so a single gesture is one disk write.
-                            SliderRow(
-                                title = stringResource(R.string.settings_nav_width_title),
-                                desc = stringResource(R.string.settings_nav_width_desc),
-                                valueLabel = "${capsuleWidth.toInt()}dp",
-                                value = capsuleWidth,
-                                valueRange = NavCapsuleWidthRange,
-                                steps = 69,
-                                enabled = true,
-                                onValueChange = { capsuleWidth = it },
-                                onValueChangeFinished = {
-                                    prefs.edit().putFloat("nav_capsule_width", capsuleWidth).apply()
-                                    onNavGeometryChanged(capsuleWidth, capsuleHeight, navBarBottomOffset, glassStrength)
-                                },
-                            )
-                            SliderRow(
-                                title = stringResource(R.string.settings_nav_height_title),
-                                desc = stringResource(R.string.settings_nav_height_desc),
-                                valueLabel = "${capsuleHeight.toInt()}dp",
-                                value = capsuleHeight,
-                                valueRange = NavCapsuleHeightRange,
-                                steps = 15,
-                                enabled = true,
-                                onValueChange = { capsuleHeight = it },
-                                onValueChangeFinished = {
-                                    prefs.edit().putFloat("nav_capsule_height", capsuleHeight).apply()
-                                    onNavGeometryChanged(capsuleWidth, capsuleHeight, navBarBottomOffset, glassStrength)
-                                },
-                            )
+                            // 1.4.1-beta4: the capsule's width, height and gap to the bottom
+                            // are pinned (256 x 52dp, 15dp above the inset) and their three
+                            // sliders are gone, so every device renders the same capsule.
+                            // Glass strength is the last bottom bar number still adjustable:
+                            // it tracks the wallpaper rather than the hardware, so it cannot
+                            // be pinned to a number that is right for one screen.
                             SliderRow(
                                 title = stringResource(R.string.settings_glass_strength_title),
                                 desc = stringResource(R.string.settings_glass_strength_desc),
@@ -581,21 +548,7 @@ fun SettingsScreen(
                                 onValueChange = { glassStrength = it },
                                 onValueChangeFinished = {
                                     prefs.edit().putFloat("nav_glass_strength", glassStrength).apply()
-                                    onNavGeometryChanged(capsuleWidth, capsuleHeight, navBarBottomOffset, glassStrength)
-                                },
-                            )
-                            SliderRow(
-                                title = stringResource(R.string.settings_nav_bottom_offset_title),
-                                desc = stringResource(R.string.settings_nav_bottom_offset_desc),
-                                valueLabel = "${navBarBottomOffset.toInt()}dp",
-                                value = navBarBottomOffset,
-                                valueRange = NavCapsuleBottomOffsetRange,
-                                steps = 40,
-                                enabled = true,
-                                onValueChange = { navBarBottomOffset = it },
-                                onValueChangeFinished = {
-                                    prefs.edit().putFloat("nav_bar_bottom_offset", navBarBottomOffset).apply()
-                                    onNavGeometryChanged(capsuleWidth, capsuleHeight, navBarBottomOffset, glassStrength)
+                                    onGlassStrengthChanged(glassStrength)
                                 },
                             )
                         },

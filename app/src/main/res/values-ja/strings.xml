@@ -210,14 +210,8 @@
     <string name="settings_theme_wall_sub">モネカラー有効時はここから色を抽出</string>
     <string name="settings_theme_wall_custom">カスタム</string>
     <string name="settings_theme_glass_note">有効にすると、下部バーは中央に浮かぶ小さなガラスカプセルになります</string>
-    <string name="settings_nav_width_title">バー幅</string>
-    <string name="settings_nav_width_desc">中央のガラスカプセル型の横サイズ</string>
-    <string name="settings_nav_height_title">バー高さ</string>
-    <string name="settings_nav_height_desc">中央のガラスカプセル型の縦サイズ</string>
     <string name="settings_glass_strength_title">ガラスの濃さ</string>
     <string name="settings_glass_strength_desc">高度なマテリアルの透過とぼかしの強さを調整</string>
-    <string name="settings_nav_bottom_offset_title">バー下端の余白</string>
-    <string name="settings_nav_bottom_offset_desc">ガラスカプセルと画面下端の距離</string>
     <string name="about_github_project">GitHub 項目</string>
     <string name="about_github_project_desc">github.com/Yxlan-yu/SRrate</string>
     <string name="about_source_code">ソースコード</string>
