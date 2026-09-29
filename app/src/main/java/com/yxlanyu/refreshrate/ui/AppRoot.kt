@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -22,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import com.yxlanyu.refreshrate.MainActivity
 import com.yxlanyu.refreshrate.R
 import com.yxlanyu.refreshrate.service.UpdateWorker
+import com.yxlanyu.refreshrate.ui.components.LocalTopBarFrost
 import com.yxlanyu.refreshrate.ui.components.UpdateDialog
 import com.yxlanyu.refreshrate.ui.components.liquid.LiquidGlassNavigationBar
 import com.yxlanyu.refreshrate.ui.components.liquid.NavCapsuleBottomPadding
@@ -140,32 +142,37 @@ fun AppRoot() {
         },
     ) { innerPadding ->
         forceLangRecompose
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier
-                .fillMaxSize()
-                .then(
-                    if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier,
-                ),
-        ) { page ->
-            when (tabs[page]) {
-                MainTab.Home -> HomeScreen(outerContentPadding = innerPadding)
-                MainTab.Custom -> CustomScreen(outerContentPadding = innerPadding)
-                MainTab.Tools -> MonitorScreen(outerContentPadding = innerPadding)
-                MainTab.Settings -> SettingsScreen(
-                    outerContentPadding = innerPadding,
-                    updateController = updateController,
-                    onLanguageChanged = {
-                        activity?.refreshAppliedLang()
-                        langVersion++
-                    },
-                    onAdvancedMaterialChanged = { checked ->
-                        advancedMaterial = checked
-                    },
-                    onGlassStrengthChanged = { strength ->
-                        glassStrength = strength
-                    },
-                )
+        // 1.4.1-beta5: the same switch that drives the bottom bar's liquid glass also drives the
+        // top bar frost. Each RefreshPageScaffold builds its own list backdrop behind the flag, so
+        // the four pages stay independent and the pager-wide nav backdrop below is untouched.
+        CompositionLocalProvider(LocalTopBarFrost provides isBlurActive) {
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier,
+                    ),
+            ) { page ->
+                when (tabs[page]) {
+                    MainTab.Home -> HomeScreen(outerContentPadding = innerPadding)
+                    MainTab.Custom -> CustomScreen(outerContentPadding = innerPadding)
+                    MainTab.Tools -> MonitorScreen(outerContentPadding = innerPadding)
+                    MainTab.Settings -> SettingsScreen(
+                        outerContentPadding = innerPadding,
+                        updateController = updateController,
+                        onLanguageChanged = {
+                            activity?.refreshAppliedLang()
+                            langVersion++
+                        },
+                        onAdvancedMaterialChanged = { checked ->
+                            advancedMaterial = checked
+                        },
+                        onGlassStrengthChanged = { strength ->
+                            glassStrength = strength
+                        },
+                    )
+                }
             }
         }
         UpdateDialog(updateController)
