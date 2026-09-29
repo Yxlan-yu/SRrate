@@ -167,7 +167,9 @@ fun CustomScreen(outerContentPadding: PaddingValues) {
         CustomPage.AppList -> stringResource(R.string.app_list_title)
         CustomPage.AppConfig -> stringResource(R.string.app_refresh_config_title)
     }
-    val backIcon = if (p != CustomPage.Main) {
+    // The explicit @Composable type is required, not decoration: without it the compiler
+    // infers a plain (() -> Unit)? and every Icon inside becomes a non-composable call.
+    val backIcon: (@Composable () -> Unit)? = if (p != CustomPage.Main) {
         {
             top.yukonga.miuix.kmp.basic.IconButton(onClick = { backToPrevious() }) {
                 top.yukonga.miuix.kmp.basic.Icon(
