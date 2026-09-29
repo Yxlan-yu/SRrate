@@ -11,8 +11,8 @@ android {
         applicationId "com.yxlanyu.refreshrate"
         minSdk 24
         targetSdk 34
-versionCode 149
-    versionName "1.4.1-beta4"
+        versionCode 150
+        versionName "1.4.1-beta5"
     }
 
     signingConfigs {
@@ -57,9 +57,9 @@ kotlin {
 }
 
 dependencies {
-    implementation 'top.yukonga.miuix.kmp:miuix-ui-android:0.9.2'
-    implementation 'top.yukonga.miuix.kmp:miuix-icons-android:0.9.2'
-    implementation 'top.yukonga.miuix.kmp:miuix-blur-android:0.9.2'
+    implementation 'top.yukonga.miuix.kmp:miuix-ui-android:0.9.4'
+    implementation 'top.yukonga.miuix.kmp:miuix-icons-android:0.9.4'
+    implementation 'top.yukonga.miuix.kmp:miuix-blur-android:0.9.4'
     implementation 'org.jetbrains.compose.ui:ui:1.11.1'
     implementation 'org.jetbrains.compose.runtime:runtime:1.11.1'
     implementation 'org.jetbrains.compose.foundation:foundation:1.11.1'
