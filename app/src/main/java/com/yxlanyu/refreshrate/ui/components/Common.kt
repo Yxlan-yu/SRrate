@@ -105,7 +105,18 @@ fun RefreshPageScaffold(
     val scrollBehavior = MiuixScrollBehavior()
     val pageColor = MiuixTheme.colorScheme.surface
     val listBackdrop = if (LocalTopBarFrost.current) {
-        rememberLayerBackdrop { drawContent() }
+        // The page colour goes down first, and it has to: the LazyColumn paints no background of its
+        // own, so without this the recorded layer is *transparent* wherever no item happens to sit.
+        // ProgressiveBlur.Top tapers the blur to zero at the bar's lower edge, which means that last
+        // strip samples the backdrop directly instead of through a kernel -- and a direct sample of an
+        // empty region is black, not page colour. That is the 30px black band this replaces, and it
+        // showed up on whichever page happened to have a gap under the bar (Custom) while the denser
+        // pages blurred enough to hide it. Filling first makes "nothing drawn" mean "page colour",
+        // which is what is actually on screen there.
+        rememberLayerBackdrop {
+            drawRect(pageColor)
+            drawContent()
+        }
     } else {
         null
     }
