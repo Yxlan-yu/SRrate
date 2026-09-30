@@ -22,13 +22,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -38,59 +34,19 @@ import top.yukonga.miuix.kmp.basic.Scaffold
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar
 import top.yukonga.miuix.kmp.basic.Text
 import top.yukonga.miuix.kmp.basic.TopAppBar
-import top.yukonga.miuix.kmp.basic.TopAppBarState
-import top.yukonga.miuix.kmp.blur.BlendColorEntry
-import top.yukonga.miuix.kmp.blur.BlurColors
-import top.yukonga.miuix.kmp.blur.ProgressiveBlur
-import top.yukonga.miuix.kmp.blur.layerBackdrop
-import top.yukonga.miuix.kmp.blur.progressiveTextureBlur
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.utils.overScrollVertical
-
-/** Blur radius, in dp, of the top bar frost where it is at full strength. */
-internal const val TopBarFrostBlurRadius = 20f
-
-/**
- * How far the list has to slide under the bar before the frost starts appearing, and where it is
- * fully opaque -- both as a fraction of [TopAppBarState.overlappedFraction].
- */
-internal const val TopBarFrostFadeStart = 0.02f
-internal const val TopBarFrostFadeEnd = 0.4f
-
-/** Translucent page-colour scrim mixed into the frost, so the title stays readable over content. */
-internal const val TopBarFrostScrimAlpha = 0.32f
-
-/**
- * 1.4.1-beta5: whether the scrollable top bars show real frosted glass. Fed from AppRoot, which
- * reads it off Settings > Theme > Interaction > "Advanced material" (already ANDed with the
- * RuntimeShader gate). Everything downstream treats it as a plain boolean.
- */
-internal val LocalTopBarFrost = staticCompositionLocalOf { false }
-
-/** Maps "how much of the bar the list has slid under" onto the frost's opacity. */
-private fun frostAlpha(overlapped: Float): Float =
-    ((overlapped - TopBarFrostFadeStart) / (TopBarFrostFadeEnd - TopBarFrostFadeStart))
-        .coerceIn(0f, 1f)
 
 /**
  * A scrolling page: a collapsing top bar over a lazy list.
  *
- * 1.4.1-beta5 adds the scroll-driven frost. Two things had to be true for it to work, and beta4
- * had neither:
- *
- *  * **The frost must sample the list.** miuix's [Scaffold] places the top bar *after* the body,
- *    so the bar is already drawn on top of the list and list content does slide underneath it --
- *    the geometry was never the problem. What beta4 sampled was a pager-wide backdrop, which has
- *    nothing behind it while the large title is expanded, so the blur had nothing to blur and
- *    only the white tint survived: a flat haze with a hard edge. Recording the list itself makes
- *    "nothing behind it" mean "nothing to draw".
- *  * **The frost must fade with the overlap.** [TopAppBarState.overlappedFraction] is 0 while the
- *    bar is expanded and 1 once the list covers all of it, which is exactly the MIUI behaviour the
- *    user asked for, and it keeps the expanded state clean instead of tinting an empty backdrop.
- *
- * The frost lives in a [Box] beside the bar, never inside the recorded list, so it can never
- * sample the surface it is itself drawn into.
+ * 1.5.1 strips the beta5 frosted-glass top bar out entirely. The user asked for the opposite
+ * of the frost: every page's bar must behave exactly like Home's -- transparent over the page
+ * background at rest, and transparent over whatever content slides underneath it once you
+ * scroll. Frosted glass was abandoned after beta5 because on the sparse pages the bar looked
+ * like a flat pale slab (the blur ramps to zero at the bar's lower edge), on the Custom root it
+ * looked "capped" with the picture clipped at the scroll limit, and on the app list it jittered
+ * during slow scrolls. One transparent bar for all pages removes every one of those symptoms.
  */
 @Composable
 fun RefreshPageScaffold(
@@ -103,82 +59,28 @@ fun RefreshPageScaffold(
     content: LazyListScope.() -> Unit,
 ) {
     val scrollBehavior = MiuixScrollBehavior()
-    val pageColor = MiuixTheme.colorScheme.surface
-    val listBackdrop = if (LocalTopBarFrost.current) {
-        // The page colour goes down first, and it has to: the LazyColumn paints no background of its
-        // own, so without this the recorded layer is *transparent* wherever no item happens to sit.
-        // ProgressiveBlur.Top tapers the blur to zero at the bar's lower edge, which means that last
-        // strip samples the backdrop directly instead of through a kernel -- and a direct sample of an
-        // empty region is black, not page colour. That is the 30px black band this replaces, and it
-        // showed up on whichever page happened to have a gap under the bar (Custom) while the denser
-        // pages blurred enough to hide it. Filling first makes "nothing drawn" mean "page colour",
-        // which is what is actually on screen there.
-        rememberLayerBackdrop {
-            drawRect(pageColor)
-            drawContent()
-        }
-    } else {
-        null
-    }
-    val frostColors = remember(pageColor) {
-        BlurColors(
-            blendColors = listOf(BlendColorEntry(pageColor.copy(alpha = TopBarFrostScrimAlpha))),
-        )
-    }
-    // Transparent only when there is something that can actually show through; with the frost off
-    // the bar keeps the opaque page colour it has always had.
-    val barColor = if (listBackdrop != null) Color.Transparent else pageColor
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            Box(Modifier) {
-                listBackdrop?.let { backdrop ->
-                    Box(
-                        Modifier
-                            .matchParentSize()
-                            // Read in the draw phase on purpose: overlappedFraction is derived
-                            // from contentOffset, which moves on every scroll frame, and reading
-                            // it during composition would recompose this subtree 60 times a second.
-                            .graphicsLayer {
-                                alpha = frostAlpha(scrollBehavior.state.overlappedFraction)
-                            }
-                            // ProgressiveBlur.Top, not Bottom, and the rule is the seam: a blur
-                            // band has to be pixel-sharp at the edge content crosses into, or
-                            // "blurred inside, sharp outside" draws exactly the hard line beta4
-                            // was rejected for. List content enters under the bar's LOWER edge and
-                            // travels upward, so Top (full at the top, clear at the bottom) dissolves
-                            // it into the frost as it rises -- and leaves the title strip, the one
-                            // place that must stay legible over anything scrolling underneath, at
-                            // full strength. The scrim in [frostColors] rides the same gradient.
-                            .progressiveTextureBlur(
-                                backdrop = backdrop,
-                                shape = RectangleShape,
-                                blurRadius = TopBarFrostBlurRadius,
-                                gradient = ProgressiveBlur.Top,
-                                colors = frostColors,
-                            ),
-                    )
-                }
-                if (largeTitle.isNotEmpty()) {
-                    TopAppBar(
-                        title = title,
-                        largeTitle = largeTitle,
-                        subtitle = subtitle,
-                        navigationIcon = navigationIcon ?: {},
-                        actions = actions ?: {},
-                        scrollBehavior = scrollBehavior,
-                        color = barColor,
-                    )
-                } else {
-                    SmallTopAppBar(
-                        title = title,
-                        navigationIcon = navigationIcon ?: {},
-                        actions = actions ?: {},
-                        scrollBehavior = scrollBehavior,
-                        color = barColor,
-                    )
-                }
+            if (largeTitle.isNotEmpty()) {
+                TopAppBar(
+                    title = title,
+                    largeTitle = largeTitle,
+                    subtitle = subtitle,
+                    navigationIcon = navigationIcon ?: {},
+                    actions = actions ?: {},
+                    scrollBehavior = scrollBehavior,
+                    color = Color.Transparent,
+                )
+            } else {
+                SmallTopAppBar(
+                    title = title,
+                    navigationIcon = navigationIcon ?: {},
+                    actions = actions ?: {},
+                    scrollBehavior = scrollBehavior,
+                    color = Color.Transparent,
+                )
             }
         },
     ) { innerPadding ->
@@ -186,10 +88,7 @@ fun RefreshPageScaffold(
             modifier = Modifier
                 .fillMaxSize()
                 .overScrollVertical()
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
-                .then(
-                    if (listBackdrop != null) Modifier.layerBackdrop(listBackdrop) else Modifier,
-                ),
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
             contentPadding = PaddingValues(
                 top = innerPadding.calculateTopPadding(),
                 bottom = outerContentPadding.calculateBottomPadding(),
