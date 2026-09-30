@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.matchParentSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -133,6 +132,14 @@ fun RefreshPageScaffold(
                             .graphicsLayer {
                                 alpha = frostAlpha(scrollBehavior.state.overlappedFraction)
                             }
+                            // ProgressiveBlur.Top, not Bottom, and the rule is the seam: a blur
+                            // band has to be pixel-sharp at the edge content crosses into, or
+                            // "blurred inside, sharp outside" draws exactly the hard line beta4
+                            // was rejected for. List content enters under the bar's LOWER edge and
+                            // travels upward, so Top (full at the top, clear at the bottom) dissolves
+                            // it into the frost as it rises -- and leaves the title strip, the one
+                            // place that must stay legible over anything scrolling underneath, at
+                            // full strength. The scrim in [frostColors] rides the same gradient.
                             .progressiveTextureBlur(
                                 backdrop = backdrop,
                                 shape = RectangleShape,
